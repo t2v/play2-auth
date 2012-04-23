@@ -80,7 +80,11 @@ trait AuthConfigImpl extends AuthConfig {
 
   def authorizationFailed(request: Request[Any]) = Forbidden("no permission")
 
-  def authorize(user: User, authority: Authority) = user.permission <= authority
+  def authorize(user: User, authority: Authority) = (user.permission, authority) match {
+    case (Administrator, _) => true
+    case (NormalUser, NormalUser) => true
+    case _ => false
+  }
 
 }
 
