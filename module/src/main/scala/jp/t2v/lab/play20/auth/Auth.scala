@@ -7,17 +7,17 @@ import play.api.Play._
 trait Auth {
   self: Controller with AuthConfig =>
 
-  def authorizedAction(authority: AUTHORITY)(f: USER => Request[Any] => PlainResult) =
+  def authorizedAction(authority: Authority)(f: User => Request[Any] => PlainResult) =
     Action(req => authorized(authority)(req).right.map(u => f(u)(req)).merge)
 
-  def authorized(authority: AUTHORITY)(implicit request: Request[Any]): Either[PlainResult, USER] = for {
-    user <- restoreUser(request).toRight(authenticationFailed).right
-    _ <- Either.cond(authorize(user, authority), (), authorizationFailed).right
+  def authorized(authority: Authority)(implicit request: Request[Any]): Either[PlainResult, User] = for {
+    user <- restoreUser(request).toRight(authenticationFailed(request)).right
+    _ <- Either.cond(authorize(user, authority), (), authorizationFailed(request)).right
   } yield user
 
-  private def restoreUser(request: Request[Any]): Option[USER] = for {
+  private def restoreUser(request: Request[Any]): Option[User] = for {
     sessionId <- request.session.get("sessionId")
-    userId <- Cache.getAs[ID](sessionId + ":sessionId")(current, idManifest)
+    userId <- Cache.getAs[Id](sessionId + ":sessionId")(current, idManifest)
     user <- resolveUser(userId)
   } yield {
     Cache.set(sessionId + ":sessionId", userId, sessionTimeoutInSeconds)

@@ -21,8 +21,8 @@ object Application extends Controller with LoginLogout with AuthConfigImpl {
     Ok(html.login(loginForm))
   }
 
-  def logout = Action { request =>
-    gotoLogoutSucceeded(request).flashing(
+  def logout = Action { implicit request =>
+    gotoLogoutSucceeded.flashing(
       "success" -> "You've been logged out"
     )
   }
@@ -60,27 +60,27 @@ object Message extends Base {
 }
 trait AuthConfigImpl extends AuthConfig {
 
-  type ID = String
+  type Id = String
 
-  type USER = Account
+  type User = Account
 
-  type AUTHORITY = Permission
+  type Authority = Permission
 
-  val idManifest = classManifest[ID]
+  val idManifest = classManifest[Id]
 
   val sessionTimeoutInSeconds = 3600
 
-  def resolveUser(id: ID) = Account.findById(id)
+  def resolveUser(id: Id) = Account.findById(id)
 
-  val loginSucceeded = Redirect(routes.Message.main)
+  def loginSucceeded(request: Request[Any]) = Redirect(routes.Message.main)
 
-  val logoutSucceeded = Redirect(routes.Application.login)
+  def logoutSucceeded(request: Request[Any]) = Redirect(routes.Application.login)
 
-  val authenticationFailed = Redirect(routes.Application.login)
+  def authenticationFailed(request: Request[Any]) = Redirect(routes.Application.login)
 
-  val authorizationFailed = Forbidden("no permission")
+  def authorizationFailed(request: Request[Any]) = Forbidden("no permission")
 
-  def authorize(user: USER, authority: AUTHORITY) = user.permission <= authority
+  def authorize(user: User, authority: Authority) = user.permission <= authority
 
 }
 
