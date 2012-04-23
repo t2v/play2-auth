@@ -1,13 +1,13 @@
 package jp.t2v.lab.play20.auth
 
-import play.api.mvc.{Action, PlainResult, Request, Controller}
 import play.api.cache.Cache
 import play.api.Play._
+import play.api.mvc._
 
 trait Auth {
   self: Controller with AuthConfig =>
 
-  def authorizedAction(authority: Authority)(f: User => Request[Any] => PlainResult) =
+  def authorizedAction(authority: Authority)(f: User => Request[Any] => Result) =
     Action(req => authorized(authority)(req).right.map(u => f(u)(req)).merge)
 
   def authorized(authority: Authority)(implicit request: Request[Any]): Either[PlainResult, User] = for {
