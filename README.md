@@ -238,7 +238,7 @@ trait AuthConfigImpl extends AuthConfig {
 ```
 
 ```scala
-object Application extends Controller with Auth with AuthConfig {
+object Application extends Controller with Auth with AuthConfigImpl {
 
   def checkAuthor(messageId: Int)(account: Account): Boolean =
     Message.getAuther(messageId) == account
