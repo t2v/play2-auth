@@ -20,9 +20,9 @@ Play2.0 module for Authentication and Authorization
 
 標準で提供されている `Security` トレイトでは、認証後に `Action` を返します。
 
-これでは認証/認可以外にも様々なAction合成を行いたい場合に非常に不便です。
+これでは認証/認可以外にも様々なAction合成を行いたい場合にネストが深くなって非常に記述性が低くなります。
 
-このモジュールでは `Either[SimpleResult, User]` を返すインターフェイスを用意することで、
+このモジュールでは `Either[PlainResult, User]` を返すインターフェイスを用意することで、
 柔軟に他の操作を組み合わせて使用することができます。
 
 
