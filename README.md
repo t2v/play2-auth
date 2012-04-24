@@ -220,11 +220,6 @@ __※注意！リポジトリただいま準備中！！！！！！！__
 高度な使い方
 ---------------------------------------
 
-### 他のAction操作と合成する
-
-後で書く
-
-
 ### リクエストパラメータに応じて権限判定を変更する
 
 例えば SNS のようなアプリケーションでは、メッセージの編集といった機能があります。
@@ -249,7 +244,7 @@ trait AuthConfigImpl extends AuthConfig {
 ```scala
 object Application extends Controller with Auth with AuthConfigImpl {
 
-  def sameAuthor(messageId: Int)(account: Account): Boolean =
+  private def sameAuthor(messageId: Int)(account: Account): Boolean =
     Message.getAuther(messageId) == account
 
   def edit(messageId: Int) = authorizedAction(sameAuthor(messageId)) { user => request =>
@@ -286,6 +281,120 @@ trait AuthConfigImpl extends AuthConfig {
 }
 ```
 
+
+### 他のAction操作と合成する
+
+例えば、CSRF対策で各Actionでトークンのチェックをしたい、としましょう。
+
+全てのActionで毎回チェックロジックを書くのは大変なので、普通はこんなActionの拡張をすると思います。
+
+```scala
+object Application extends Controller {
+
+  // Token の発行処理は省略
+
+  val tokenForm = Form("token" -> text)
+
+  private def validateToken(request: Request): Boolean = (for {
+    tokenInForm <- tokenForm.bindFromRequest(request).value
+    tokenInSession <- request.session.get("token")
+  } yield tokenInForm == tokenInSession).getOrElse(false)
+
+  private def validAction(f: Request[Any] => Result) = Action { request =>
+    if (validateToken(request)) f(request)
+    else BadRequest
+  }
+
+  def page1 = validAction { request =>
+    // do something
+    Ok(html.page1("result"))
+  }
+
+  def page2 = validAction { request =>
+    // do something
+    Ok(html.page2("result"))
+  }
+
+}
+```
+
+この validateToken に認証/認可の仕組みを組み込むにはどうすればいいでしょうか？
+
+`authorizedAction` メソッドの代わりに `authorized` メソッドを使うことで簡単に実現ができます。
+
+```scala
+object Application extends Controller with Auth with AuthConfigImpl {
+
+  // Token の発行処理は省略
+
+  val tokenForm = Form("token" -> text)
+
+  private def validateToken(implicit request: Request): Boolean = (for {
+    tokenInForm <- tokenForm.bindFromRequest(request).value
+    tokenInSession <- request.session.get("token")
+  } yield tokenInForm == tokenInSession).getOrElse(false)
+
+  private authAndValidAction(authority: Authority)(f: User => Request[Any] => Result) =
+    Action { implicit request =>
+      (for {
+        user <- authorized(authority).right
+        _    <- Either.cond(validateToken, (), BadRequest).right
+      } yield f(user)(request)).merge
+    }
+
+  def page1 = authAndValidAction { user => request =>
+    // do something
+    Ok(html.page1("result"))
+  }
+
+  def page2 = authAndValidAction { user => request =>
+    // do something
+    Ok(html.page2("result"))
+  }
+
+}
+```
+
+この例だけでは簡単さが実感できないかもしれません。
+ではこれに更に pjax によって動的に Template を切り替えたいといったらどうでしょう？
+
+その場合でも柔軟に取込むことができます。
+
+```scala
+
+  private type Template = String => Html
+  private def pjax(implicit request: Request[Any]): Template = {
+    if (request.headers.keys("X-PJAX")) {
+      html.pjaxTemplate.apply
+    } else {
+      val displayValues = DomainLogic.getDisplayValues()
+      html.fullTemplate.apply(displayValues)
+    }
+  }
+
+  private complexAction(authority: Authority)(f: User => Template => Request[Any] => Result) =
+    Action { implicit request =>
+      (for {
+        user     <- authorized(authority).right
+        _        <- Either.cond(validateToken, (), BadRequest).right
+        template <- Right(pjax).right
+      } yield f(user)(template)(request)).merge
+    }
+
+  def page1 = complexAction { user => template => request =>
+    // do something
+    Ok(template("result"))
+  }
+
+  def page2 = complexAction { user => template => request =>
+    // do something
+    Ok(template("result"))
+  }
+```
+
+このようにどんどん Action に対して操作の合成を行っていくことができます。
+
+
 サンプルアプリケーション
 ---------------------------------------
 
@@ -296,6 +405,7 @@ trait AuthConfigImpl extends AuthConfig {
 1. ブラウザで `http://localhost:9000/` にアクセス
     1. 「Database 'default' needs evolution!」と聞かれるので `Apply this script now!` を押して実行します
     1. 適当にログインします
+    
         アカウントは以下の3アカウントが登録されています。
         
             Email             | Password | Permission
