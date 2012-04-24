@@ -3,6 +3,15 @@ Play2.0 module for Authentication and Authorization
 
 これは Play2.0 のアプリケーションに認証/認可の機能を手軽に組み込むためのモジュールです。
 
+対象
+---------------------------------------
+
+このモジュールは __Play2.0__ の __Scala__版を対象としています。
+Java版には [Deadbolt 2](https://github.com/schaloner/deadbolt-2) というモジュールがありますので
+こちらも参考にして下さい。
+
+Play2.0final および Play2.0.1 で動作確認をしています。
+
 動機
 ---------------------------------------
 
@@ -13,10 +22,10 @@ Play2.0 module for Authentication and Authorization
 サンプルアプリケーションのように、E-mailアドレスやユーザIDなどを識別子として利用した場合、
 万が一Cookieが流出した場合に、即座にSessionを無効にすることができません。
 
-このモジュールでは、暗号論的擬似乱数を使用したSessionIDを生成し、
-万が一Cookieが流失した場合でも、再ログインによるSessionIDの無効化や、タイムアウトを行うことができます。
+このモジュールでは、暗号論的に安全な乱数生成器を使用してセッション毎にuniqueなSessionIDを生成します。
+万が一Cookieが流失した場合でも、再ログインによるSessionIDの無効化やタイムアウト処理を行うことができます。
 
-### 拡張性
+### 柔軟性
 
 標準で提供されている `Security` トレイトでは、認証後に `Action` を返します。
 
@@ -240,10 +249,10 @@ trait AuthConfigImpl extends AuthConfig {
 ```scala
 object Application extends Controller with Auth with AuthConfigImpl {
 
-  def checkAuthor(messageId: Int)(account: Account): Boolean =
+  def sameAuthor(messageId: Int)(account: Account): Boolean =
     Message.getAuther(messageId) == account
 
-  def edit(messageId: Int) = authorizedAction(checkAuthor(messageId)) { user => request =>
+  def edit(messageId: Int) = authorizedAction(sameAuthor(messageId)) { user => request =>
     val target = Message.findById(messageId)
     Ok(html.message.edit(messageForm.fill(target)))
   }
@@ -276,6 +285,33 @@ trait AuthConfigImpl extends AuthConfig {
 
 }
 ```
+
+サンプルアプリケーション
+---------------------------------------
+
+1. `git clone https://github.com/t2v/play20-auth.git`
+1. `cd play20-auth`
+1. `play`
+1. `run`
+1. ブラウザで `http://localhost:9000/` にアクセス
+    1. 「Database 'default' needs evolution!」と聞かれるので `Apply this script now!` を押して実行します
+    1. 適当にログインします
+        アカウントは以下の3アカウントが登録されています。
+        
+            Email             | Password | Permission
+            alice@example.com | secret   | Administrator
+            bob@example.com   | secret   | NormalUser
+            chris@example.com | secret   | NormalUser
+
+
+注意事項
+---------------------------------------
+
+このモジュールは Play2.0 の [Cache API](http://www.playframework.org/documentation/2.0/ScalaCache) を利用しています。
+
+標準実装の [Ehcache](http://ehcache.org) では、サーバを分散させた場合に正しく認証情報を扱えない場合があります。
+
+サーバを分散させる場合には [Memcached Plugin](https://github.com/mumoshu/play2-memcached) 等を利用してください。
 
 
 ライセンス
