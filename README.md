@@ -38,8 +38,6 @@ Play2.0final および Play2.0.1 で動作確認をしています。
 導入
 ---------------------------------------
 
-__※注意！リポジトリただいま準備中！！！！！！！__
-
 `Build.scala` の `appDependencies` 及び `PlayProject.settings` 内に以下のような記述を追加します。
 
 ```scala
@@ -48,7 +46,7 @@ __※注意！リポジトリただいま準備中！！！！！！！__
   )
 
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
-    resolvers += "t2v.jp repo" at "http://t2v.github.com/maven-repo/release"
+    resolvers += "t2v.jp repo" at "http://www.t2v.jp/maven-repo/release"
   )
 ```
 
