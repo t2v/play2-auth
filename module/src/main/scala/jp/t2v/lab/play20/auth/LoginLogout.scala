@@ -20,8 +20,8 @@ trait LoginLogout {
   }
 
   private def generateSessionId(): String = {
-    def isAlphaNum(c: Char) = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
-    Stream.continually(random.nextPrintableChar).filter(isAlphaNum).take(64).mkString
+    val table = "abcdefghijklmnopqrstuvwxyz1234567890-_.!~*'()"
+    Stream.continually(random.nextInt(table.size)).map(table).take(64).mkString
   }
 
   private val random = new Random(new SecureRandom())
