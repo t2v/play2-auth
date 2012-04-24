@@ -293,7 +293,7 @@ object Application extends Controller {
 
   val tokenForm = Form("token" -> text)
 
-  private def validateToken(request: Request): Boolean = (for {
+  private def validateToken(request: Request[Any]): Boolean = (for {
     tokenInForm <- tokenForm.bindFromRequest(request).value
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
@@ -327,7 +327,7 @@ object Application extends Controller with Auth with AuthConfigImpl {
 
   val tokenForm = Form("token" -> text)
 
-  private def validateToken(implicit request: Request): Boolean = (for {
+  private def validateToken(implicit request: Request[Any]): Boolean = (for {
     tokenInForm <- tokenForm.bindFromRequest(request).value
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
