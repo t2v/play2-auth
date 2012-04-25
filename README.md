@@ -1,53 +1,54 @@
 Play2.0 module for Authentication and Authorization
 ===========================================================
 
-これは Play2.0 のアプリケーションに認証/認可の機能を手軽に組み込むためのモジュールです。
+This module offers Authentication and Authorization features to Play2.0 applications
 
-対象
+Target
 ---------------------------------------
 
-このモジュールは __Play2.0__ の __Scala__版を対象としています。
-Java版には [Deadbolt 2](https://github.com/schaloner/deadbolt-2) というモジュールがありますので
-こちらも参考にして下さい。
+This module is targeting the __Scala__ version of __Play2.0__.
 
-Play2.0final および Play2.0.1 で動作確認をしています。
+For Java version of Play2.0, there is an authorization module that is named [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
 
-動機
+This module is verificated on Play2.0final and Play2.0.1.
+
+Motivation
 ---------------------------------------
 
-### 安全性
- 
-標準で提供されている `Security` トレイトでは、ユーザを識別する識別子を規定していません。
+### Secure
 
-サンプルアプリケーションのように、E-mailアドレスやユーザIDなどを識別子として利用した場合、
-万が一Cookieが流出した場合に、即座にSessionを無効にすることができません。
+`Security` trait in Play2.0 API does not define identifier that identify a user.
 
-このモジュールでは、暗号論的に安全な乱数生成器を使用してセッション毎にuniqueなSessionIDを生成します。
-万が一Cookieが流失した場合でも、再ログインによるSessionIDの無効化やタイムアウト処理を行うことができます。
+If you use an E-mail or a user ID as an identier, 
+users can not invalidate the session when the cookie leaks.
 
-### 柔軟性
-
-標準で提供されている `Security` トレイトでは、認証後に `Action` を返します。
-
-これでは認証/認可以外にも様々なAction合成を行いたい場合にネストが深くなって非常に記述性が低くなります。
-
-このモジュールでは `Either[PlainResult, User]` を返すインターフェイスを用意することで、
-柔軟に他の操作を組み合わせて使用することができます。
+This module create a unique SessionID by a secure random number generator.
+Even if the cookie leaks, users can invalidate the session by relogin and 
+your application can set a time limit for sessions.
 
 
-導入
+### Flexible
+
+Since `Security` trait in Play2.0 API returns `Action`, 
+complicated action methods are nested too deep.
+
+This module provides an interface that return `Either[PlainResult, User]`.
+So, writing complicated action methods is easy.
+
+
+Installation
 ---------------------------------------
 
-1. `Build.scala` もしくは `build.sbt` にリポジトリ定義を追加します。
+1. add a repository resolver into your `Build.scala` or `build.sbt`.
 
         resolvers += "t2v.jp repo" at "http://www.t2v.jp/maven-repo/"
 
-1. `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
-    1. 安定版
+1. add a dependency declaration into your `Build.scala` or `build.sbt`.
+    1. stable relese
 
             "jp.t2v" %% "play20.auth" % "0.1"
 
-    1. 開発版
+    1. current version
 
             "jp.t2v" %% "play20.auth" % "0.2-SNAPSHOT"
 
@@ -63,30 +64,30 @@ For example: `Build.scala`
   )
 ```
 
-
-使い方
+Usage
 ---------------------------------------
 
-1. `app/controllers` 以下に `jp.t2v.lab.play20.auth.AuthConfig` を実装した `trait` を作成します。
+1. First step, create a trait that is mixed-in `jp.t2v.lab.play20.auth.AuthConfig` in `app/controllers`.
 
     ```scala
-    // (例)
+    // Example
     trait AuthConfigImpl extends AuthConfig {
     
       /** 
-       * ユーザを識別するIDの型です。String や Int や Long などが使われるでしょう。 
+       * A type that is used to identify a user.
+       * `String`, `Int`, `Long` and so on. 
        */
       type Id = String
     
       /** 
-       * あなたのアプリケーションで認証するユーザを表す型です。
-       * User型やAccount型など、アプリケーションに応じて設定してください。 
+       * A type that represents a user in your application.
+       * `User`, `Account` and so on.
        */
       type User = Account
     
       /** 
-       * 認可(権限チェック)を行う際に、アクション毎に設定するオブジェクトの型です。
-       * このサンプルでは例として以下のような trait を使用しています。
+       * A type that is defined every action for authorization.
+       * This sample uses the following trait.
        *
        * sealed trait Permission
        * case object Administrator extends Permission
@@ -95,45 +96,45 @@ For example: `Build.scala`
       type Authority = Permission
     
       /**
-       * CacheからユーザIDを取り出すための ClassManifest です。
-       * 基本的にはこの例と同じ記述をして下さい。
+       * A `ClassManifest` is used to get out an id from the Cache API.
+       * Basically use the same setting as the following.
        */
       val idManifest: ClassManifest[Id] = classManifest[Id]
     
       /**
-       * セッションタイムアウトの時間(秒)です。
+       * A duration of the session timeout in seconds
        */
       val sessionTimeoutInSeconds: Int = 3600
     
       /**
-       * ユーザIDからUserブジェクトを取得するアルゴリズムを指定します。
-       * 任意の処理を記述してください。
+       * A function that returns a `User` object from an `Id`.
+       * Describe the procedure according as your application.
        */
       def resolveUser(id: Id): Option[User] = Account.findById(id)
     
       /**
-       * ログインが成功した際に遷移する先を指定します。
+       * A movement target after a successful user login.
        */
       def loginSucceeded(request: Request[Any]): PlainResult = Redirect(routes.Message.main)
     
       /**
-       * ログアウトが成功した際に遷移する先を指定します。
+       * A movement target after a successful user logout.
        */
       def logoutSucceeded(request: Request[Any]): PlainResult = Redirect(routes.Application.login)
     
       /**
-       * 認証が失敗した場合に遷移する先を指定します。
+       * A movement target after a failed authentication.
        */
       def authenticationFailed(request: Request[Any]): PlainResult = Redirect(routes.Application.login)
     
       /**
-       * 認可(権限チェック)が失敗した場合に遷移する先を指定します。
+       * A movement target after a failed authorization.
        */
       def authorizationFailed(request: Request[Any]): PlainResult = Forbidden("no permission")
     
       /**
-       * 権限チェックのアルゴリズムを指定します。
-       * 任意の処理を記述してください。
+       * A function that authorize a user by `Authority`.
+       * Describe the procedure according as your application.
        */
       def authorize(user: User, authority: Authority): Boolean = 
         (user.permission, authority) match {
@@ -145,29 +146,29 @@ For example: `Build.scala`
     }
     ```
 
-1. 次にログイン、ログアウトを行う `Controller` を作成します。
-   この `Controller` に、先ほど作成した `AuthConfigImpl` トレイトと、
-   `jp.t2v.lab.play20.auth.LoginLogout` トレイトを mixin します。
+1. Next step, create a `Controller` that defines login and logout actions.
+   This `Controller` is mixed with `jp.t2v.lab.play20.auth.LoginLogout` trait and
+   the trait that was created in first step.
 
     ```scala
     object Application extends Controller with LoginLogout with AuthConfigImpl {
     
-      /** ログインFormはアプリケーションに応じて自由に作成してください。 */
+      /** Describe the login form according as your application. */
       val loginForm = Form {
         mapping("email" -> email, "password" -> text)(Account.authenticate)(_.map(u => (u.email, "")))
           .verifying("Invalid email or password", result => result.isDefined)
       }
     
-      /** ログインページはアプリケーションに応じて自由に作成してください。 */
+      /** Describe the login page action according as your application. */
       def login = Action { implicit request =>
         Ok(html.login(loginForm))
       }
     
       /** 
-       * ログアウト処理では任意の処理を行った後、
-       * gotoLogoutSucceeded メソッドを呼び出した結果を返して下さい。
-       * gotoLogoutSucceeded メソッドは PlainResult を返しますので、
-       * 以下のように任意の処理を追加することもできます。
+       * Return the `gotoLogoutSucceeded` method's result in the logout action.
+       *
+       * Since the `gotoLogoutSucceeded` returns `PlainResult`, 
+       * you can add a procedure like the following.
        * 
        *   gotoLogoutSucceeded.flashing(
        *     "success" -> "You've been logged out"
@@ -179,10 +180,10 @@ For example: `Build.scala`
       }
     
       /**
-       * ログイン処理では認証が成功した場合、
-       * gotoLoginSucceeded メソッドを呼び出した結果を返して下さい。
-       * gotoLoginSucceeded メソッドも gotoLogoutSucceeded と同じく PlainResult を返しますので、
-       * 任意の処理を追加することも可能です。
+       * Return the `gotoLoginSucceeded` method's result in the login action.
+       * 
+       * Since the `gotoLoginSucceeded` returns `PlainResult`, 
+       * you can add a procedure like the `gotoLogoutSucceeded`.
        */
       def authenticate = Action { implicit request =>
         loginForm.bindFromRequest.fold(
@@ -194,15 +195,16 @@ For example: `Build.scala`
     }
     ```
 
-1. 最後は、好きな `Controller` に 先ほど作成した `AuthConfigImpl` トレイトと
-   `jp.t2v.lab.play20.auth.Auth` トレイト を mixin すれば、認証/認可の仕組みを導入することができます。
+1. Last step, mix `jp.t2v.lab.play20.auth.Auth` trait and the trait that was created in first step
+   in your Controllers.
 
     ```scala
     object Message extends Controller with Auth with AuthConfigImpl {
     
-      // authorizedAction は 第一引数に権限チェック用の Authority を取り、
-      // 第二引数に User => Request[Any] => Result な関数を取り、
-      // Action を返します。
+      // The `authorizedAction` method
+      //    takes an `Authority` as a first argument and
+      //    takes a function whose type is `User => Request[Any] => Result` as a second argument and
+      //    returns an `Action`
     
       def main = authorizedAction(NormalUser) { user => implicit request =>
         val title = "message main"
@@ -219,7 +221,7 @@ For example: `Build.scala`
         Ok(html.message.detail(title + id))
       }
     
-      // このActionだけ、Administrator でなければ実行できなくなります。
+      // Only Administrator can execute this action.
       def write = authorizedAction(Administrator) { user => implicit request =>
         val title = "write message"
         Ok(html.message.write(title))
@@ -229,22 +231,21 @@ For example: `Build.scala`
     ```
 
 
-高度な使い方
+Advanced usage
 ---------------------------------------
 
-### リクエストパラメータに応じて権限判定を変更する
+### Changing the authorization according to request parameters.
 
-例えば SNS のようなアプリケーションでは、メッセージの編集といった機能があります。
+For example, SNS application has a function that edit messages.
 
-しかしこのメッセージ編集は、自分の書いたメッセージは編集可能だけども、
-他のユーザが書いたメッセージは編集禁止にしなくてはいけません。
+Your application should make a user enable to edit his own messages and disable to edit others' own messages.
 
-そういった場合にも以下のように `Authority` を関数にすることで簡単に対応が可能です。
+In this case, it is easy if `Authority` is a `Function` as follows.
 
 ```scala
 trait AuthConfigImpl extends AuthConfig {
 
-  // 他の設定省略
+  // Other setup is omitted. 
 
   type Authority = User => Boolean
 
@@ -268,18 +269,18 @@ object Application extends Controller with Auth with AuthConfigImpl {
 ```
 
 
-### ログイン後、認証直前にアクセスしていたページに遷移する
+### Returning first access page after login
 
-アプリケーションの任意のページにアクセスしてきた際に、
-未ログイン状態であればログインページに遷移し、
-ログインが成功した後に最初にアクセスしてきたページに戻したい、といった要求があります。
+For example, when an unauthenticated user access to non-login page, 
+your application redirects the user to login page.
+Then, when the user succeeds in login, your application redirects the user to the first accessed page.
 
-その場合も以下のようにするだけで簡単に実現できます。
+In this case, you only have to change `authenticationFailed` and `loginSucceeded` as follows.
 
 ```scala
 trait AuthConfigImpl extends AuthConfig {
 
-  // 他の設定省略
+  // Other settings are omitted.
 
   def authenticationFailed(request: Request[Any]): PlainResult = 
     Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
@@ -294,16 +295,16 @@ trait AuthConfigImpl extends AuthConfig {
 ```
 
 
-### 他のAction操作と合成する
+### Action composition
 
-例えば、CSRF対策で各Actionでトークンのチェックをしたい、としましょう。
+For example, you want to validate token at every action for the purpose of the CSRF prevention.
 
-全てのActionで毎回チェックロジックを書くのは大変なので、普通はこんなActionの拡張をすると思います。
+Since it is too hard to write the validation in all actions, Usually a method is defined as follows.
 
 ```scala
 object Application extends Controller {
 
-  // Token の発行処理は省略
+  // Other settings are omitted.
 
   val tokenForm = Form("token" -> text)
 
@@ -330,14 +331,14 @@ object Application extends Controller {
 }
 ```
 
-この validateToken に認証/認可の仕組みを組み込むにはどうすればいいでしょうか？
+How do you incorporate function that authenticate and authorize a user in `validateToken` ?
 
-`authorizedAction` メソッドの代わりに `authorized` メソッドを使うことで簡単に実現ができます。
+You only have to use `authorized` method insted of `authorizedAction` method.
 
 ```scala
 object Application extends Controller with Auth with AuthConfigImpl {
 
-  // Token の発行処理は省略
+  // The token publication is omitted.
 
   val tokenForm = Form("token" -> text)
 
@@ -367,10 +368,11 @@ object Application extends Controller with Auth with AuthConfigImpl {
 }
 ```
 
-この例だけでは簡単さが実感できないかもしれません。
-ではこれに更に pjax によって動的に Template を切り替えたいといったらどうでしょう？
+Simplicity may be unable to be realized only in this example.
 
-その場合でも柔軟に取込むことができます。
+Then, how do you incorporate function that changes templates dynamically by pjax ?
+
+In that case, it is easy.
 
 ```scala
 
@@ -404,21 +406,21 @@ object Application extends Controller with Auth with AuthConfigImpl {
   }
 ```
 
-このようにどんどん Action に対して操作の合成を行っていくことができます。
+Thus, you can combine functions for action methods.
 
 
-サンプルアプリケーション
+Sample Application
 ---------------------------------------
 
 1. `git clone https://github.com/t2v/play20-auth.git`
 1. `cd play20-auth`
 1. `play`
 1. `run`
-1. ブラウザで `http://localhost:9000/` にアクセス
-    1. 「Database 'default' needs evolution!」と聞かれるので `Apply this script now!` を押して実行します
-    1. 適当にログインします
+1. access to `http://localhost:9000/` on your browser.
+    1. click `Apply this script now!`
+    1. login
     
-        アカウントは以下の3アカウントが登録されています。
+        defined accounts
         
             Email             | Password | Permission
             alice@example.com | secret   | Administrator
@@ -426,20 +428,21 @@ object Application extends Controller with Auth with AuthConfigImpl {
             chris@example.com | secret   | NormalUser
 
 
-注意事項
+Attention
 ---------------------------------------
 
-このモジュールは Play2.0 の [Cache API](http://www.playframework.org/documentation/2.0/ScalaCache) を利用しています。
+This module uses [Cache API](http://www.playframework.org/documentation/2.0/ScalaCache) of Play2.0.
 
-標準実装の [Ehcache](http://ehcache.org) では、サーバを分散させた場合に正しく認証情報を扱えない場合があります。
+[Ehcache](http://ehcache.org) that is the default implementation 
+can not treat authentication information appropriately when the application servers are distributed.
 
-サーバを分散させる場合には [Memcached Plugin](https://github.com/mumoshu/play2-memcached) 等を利用してください。
+When you have to distribute the servers, 
+you should use [Memcached Plugin](https://github.com/mumoshu/play2-memcached) or etc.
 
 
-ライセンス
+License
 ---------------------------------------
 
-このモジュールは Apache Software License, version 2 の元に公開します。
-
-詳しくは `LICENSE` ファイルを参照ください。
+This library is released under the Apache Software License, version 2, 
+which should be included with the source in a file named `LICENSE`.
 
