@@ -38,7 +38,20 @@ Play2.0final および Play2.0.1 で動作確認をしています。
 導入
 ---------------------------------------
 
-`Build.scala` の `appDependencies` 及び `PlayProject.settings` 内に以下のような記述を追加します。
+1. `Build.scala` もしくは `build.sbt` にリポジトリ定義を追加します。
+
+        resolvers += "t2v.jp repo" at "http://www.t2v.jp/maven-repo/"
+
+1. `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
+    1. 安定版
+
+            "jp.t2v" %% "play20.auth" % "0.1"
+
+    1. 開発版
+
+            "jp.t2v" %% "play20.auth" % "0.2-SNAPSHOT"
+
+For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
@@ -46,9 +59,10 @@ Play2.0final および Play2.0.1 で動作確認をしています。
   )
 
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
-    resolvers += "t2v.jp repo" at "http://www.t2v.jp/maven-repo/release"
+    resolvers += "t2v.jp repo" at "http://www.t2v.jp/maven-repo/"
   )
 ```
+
 
 使い方
 ---------------------------------------
