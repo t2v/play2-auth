@@ -7,15 +7,18 @@ import play.api.mvc._
 trait Auth {
   self: Controller with AuthConfig =>
 
-  def authorizedAction(authority: Authority)(f: User => Request[Any] => Result) =
-    Action(req => authorized(authority)(req).right.map(u => f(u)(req)).merge)
+  def authorizedAction(authority: Authority)(f: User => Request[AnyContent] => Result): Action[AnyContent] =
+    authorizedAction(BodyParsers.parse.anyContent, authority)(f)
 
-  def authorized(authority: Authority)(implicit request: Request[Any]): Either[PlainResult, User] = for {
+  def authorizedAction[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Result): Action[A] =
+    Action(p)(req => authorized(authority)(req).right.map(u => f(u)(req)).merge)
+
+  def authorized[A](authority: Authority)(implicit request: Request[A]): Either[PlainResult, User] = for {
     user <- restoreUser(request).toRight(authenticationFailed(request)).right
     _ <- Either.cond(authorize(user, authority), (), authorizationFailed(request)).right
   } yield user
 
-  private def restoreUser(request: Request[Any]): Option[User] = for {
+  private def restoreUser[A](request: Request[A]): Option[User] = for {
     sessionId <- request.session.get("sessionId")
     userId <- Cache.getAs[Id](sessionId + ":sessionId")(current, idManifest)
     user <- resolveUser(userId)

@@ -115,22 +115,22 @@ Usage
       /**
        * A movement target after a successful user login.
        */
-      def loginSucceeded(request: Request[Any]): PlainResult = Redirect(routes.Message.main)
+      def loginSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Message.main)
     
       /**
        * A movement target after a successful user logout.
        */
-      def logoutSucceeded(request: Request[Any]): PlainResult = Redirect(routes.Application.login)
+      def logoutSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
     
       /**
        * A movement target after a failed authentication.
        */
-      def authenticationFailed(request: Request[Any]): PlainResult = Redirect(routes.Application.login)
+      def authenticationFailed[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
     
       /**
        * A movement target after a failed authorization.
        */
-      def authorizationFailed(request: Request[Any]): PlainResult = Forbidden("no permission")
+      def authorizationFailed[A](request: Request[A]): PlainResult = Forbidden("no permission")
     
       /**
        * A function that authorize a user by `Authority`.
@@ -203,7 +203,7 @@ Usage
     
       // The `authorizedAction` method
       //    takes an `Authority` as a first argument and
-      //    takes a function whose type is `User => Request[Any] => Result` as a second argument and
+      //    takes a function whose type is `User => Request[AnyContent] => Result` as a second argument and
       //    returns an `Action`
     
       def main = authorizedAction(NormalUser) { user => implicit request =>
@@ -282,10 +282,10 @@ trait AuthConfigImpl extends AuthConfig {
 
   // Other settings are omitted.
 
-  def authenticationFailed(request: Request[Any]): PlainResult = 
+  def authenticationFailed[A](request: Request[A]): PlainResult = 
     Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
 
-  def loginSucceeded(request: Request[Any]): PlainResult = {
+  def loginSucceeded[A](request: Request[A]): PlainResult = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url)
     request.session - "access_uri"
     Redirect(uri)
@@ -308,12 +308,12 @@ object Application extends Controller {
 
   val tokenForm = Form("token" -> text)
 
-  private def validateToken(request: Request[Any]): Boolean = (for {
+  private def validateToken(request: Request[AnyContent]): Boolean = (for {
     tokenInForm <- tokenForm.bindFromRequest(request).value
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
 
-  private def validAction(f: Request[Any] => Result) = Action { request =>
+  private def validAction(f: Request[AnyContent] => Result) = Action { request =>
     if (validateToken(request)) f(request)
     else BadRequest
   }
@@ -342,12 +342,12 @@ object Application extends Controller with Auth with AuthConfigImpl {
 
   val tokenForm = Form("token" -> text)
 
-  private def validateToken(implicit request: Request[Any]): Boolean = (for {
+  private def validateToken(implicit request: Request[AnyContent]): Boolean = (for {
     tokenInForm <- tokenForm.bindFromRequest(request).value
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
 
-  private authAndValidAction(authority: Authority)(f: User => Request[Any] => Result) =
+  private authAndValidAction(authority: Authority)(f: User => Request[AnyContent] => Result) =
     Action { implicit request =>
       (for {
         user <- authorized(authority).right
@@ -377,7 +377,7 @@ In that case, it is easy.
 ```scala
 
   private type Template = String => Html
-  private def pjax(implicit request: Request[Any]): Template = {
+  private def pjax(implicit request: Request[AnyContent]): Template = {
     if (request.headers.keys("X-PJAX")) {
       html.pjaxTemplate.apply
     } else {
@@ -386,7 +386,7 @@ In that case, it is easy.
     }
   }
 
-  private complexAction(authority: Authority)(f: User => Template => Request[Any] => Result) =
+  private complexAction(authority: Authority)(f: User => Template => Request[AnyContent] => Result) =
     Action { implicit request =>
       (for {
         user     <- authorized(authority).right

@@ -9,7 +9,7 @@ import java.security.SecureRandom
 trait LoginLogout {
   self: Controller with AuthConfig =>
 
-  def gotoLoginSucceeded(userId: Id)(implicit request: Request[Any]): PlainResult = {
+  def gotoLoginSucceeded[A](userId: Id)(implicit request: Request[A]): PlainResult = {
     Cache.getAs[String](userId + ":userId").foreach { old =>
       Cache.set(old + ":sessionId", "", 1)
     }
@@ -26,7 +26,7 @@ trait LoginLogout {
 
   private val random = new Random(new SecureRandom())
 
-  def gotoLogoutSucceeded(implicit request: Request[Any]): PlainResult = {
+  def gotoLogoutSucceeded[A](implicit request: Request[A]): PlainResult = {
     for {
       sessionId <- request.session.get("sessionId")
       userId <- Cache.getAs[Id](sessionId + ":sessionId")(current, idManifest)

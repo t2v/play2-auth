@@ -1,6 +1,6 @@
 name := "play20.auth"
 
-version := "0.1"
+version := "0.2-SNAPSHOT"
 
 resolvers ++= Seq(
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
@@ -12,4 +12,4 @@ libraryDependencies ++= Seq(
 
 organization := "jp.t2v"
 
-publishTo := Some(Resolver.file("maven-repo", file("../../maven-repo/")))
+publishTo := Some(Resolver.file("maven-repo", file("D:/home/nakamura/works/workspace/maven-repo/")))

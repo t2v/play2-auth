@@ -17,13 +17,13 @@ trait AuthConfig {
 
   def resolveUser(id: Id): Option[User]
 
-  def loginSucceeded(request: Request[Any]): PlainResult
+  def loginSucceeded[A](request: Request[A]): PlainResult
 
-  def logoutSucceeded(request: Request[Any]): PlainResult
+  def logoutSucceeded[A](request: Request[A]): PlainResult
 
-  def authenticationFailed(request: Request[Any]): PlainResult
+  def authenticationFailed[A](request: Request[A]): PlainResult
 
-  def authorizationFailed(request: Request[Any]): PlainResult
+  def authorizationFailed[A](request: Request[A]): PlainResult
 
   def authorize(user: User, authority: Authority): Boolean
 

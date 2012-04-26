@@ -72,13 +72,13 @@ trait AuthConfigImpl extends AuthConfig {
 
   def resolveUser(id: Id) = Account.findById(id)
 
-  def loginSucceeded(request: Request[Any]) = Redirect(routes.Message.main)
+  def loginSucceeded[A](request: Request[A]) = Redirect(routes.Message.main)
 
-  def logoutSucceeded(request: Request[Any]) = Redirect(routes.Application.login)
+  def logoutSucceeded[A](request: Request[A]) = Redirect(routes.Application.login)
 
-  def authenticationFailed(request: Request[Any]) = Redirect(routes.Application.login)
+  def authenticationFailed[A](request: Request[A]) = Redirect(routes.Application.login)
 
-  def authorizationFailed(request: Request[Any]) = Forbidden("no permission")
+  def authorizationFailed[A](request: Request[A]) = Forbidden("no permission")
 
   def authorize(user: User, authority: Authority) = (user.permission, authority) match {
     case (Administrator, _) => true
@@ -90,7 +90,7 @@ trait AuthConfigImpl extends AuthConfig {
 
 trait Base extends Controller with Auth with Pjax with AuthConfigImpl {
 
-  def compositeAction(permission: Permission)(f: Account => Template => Request[Any] => PlainResult) =
+  def compositeAction(permission: Permission)(f: Account => Template => Request[AnyContent] => PlainResult) =
     Action { implicit request =>
       (for {
         user     <- authorized(permission).right
