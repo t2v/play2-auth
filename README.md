@@ -46,11 +46,11 @@ Installation
 1. add a dependency declaration into your `Build.scala` or `build.sbt`.
     1. stable relese
 
-            "jp.t2v" %% "play20.auth" % "0.1"
+            "jp.t2v" %% "play20.auth" % "0.2"
 
     1. current version
 
-            "jp.t2v" %% "play20.auth" % "0.2-SNAPSHOT"
+            "jp.t2v" %% "play20.auth" % "0.3-SNAPSHOT"
 
 For example: `Build.scala`
 
