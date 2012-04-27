@@ -238,7 +238,7 @@ Advanced usage
 
 For example, SNS application has a function that edit messages.
 
-Your application should make a user enable to edit his own messages and disable to edit others' own messages.
+Your application should make a user possible to edit his own messages and impossible to edit others' own messages.
 
 In this case, it is easy if `Authority` is a `Function` as follows.
 
