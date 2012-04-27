@@ -11,33 +11,52 @@ trait LoginLogout {
   self: Controller with AuthConfig =>
 
   def gotoLoginSucceeded[A](userId: Id)(implicit request: Request[A]): PlainResult = {
-    Cache.getAs[String](userId + ":userId").foreach { old =>
-      Cache.set(old + ":sessionId", "", 1)
-    }
+    getSessionId(userId).foreach(deleteUserId)
     val sessionId = generateSessionId()
-    Cache.set(sessionId + ":sessionId", userId, sessionTimeoutInSeconds)
-    Cache.set(userId + ":userId", sessionId, sessionTimeoutInSeconds)
+    storeId(sessionId, userId)
     loginSucceeded(request).withSession("sessionId" -> sessionId)
+  }
+
+  def gotoLogoutSucceeded[A](implicit request: Request[A]): PlainResult = {
+    for {
+      sessionId <- request.session.get("sessionId")
+      userId <- getUserId(sessionId)
+    } {
+      deleteUserId(sessionId)
+      deleteSessionId(userId)
+    }
+    logoutSucceeded(request).withNewSession
   }
 
   @tailrec
   private def generateSessionId(): String = {
     val table = "abcdefghijklmnopqrstuvwxyz1234567890-_.!~*'()"
     val token = Stream.continually(random.nextInt(table.size)).map(table).take(64).mkString
-    if (Cache.getAs[String](token + ":sessionId").isEmpty) token else generateSessionId()
+    if (getUserId(token).isEmpty) token else generateSessionId()
   }
 
   private val random = new Random(new SecureRandom())
 
-  def gotoLogoutSucceeded[A](implicit request: Request[A]): PlainResult = {
-    for {
-      sessionId <- request.session.get("sessionId")
-      userId <- Cache.getAs[Id](sessionId + ":sessionId")(current, idManifest)
-    } {
-      Cache.set(sessionId + ":sessionId", "", 1)
-      Cache.set(userId + ":userId", "", 1)
-    }
-    logoutSucceeded(request).withNewSession
+  val sessionIdSuffix = ":sessionId"
+  val userIdSuffix = ":userId"
+
+  private def getUserId(sessionId: String): Option[Id] =
+    Cache.getAs[Id](sessionId + sessionIdSuffix)(current, idManifest)
+
+  private def getSessionId[A](userId: Id)(implicit request: Request[A]): Option[String] =
+    Cache.getAs[String](userId + userIdSuffix)
+
+  private def deleteUserId(sessionId: String) {
+    Cache.set(sessionId + sessionIdSuffix, "", 1)
+  }
+
+  private def deleteSessionId(userId: Id) {
+    Cache.set(userId + userIdSuffix, "", 1)
+  }
+
+  private def storeId(sessionId: String, userId: Id) {
+    Cache.set(sessionId + sessionIdSuffix, userId, sessionTimeoutInSeconds)
+    Cache.set(userId + userIdSuffix, sessionId, sessionTimeoutInSeconds)
   }
 
 }
