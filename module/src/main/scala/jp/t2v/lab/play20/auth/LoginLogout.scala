@@ -47,11 +47,11 @@ trait LoginLogout {
     Cache.getAs[String](userId + userIdSuffix)
 
   private def deleteUserId(sessionId: String) {
-    Cache.set(sessionId + sessionIdSuffix, "", 1)
+    Cache.set(sessionId + sessionIdSuffix, null, 1)
   }
 
   private def deleteSessionId(userId: Id) {
-    Cache.set(userId + userIdSuffix, "", 1)
+    Cache.set(userId + userIdSuffix, null, 1)
   }
 
   private def storeId(sessionId: String, userId: Id) {
