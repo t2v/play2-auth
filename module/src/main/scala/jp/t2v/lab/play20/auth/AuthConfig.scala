@@ -2,7 +2,6 @@ package jp.t2v.lab.play20.auth
 
 import play.api.mvc.{Request, PlainResult}
 
-
 trait AuthConfig {
 
   type Id

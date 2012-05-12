@@ -1,13 +1,11 @@
 package jp.t2v.lab.play20.auth
 
-import play.api.Play._
-import play.api.cache.Cache
 import play.api.mvc.{Request, PlainResult, Controller}
 import scala.annotation.tailrec
 import scala.util.Random
 import java.security.SecureRandom
 
-trait LoginLogout {
+trait LoginLogout extends CacheAdapter {
   self: Controller with AuthConfig =>
 
   def gotoLoginSucceeded[A](userId: Id)(implicit request: Request[A]): PlainResult = {
@@ -36,27 +34,5 @@ trait LoginLogout {
   }
 
   private val random = new Random(new SecureRandom())
-
-  val sessionIdSuffix = ":sessionId"
-  val userIdSuffix = ":userId"
-
-  private def getUserId(sessionId: String): Option[Id] =
-    Cache.getAs[Id](sessionId + sessionIdSuffix)(current, idManifest)
-
-  private def getSessionId[A](userId: Id)(implicit request: Request[A]): Option[String] =
-    Cache.getAs[String](userId + userIdSuffix)
-
-  private def deleteUserId(sessionId: String) {
-    Cache.set(sessionId + sessionIdSuffix, null, 1)
-  }
-
-  private def deleteSessionId(userId: Id) {
-    Cache.set(userId + userIdSuffix, null, 1)
-  }
-
-  private def storeId(sessionId: String, userId: Id) {
-    Cache.set(sessionId + sessionIdSuffix, userId, sessionTimeoutInSeconds)
-    Cache.set(userId + userIdSuffix, sessionId, sessionTimeoutInSeconds)
-  }
 
 }
