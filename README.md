@@ -6,24 +6,24 @@ This module offers Authentication and Authorization features to Play2.0 applicat
 Target
 ---------------------------------------
 
-This module is targeting the __Scala__ version of __Play2.0__.
+This module is targets the __Scala__ version of __Play2.0__.
 
-For Java version of Play2.0, there is an authorization module that is named [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
+For the Java version of Play2.0, there is an authorization module called [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
 
-This module is verificated on Play2.0final and Play2.0.1.
+This module has been tested on Play2.0final and Play2.0.1.
 
 Motivation
 ---------------------------------------
 
 ### Secure
 
-`Security` trait in Play2.0 API does not define identifier that identify a user.
+`Security` trait in Play2.0 API does not define an identifier that identifies a user.
 
 If you use an E-mail or a user ID as an identier, 
 users can not invalidate the session when the cookie leaks.
 
-This module create a unique SessionID by a secure random number generator.
-Even if the cookie leaks, users can invalidate the session by relogin and 
+This module creates a unique SessionID using a secure random number generator.
+Even if the cookie leaks, users can invalidate the session by logging in again and 
 your application can set a time limit for sessions.
 
 
@@ -33,18 +33,18 @@ Since `Security` trait in Play2.0 API returns `Action`,
 complicated action methods are nested too deep.
 
 This module provides an interface that return `Either[PlainResult, User]`.
-So, writing complicated action methods is easy.
+so, writing complicated action methods is easy.
 
 
 Installation
 ---------------------------------------
 
-1. add a repository resolver into your `Build.scala` or `build.sbt`.
+1. add a repository resolver into your `Build.scala` or `build.sbt` file.
 
         resolvers += "t2v.jp repo" at "http://www.t2v.jp/maven-repo/"
 
-1. add a dependency declaration into your `Build.scala` or `build.sbt`.
-    1. stable relese
+1. add a dependency declaration into your `Build.scala` or `build.sbt` file.
+    1. stable release
 
             "jp.t2v" %% "play20.auth" % "0.2"
 
@@ -86,7 +86,7 @@ Usage
       type User = Account
     
       /** 
-       * A type that is defined every action for authorization.
+       * A type that is defined by every action for authorization.
        * This sample uses the following trait.
        *
        * sealed trait Permission
@@ -96,7 +96,7 @@ Usage
       type Authority = Permission
     
       /**
-       * A `ClassManifest` is used to get out an id from the Cache API.
+       * A `ClassManifest` is used to get an id from the Cache API.
        * Basically use the same setting as the following.
        */
       val idManifest: ClassManifest[Id] = classManifest[Id]
@@ -108,33 +108,33 @@ Usage
     
       /**
        * A function that returns a `User` object from an `Id`.
-       * Describe the procedure according as your application.
+       * Describe the procedure according to your application.
        */
       def resolveUser(id: Id): Option[User] = Account.findById(id)
     
       /**
-       * A movement target after a successful user login.
+       * A redirect target after a successful user login.
        */
       def loginSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Message.main)
     
       /**
-       * A movement target after a successful user logout.
+       * A redirect target after a successful user logout.
        */
       def logoutSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
     
       /**
-       * A movement target after a failed authentication.
+       * A redirect target after a failed authentication.
        */
       def authenticationFailed[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
     
       /**
-       * A movement target after a failed authorization.
+       * A redirect target after a failed authorization.
        */
       def authorizationFailed[A](request: Request[A]): PlainResult = Forbidden("no permission")
     
       /**
-       * A function that authorize a user by `Authority`.
-       * Describe the procedure according as your application.
+       * A function that authorizes a user by `Authority`.
+       * Describe the procedure according to your application.
        */
       def authorize(user: User, authority: Authority): Boolean = 
         (user.permission, authority) match {
@@ -153,13 +153,13 @@ Usage
     ```scala
     object Application extends Controller with LoginLogout with AuthConfigImpl {
     
-      /** Describe the login form according as your application. */
+      /** Describe the login form according to your application. */
       val loginForm = Form {
         mapping("email" -> email, "password" -> text)(Account.authenticate)(_.map(u => (u.email, "")))
           .verifying("Invalid email or password", result => result.isDefined)
       }
     
-      /** Describe the login page action according as your application. */
+      /** Describe the login page action according to your application. */
       def login = Action { implicit request =>
         Ok(html.login(loginForm))
       }
@@ -196,7 +196,7 @@ Usage
     ```
 
 1. Last step, mix `jp.t2v.lab.play20.auth.Auth` trait and the trait that was created in first step
-   in your Controllers.
+   into your Controllers.
 
     ```scala
     object Message extends Controller with Auth with AuthConfigImpl {
@@ -236,9 +236,9 @@ Advanced usage
 
 ### Changing the authorization according to request parameters.
 
-For example, SNS application has a function that edit messages.
+For example, a SNS application has a function that edit messages.
 
-Your application should make a user possible to edit his own messages and impossible to edit others' own messages.
+Your application should make it possible for a user to edit their own messages and impossible to edit other people's messages.
 
 In this case, it is easy if `Authority` is a `Function` as follows.
 
@@ -269,11 +269,11 @@ object Application extends Controller with Auth with AuthConfigImpl {
 ```
 
 
-### Returning first access page after login
+### Returning to the originally requested page after login
 
-For example, when an unauthenticated user access to non-login page, 
-your application redirects the user to login page.
-Then, when the user succeeds in login, your application redirects the user to the first accessed page.
+For example, when an unauthenticated user requests access to non-login page, 
+your application redirects the user to the login page.
+Then, when the user successfully logs in, your application redirects the user to the originally requested page.
 
 In this case, you only have to change `authenticationFailed` and `loginSucceeded` as follows.
 
@@ -297,9 +297,9 @@ trait AuthConfigImpl extends AuthConfig {
 
 ### Action composition
 
-For example, you want to validate token at every action for the purpose of the CSRF prevention.
+For example, you want to validate token at every action to defeat a CSRF attack.
 
-Since it is too hard to write the validation in all actions, Usually a method is defined as follows.
+Since it is impractical to perform the validation in all actions, Usually a method is defined as follows.
 
 ```scala
 object Application extends Controller {
@@ -331,9 +331,9 @@ object Application extends Controller {
 }
 ```
 
-How do you incorporate function that authenticate and authorize a user in `validateToken` ?
+How do you incorporate a function that authenticates and authorizes a user in `validateToken` ?
 
-You only have to use `authorized` method insted of `authorizedAction` method.
+You need to use the `authorized` method insted of `authorizedAction` method.
 
 ```scala
 object Application extends Controller with Auth with AuthConfigImpl {
@@ -368,11 +368,11 @@ object Application extends Controller with Auth with AuthConfigImpl {
 }
 ```
 
-Simplicity may be unable to be realized only in this example.
+This example is complex.
 
 Then, how do you incorporate function that changes templates dynamically by pjax ?
 
-In that case, it is easy.
+This is easy:
 
 ```scala
 
@@ -433,11 +433,11 @@ Attention
 
 This module uses [Cache API](http://www.playframework.org/documentation/2.0/ScalaCache) of Play2.0.
 
-[Ehcache](http://ehcache.org) that is the default implementation 
+[Ehcache](http://ehcache.org), the default implementation, 
 can not treat authentication information appropriately when the application servers are distributed.
 
-When you have to distribute the servers, 
-you should use [Memcached Plugin](https://github.com/mumoshu/play2-memcached) or etc.
+If you have to distributed servers, 
+you should use [Memcached Plugin](https://github.com/mumoshu/play2-memcached) or similar.
 
 
 License
