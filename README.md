@@ -431,7 +431,7 @@ Sample Application
 Attention
 ---------------------------------------
 
-This module uses [Cache API](http://www.playframework.org/documentation/2.0/ScalaCache) of Play2.0.
+This module uses the [Cache API](http://www.playframework.org/documentation/2.0/ScalaCache) of Play2.0.
 
 [Ehcache](http://ehcache.org), the default implementation, 
 can not treat authentication information appropriately when the application servers are distributed.
