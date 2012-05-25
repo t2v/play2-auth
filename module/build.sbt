@@ -12,4 +12,6 @@ libraryDependencies ++= Seq(
 
 organization := "jp.t2v"
 
-publishTo := Some(Resolver.file("maven-repo", file("D:/home/nakamura/works/workspace/maven-repo/")))
+publishTo := sys.env.get("LOCAL_MAVEN_REPO").map { dir =>
+  Resolver.file("maven-repo", file(dir))(Patterns(true, Resolver.mavenStyleBasePattern))
+}
