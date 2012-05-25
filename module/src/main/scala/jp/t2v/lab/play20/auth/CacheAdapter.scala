@@ -14,19 +14,19 @@ private[auth] trait CacheAdapter {
     Cache.getAs[Id](sessionId + sessionIdSuffix)(current, idManifest)
 
   private[auth] def getSessionId[A](userId: Id)(implicit request: Request[A]): Option[String] =
-    Cache.getAs[String](userId + userIdSuffix)
+    Cache.getAs[String](userId.toString + userIdSuffix)
 
   private[auth] def deleteUserId(sessionId: String) {
     Cache.set(sessionId + sessionIdSuffix, null, 1)
   }
 
   private[auth] def deleteSessionId(userId: Id) {
-    Cache.set(userId + userIdSuffix, null, 1)
+    Cache.set(userId.toString + userIdSuffix, null, 1)
   }
 
   private[auth] def storeId(sessionId: String, userId: Id) {
     Cache.set(sessionId + sessionIdSuffix, userId, sessionTimeoutInSeconds)
-    Cache.set(userId + userIdSuffix, sessionId, sessionTimeoutInSeconds)
+    Cache.set(userId.toString + userIdSuffix, sessionId, sessionTimeoutInSeconds)
   }
   
 }
