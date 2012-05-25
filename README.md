@@ -355,12 +355,12 @@ object Application extends Controller with Auth with AuthConfigImpl {
       } yield f(user)(request)).merge
     }
 
-  def page1 = authAndValidAction { user => request =>
+  def page1 = authAndValidAction(NormalUser) { user => request =>
     // do something
     Ok(html.page1("result"))
   }
 
-  def page2 = authAndValidAction { user => request =>
+  def page2 = authAndValidAction(NormalUser) { user => request =>
     // do something
     Ok(html.page2("result"))
   }
@@ -395,12 +395,12 @@ This is easy:
       } yield f(user)(template)(request)).merge
     }
 
-  def page1 = complexAction { user => template => request =>
+  def page1 = complexAction(NormalUser) { user => template => request =>
     // do something
     Ok(template("result"))
   }
 
-  def page2 = complexAction { user => template => request =>
+  def page2 = complexAction(NormalUser) { user => template => request =>
     // do something
     Ok(template("result"))
   }
