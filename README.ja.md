@@ -293,6 +293,24 @@ trait AuthConfigImpl extends AuthConfig {
 }
 ```
 
+### ログイン状態と未ログイン状態で表示を変える
+
+トップページなどにおいて、未ログイン状態でも画面を正常に表示し、
+ログイン状態であればユーザ名などを表示する、といったことがしたい場合、
+以下のように `optionalUserAction` を使用することで実現することができる。
+
+```scala
+object Application extends Controller with Auth with AuthConfigImpl {
+
+  // maybeUser is an Option[User] instance.
+  def index = optionalUserAction { maybeUser => request
+    val user: User = maybeUser.getOrElse(GuestUser)
+    Ok(html.index(user))
+  }
+
+}
+```
+
 
 ### 他のAction操作と合成する
 
@@ -354,12 +372,12 @@ object Application extends Controller with Auth with AuthConfigImpl {
       } yield f(user)(request)).merge
     }
 
-  def page1 = authAndValidAction(NormalUser) { user => request =>
+  def page1 = authAndValidAction { user => request =>
     // do something
     Ok(html.page1("result"))
   }
 
-  def page2 = authAndValidAction(NormalUser) { user => request =>
+  def page2 = authAndValidAction { user => request =>
     // do something
     Ok(html.page2("result"))
   }
@@ -393,18 +411,50 @@ object Application extends Controller with Auth with AuthConfigImpl {
       } yield f(user)(template)(request)).merge
     }
 
-  def page1 = complexAction(NormalUser) { user => template => request =>
+  def page1 = complexAction { user => template => request =>
     // do something
     Ok(template("result"))
   }
 
-  def page2 = complexAction(NormalUser) { user => template => request =>
+  def page2 = complexAction { user => template => request =>
     // do something
     Ok(template("result"))
   }
 ```
 
 このようにどんどん Action に対して操作の合成を行っていくことができます。
+
+
+### Stateless
+
+このモジュールの標準実装はステートフルな実装になっています。
+Play framefork が推奨するステートレスなポリシーを尊重したくはあるのですが、
+ステートレスにすると次のようなセキュリティリスクが存在するため、標準では安全側に倒してあります。
+
+例えば、インターネットカフェなどでサービスにログインし、
+ログアウトするのを忘れて帰宅してしまった、といった場合。
+ステートレスではその事実に気付いても即座にそのSessionを無効にすることができません。
+標準実装ではログイン時に、それより以前のSessionを無効にしてます。
+したがってこの様な事態に気付いた場合、即座に再ログインすることでSessionを無効化することができます。
+
+このようなリスクを踏まえ、それでもステートレスにしたい場合、
+以下のように `RelationResolver` の実装を `CookieRelationResolver` 切り替えることでステートレスにすることができます。
+
+```scala
+trait AuthConfigImpl extends AuthConfig {
+
+  // 他の設定省略
+
+  override def resolver[A](implicit request: Request[A]) =
+    new CookieRelationResolver[Id, A](request)
+
+}
+```
+
+`RelationResolver` は SessionID および UserID を紐付ける責務を負っています。
+この実装を切り替えることで、例えば RDBMS に認証情報を登録するといった事も可能です。
+
+なお、`CookieRelationResolver` ではSessionタイムアウトは未サポートとなっています。
 
 
 サンプルアプリケーション

@@ -294,6 +294,23 @@ trait AuthConfigImpl extends AuthConfig {
 }
 ```
 
+### changing a disply by the login state 
+
+When you want to display the application's index to un-logged-in users
+and logged-in users, you only have to user `optionalUserAction` as follows.
+
+```scala
+object Application extends Controller with Auth with AuthConfigImpl {
+
+  // maybeUser is an Option[User] instance.
+  def index = optionalUserAction { maybeUser => request
+    val user: User = maybeUser.getOrElse(GuestUser)
+    Ok(html.index(user))
+  }
+
+}
+```
+
 
 ### Action composition
 
@@ -407,6 +424,34 @@ This is easy:
 ```
 
 Thus, you can combine functions for action methods.
+
+
+### Stateless
+
+We respect the Play framework stateless policy.
+But, this module's default implementation is statefull, 
+since the stateless implementation has the security risk as follow.
+
+For example, A user log-in your application in a internet-cafe.
+And the user returns home without logout.
+By the stateless implementation, he(or she) can not invalidate the session.
+
+Nevertheless, you want to use stateless, override the `resolver` method on `AuthConfig` as follows
+
+```scala
+trait AuthConfigImpl extends AuthConfig {
+
+  // ëºÇÃê›íËè»ó™
+
+  override def resolver[A](implicit request: Request[A]) =
+    new CookieRelationResolver[Id, A](request)
+
+}
+```
+
+You make your application possible to save the authentication data on RDBMS by overriding the resolver.
+
+`CookieRelationResolver` is not support session timeout.
 
 
 Sample Application
