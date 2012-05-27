@@ -297,7 +297,7 @@ trait AuthConfigImpl extends AuthConfig {
 
 トップページなどにおいて、未ログイン状態でも画面を正常に表示し、
 ログイン状態であればユーザ名などを表示する、といったことがしたい場合、
-以下のように `optionalUserAction` を使用することで実現することができる。
+以下のように `optionalUserAction` を使用することで実現することができます。
 
 ```scala
 object Application extends Controller with Auth with AuthConfigImpl {
