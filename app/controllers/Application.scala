@@ -86,6 +86,9 @@ trait AuthConfigImpl extends AuthConfig {
     case _ => false
   }
 
+//  override def resolver[A](implicit request: Request[A]) =
+//    new CookieRelationResolver[Id, A](request)
+
 }
 
 trait Base extends Controller with Auth with Pjax with AuthConfigImpl {

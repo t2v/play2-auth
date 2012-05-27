@@ -11,8 +11,8 @@ trait LoginLogout {
   def gotoLoginSucceeded[A](userId: Id)(implicit request: Request[A]): PlainResult = {
     resolver.removeByUserId(userId)
     val sessionId = generateSessionId(request)
-    resolver.store(sessionId, userId, sessionTimeoutInSeconds)
-    loginSucceeded(request).withSession("sessionId" -> sessionId)
+    val session = resolver.store(sessionId, userId, sessionTimeoutInSeconds)
+    loginSucceeded(request).withSession(session + ("sessionId" -> sessionId))
   }
 
   def gotoLogoutSucceeded[A](implicit request: Request[A]): PlainResult = {
@@ -24,7 +24,7 @@ trait LoginLogout {
   private def generateSessionId[A](implicit request: Request[A]): String = {
     val table = "abcdefghijklmnopqrstuvwxyz1234567890-_.!~*'()"
     val token = Stream.continually(random.nextInt(table.size)).map(table).take(64).mkString
-    if (resolver.sessionId2userId(token).isEmpty) token else generateSessionId(request)
+    if (resolver.exists(token)) generateSessionId(request) else token
   }
 
   private val random = new Random(new SecureRandom())
