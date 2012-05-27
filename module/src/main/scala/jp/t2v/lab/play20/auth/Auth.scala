@@ -11,6 +11,12 @@ trait Auth {
   def authorizedAction[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Result): Action[A] =
     Action(p)(req => authorized(authority)(req).right.map(u => f(u)(req)).merge)
 
+  def optionalUserAction(f: Option[User] => Request[AnyContent] => Result): Action[AnyContent] =
+    optionalUserAction(BodyParsers.parse.anyContent)(f)
+
+  def optionalUserAction[A](p: BodyParser[A])(f: Option[User] => Request[A] => Result): Action[A] =
+    Action(p)(req => f(restoreUser(req))(req))
+
   def authorized[A](authority: Authority)(implicit request: Request[A]): Either[PlainResult, User] = for {
     user <- restoreUser(request).toRight(authenticationFailed(request)).right
     _ <- Either.cond(authorize(user, authority), (), authorizationFailed(request)).right
