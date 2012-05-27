@@ -2,7 +2,7 @@ package jp.t2v.lab.play20.auth
 
 import play.api.mvc._
 
-trait Auth extends CacheAdapter {
+trait Auth {
   self: Controller with AuthConfig =>
 
   def authorizedAction(authority: Authority)(f: User => Request[AnyContent] => Result): Action[AnyContent] =
@@ -16,12 +16,12 @@ trait Auth extends CacheAdapter {
     _ <- Either.cond(authorize(user, authority), (), authorizationFailed(request)).right
   } yield user
 
-  private def restoreUser[A](request: Request[A]): Option[User] = for {
+  private def restoreUser[A](implicit request: Request[A]): Option[User] = for {
     sessionId <- request.session.get("sessionId")
-    userId <- getUserId(sessionId)
+    userId <- resolver.sessionId2userId(sessionId)
     user <- resolveUser(userId)
   } yield {
-    storeId(sessionId, userId)
+    resolver.prolongTimeout(sessionId, sessionTimeoutInSeconds)
     user
   }
 

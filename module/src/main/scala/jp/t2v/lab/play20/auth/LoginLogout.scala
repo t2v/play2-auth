@@ -5,32 +5,26 @@ import scala.annotation.tailrec
 import scala.util.Random
 import java.security.SecureRandom
 
-trait LoginLogout extends CacheAdapter {
+trait LoginLogout {
   self: Controller with AuthConfig =>
 
   def gotoLoginSucceeded[A](userId: Id)(implicit request: Request[A]): PlainResult = {
-    getSessionId(userId).foreach(deleteUserId)
-    val sessionId = generateSessionId()
-    storeId(sessionId, userId)
+    resolver.removeByUserId(userId)
+    val sessionId = generateSessionId(request)
+    resolver.store(sessionId, userId, sessionTimeoutInSeconds)
     loginSucceeded(request).withSession("sessionId" -> sessionId)
   }
 
   def gotoLogoutSucceeded[A](implicit request: Request[A]): PlainResult = {
-    for {
-      sessionId <- request.session.get("sessionId")
-      userId <- getUserId(sessionId)
-    } {
-      deleteUserId(sessionId)
-      deleteSessionId(userId)
-    }
+    request.session.get("sessionId") foreach resolver.removeBySessionId
     logoutSucceeded(request).withNewSession
   }
 
   @tailrec
-  private def generateSessionId(): String = {
+  private def generateSessionId[A](implicit request: Request[A]): String = {
     val table = "abcdefghijklmnopqrstuvwxyz1234567890-_.!~*'()"
     val token = Stream.continually(random.nextInt(table.size)).map(table).take(64).mkString
-    if (getUserId(token).isEmpty) token else generateSessionId()
+    if (resolver.sessionId2userId(token).isEmpty) token else generateSessionId(request)
   }
 
   private val random = new Random(new SecureRandom())

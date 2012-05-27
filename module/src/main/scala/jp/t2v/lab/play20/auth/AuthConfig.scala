@@ -10,7 +10,7 @@ trait AuthConfig {
 
   type Authority
 
-  def idManifest: ClassManifest[Id]
+  implicit def idManifest: ClassManifest[Id]
 
   def sessionTimeoutInSeconds: Int
 
@@ -25,5 +25,7 @@ trait AuthConfig {
   def authorizationFailed[A](request: Request[A]): PlainResult
 
   def authorize(user: User, authority: Authority): Boolean
+
+  def resolver[A](implicit request: Request[A]): RelationResolver[Id] = new CacheRelationResolver[Id]
 
 }
