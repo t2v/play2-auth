@@ -303,7 +303,7 @@ trait AuthConfigImpl extends AuthConfig {
 object Application extends Controller with Auth with AuthConfigImpl {
 
   // maybeUser is an Option[User] instance.
-  def index = optionalUserAction { maybeUser => request
+  def index = optionalUserAction { maybeUser => request =>
     val user: User = maybeUser.getOrElse(GuestUser)
     Ok(html.index(user))
   }

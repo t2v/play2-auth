@@ -303,7 +303,7 @@ and logged-in users, you only have to user `optionalUserAction` as follows.
 object Application extends Controller with Auth with AuthConfigImpl {
 
   // maybeUser is an Option[User] instance.
-  def index = optionalUserAction { maybeUser => request
+  def index = optionalUserAction { maybeUser => request =>
     val user: User = maybeUser.getOrElse(GuestUser)
     Ok(html.index(user))
   }
@@ -441,7 +441,7 @@ Nevertheless, you want to use stateless, override the `resolver` method on `Auth
 ```scala
 trait AuthConfigImpl extends AuthConfig {
 
-  // ‘¼‚Ìİ’èÈ—ª
+  // Other settings are omitted.
 
   override def resolver[A](implicit request: Request[A]) =
     new CookieRelationResolver[Id, A](request)
