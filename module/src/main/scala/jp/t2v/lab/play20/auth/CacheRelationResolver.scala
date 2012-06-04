@@ -12,7 +12,7 @@ class CacheRelationResolver[Id: ClassManifest] extends RelationResolver[Id] {
   def exists(sessionId: String) = sessionId2userId(sessionId).isDefined
 
   def sessionId2userId(sessionId: String): Option[Id] =
-    Cache.getAs[Id](sessionId + sessionIdSuffix)
+    Cache.get(sessionId + sessionIdSuffix).map(_.asInstanceOf[Id])
 
   def userId2sessionId(userId: Id): Option[String] =
     Cache.getAs[String](userId.toString + userIdSuffix)
