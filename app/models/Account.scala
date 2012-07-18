@@ -4,8 +4,8 @@ import play.api.db._
 import anorm._
 import anorm.SqlParser._
 import play.api.Play.current
-import org.apache.commons.codec.digest.DigestUtils._
 import java.sql.Clob
+import org.mindrot.jbcrypt.BCrypt
 
 case class Account(id: String, email: String, password: String, name: String, permission: Permission)
 
@@ -37,10 +37,8 @@ object Account {
   }
 
   def authenticate(email: String, password: String): Option[Account] = {
-    findByEmail(email).filter { account => account.password == hash(password, account.id) }
+    findByEmail(email).filter { account => BCrypt.checkpw(password, account.password) }
   }
-
-  private def hash(pass: String, salt: String): String = sha256Hex(salt.padTo('0', 256) + pass)
 
   def findByEmail(email: String): Option[Account] = {
     DB.withConnection { implicit connection =>
@@ -69,7 +67,7 @@ object Account {
       SQL("INSERT INTO account VALUES ({id}, {email}, {pass}, {name}, {permission})").on(
         'id -> account.id,
         'email -> account.email,
-        'pass -> hash(account.password, account.id),
+        'pass -> BCrypt.hashpw(account.password, BCrypt.gensalt()),
         'name -> account.name,
         'permission -> account.permission.toString
       ).executeUpdate()
