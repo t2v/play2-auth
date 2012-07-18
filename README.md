@@ -64,6 +64,9 @@ For example: `Build.scala`
   )
 ```
 
+It is not necessary to create a `play.plugins` file.
+
+
 Usage
 ---------------------------------------
 
