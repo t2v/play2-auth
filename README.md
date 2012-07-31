@@ -15,25 +15,25 @@ This module has been tested on Play2.0final and Play2.0.1.
 Motivation
 ---------------------------------------
 
-### Existing Security trait
+### Play2.0's Existing Security trait
 
 The existing `Security` trait in Play2.0 API does not define an identifier that identifies a user.
 
 If you use an E-mail or a user ID as an identier, 
-users can not invalidate the session if the session cookie is intercepted by someone else.
+users can not invalidate their session if the session cookie is intercepted.
 
 This module creates a unique SessionID using a secure random number generator.
-Even if the sessionId cookie leaks, users can invalidate the session by logging in again. 
+Even if the sessionId cookie is intercepted, users can invalidate the session by logging in again. 
 Your application can expire sessions after a set time limit.
 
 
 ### Flexiblity
 
 Since the `Security` trait in Play2.0 API returns `Action`, 
-complicated action methods are nested too deep.
+complicated action methods wind up deeply nested.
 
-This module provides an interface that returns an [`Either[PlainResult, User]`](http://www.scala-lang.org/api/current/scala/Either.html)
-so, writing complicated action methods is easy.   `Either` is a wrapper similar to `Option`
+Play2.0-auth provides an interface that returns an [`Either[PlainResult, User]`](http://www.scala-lang.org/api/current/scala/Either.html)
+Writing complicated action methods is easy.   `Either` is a wrapper similar to `Option`
 
 
 Installation
