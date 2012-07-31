@@ -19,7 +19,7 @@ Motivation
 
 The existing `Security` trait in Play2.0 API does not define an identifier that identifies a user.
 
-If you use an E-mail or a user ID as an identier, 
+If you use an Email or a userID as an identier, 
 users can not invalidate their session if the session cookie is intercepted.
 
 This module creates a unique SessionID using a secure random number generator.
