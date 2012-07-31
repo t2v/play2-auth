@@ -6,7 +6,7 @@ This module offers Authentication and Authorization features to Play2.0 applicat
 Target
 ---------------------------------------
 
-This module is targets the __Scala__ version of __Play2.0__.
+This module targets the __Scala__ version of __Play2.0__.
 
 For the Java version of Play2.0, there is an authorization module called [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
 
