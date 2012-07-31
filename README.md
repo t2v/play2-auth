@@ -33,7 +33,7 @@ Since the `Security` trait in Play2.0 API returns `Action`,
 complicated action methods wind up deeply nested.
 
 Play2.0-auth provides an interface that returns an [`Either[PlainResult, User]`](http://www.scala-lang.org/api/current/scala/Either.html)
-Writing complicated action methods is easy.   `Either` is a wrapper similar to `Option`
+making writing complicated action methods easier.   [`Either`](http://www.scala-lang.org/api/current/scala/Either.html) is a wrapper similar to `Option`
 
 
 Installation
