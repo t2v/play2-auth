@@ -150,7 +150,7 @@ Usage
     ```
 
 1. Next create a `Controller` that defines both login and logout actions.
-   This `Controller` is mixes in the `jp.t2v.lab.play20.auth.LoginLogout` trait and
+   This `Controller` mixes in the `jp.t2v.lab.play20.auth.LoginLogout` trait and
    the trait that you created in first step.
 
     ```scala
