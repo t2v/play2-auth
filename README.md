@@ -296,7 +296,7 @@ trait AuthConfigImpl extends AuthConfig {
 }
 ```
 
-### changing the display depending on whether the user is logged in 
+### Changing the display depending on whether the user is logged in 
 
 If you want to display the application's index differently to non-logged-in users
 and logged-in users, you can use `optionalUserAction`:
