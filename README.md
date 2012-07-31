@@ -241,7 +241,7 @@ Advanced usage
 
 For example, a Social networking application has a function to edit messages.
 
-It should be possible for a user to edit their own messages and impossible for that user to edit other people's messages.
+A user must be able to edit their own messages but not other people's messages.
 
 To achieve this you could define `Authority` as a `Function`:
 
@@ -316,9 +316,9 @@ object Application extends Controller with Auth with AuthConfigImpl {
 
 ### Action composition
 
-Suppose you want to validate a token at every action in order to defeat a [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)) attack.
+Suppose you want to validate a token at every action in order to defeat a [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF) attack.
 
-Since it is impractical to perform the validation in all actions, usually you would define a method as follows:
+Since it is impractical to perform the validation in all actions, usually you would define a method like this:
 
 ```scala
 object Application extends Controller {
@@ -350,7 +350,7 @@ object Application extends Controller {
 }
 ```
 
-Authenticating and authorizing a user using a `validateToken` ?
+Authenticating and authorizing a user using a `validateToken`
 
 You need to use the `authorized` method instead of the `authorizedAction` method.
 
