@@ -6,7 +6,7 @@ This module offers Authentication and Authorization features to Play2.0 applicat
 Target
 ---------------------------------------
 
-This module is targets the __Scala__ version of __Play2.0__.
+This module targets the __Scala__ version of __Play2.0__.
 
 For the Java version of Play2.0, there is an authorization module called [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
 
@@ -15,44 +15,44 @@ This module has been tested on Play2.0final and Play2.0.1.
 Motivation
 ---------------------------------------
 
-### Secure
+### Play2.0's Existing Security trait
 
-`Security` trait in Play2.0 API does not define an identifier that identifies a user.
+The existing `Security` trait in Play2.0 API does not define an identifier that identifies a user.
 
-If you use an E-mail or a user ID as an identier, 
-users can not invalidate the session when the cookie leaks.
+If you use an Email or a userID as an identier, 
+users can not invalidate their session if the session cookie is intercepted.
 
 This module creates a unique SessionID using a secure random number generator.
-Even if the cookie leaks, users can invalidate the session by logging in again and 
-your application can set a time limit for sessions.
+Even if the sessionId cookie is intercepted, users can invalidate the session by logging in again. 
+Your application can expire sessions after a set time limit.
 
 
-### Flexible
+### Flexiblity
 
-Since `Security` trait in Play2.0 API returns `Action`, 
-complicated action methods are nested too deep.
+Since the `Security` trait in Play2.0 API returns `Action`, 
+complicated action methods wind up deeply nested.
 
-This module provides an interface that return `Either[PlainResult, User]`.
-so, writing complicated action methods is easy.
+Play2.0-auth provides an interface that returns an [`Either[PlainResult, User]`](http://www.scala-lang.org/api/current/scala/Either.html)
+making writing complicated action methods easier.   [`Either`](http://www.scala-lang.org/api/current/scala/Either.html) is a wrapper similar to `Option`
 
 
 Installation
 ---------------------------------------
 
-1. add a repository resolver into your `Build.scala` or `build.sbt` file.
+1. Add a repository resolver into your `Build.scala` or `build.sbt` file:
 
         resolvers += "t2v.jp repo" at "http://www.t2v.jp/maven-repo/"
 
-1. add a dependency declaration into your `Build.scala` or `build.sbt` file.
-    1. stable release
+1. Add a dependency declaration into your `Build.scala` or `build.sbt` file:
+    1. For the stable release:
 
             "jp.t2v" %% "play20.auth" % "0.2"
 
-    1. current version
+    1. Current snapshot version:
 
             "jp.t2v" %% "play20.auth" % "0.3-SNAPSHOT"
 
-For example: `Build.scala`
+For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
@@ -64,13 +64,13 @@ For example: `Build.scala`
   )
 ```
 
-It is not necessary to create a `play.plugins` file.
+You don't need to create a `play.plugins` file.
 
 
 Usage
 ---------------------------------------
 
-1. First step, create a trait that is mixed-in `jp.t2v.lab.play20.auth.AuthConfig` in `app/controllers`.
+1. First create a trait that extends `jp.t2v.lab.play20.auth.AuthConfig` in `app/controllers`.
 
     ```scala
     // Example
@@ -90,7 +90,7 @@ Usage
     
       /** 
        * A type that is defined by every action for authorization.
-       * This sample uses the following trait.
+       * This sample uses the following trait:
        *
        * sealed trait Permission
        * case object Administrator extends Permission
@@ -99,45 +99,45 @@ Usage
       type Authority = Permission
     
       /**
-       * A `ClassManifest` is used to get an id from the Cache API.
-       * Basically use the same setting as the following.
+       * A `ClassManifest` is used to retrieve an id from the Cache API.
+       * Use something like this:
        */
       val idManifest: ClassManifest[Id] = classManifest[Id]
     
       /**
-       * A duration of the session timeout in seconds
+       * The session timeout in seconds
        */
       val sessionTimeoutInSeconds: Int = 3600
     
       /**
        * A function that returns a `User` object from an `Id`.
-       * Describe the procedure according to your application.
+       * You can alter the procedure to suit your application.
        */
       def resolveUser(id: Id): Option[User] = Account.findById(id)
     
       /**
-       * A redirect target after a successful user login.
+       * Where to redirect the user after a successful login.
        */
       def loginSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Message.main)
     
       /**
-       * A redirect target after a successful user logout.
+       * Where to redirect the user after logging out
        */
       def logoutSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
     
       /**
-       * A redirect target after a failed authentication.
+       * If the user is not logged in and tries to access a protected resource then redirct them as follows:
        */
       def authenticationFailed[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
     
       /**
-       * A redirect target after a failed authorization.
+       * If authorization failed (usually incorrect password) redirect the user as follows:
        */
       def authorizationFailed[A](request: Request[A]): PlainResult = Forbidden("no permission")
     
       /**
-       * A function that authorizes a user by `Authority`.
-       * Describe the procedure according to your application.
+       * A function that determines what `Authority` a user has.
+       * You should alter this procedure to suit your application.
        */
       def authorize(user: User, authority: Authority): Boolean = 
         (user.permission, authority) match {
@@ -149,20 +149,20 @@ Usage
     }
     ```
 
-1. Next step, create a `Controller` that defines login and logout actions.
-   This `Controller` is mixed with `jp.t2v.lab.play20.auth.LoginLogout` trait and
-   the trait that was created in first step.
+1. Next create a `Controller` that defines both login and logout actions.
+   This `Controller` mixes in the `jp.t2v.lab.play20.auth.LoginLogout` trait and
+   the trait that you created in first step.
 
     ```scala
     object Application extends Controller with LoginLogout with AuthConfigImpl {
     
-      /** Describe the login form according to your application. */
+      /** Your application's login form.  Alter it to fit your application */
       val loginForm = Form {
         mapping("email" -> email, "password" -> text)(Account.authenticate)(_.map(u => (u.email, "")))
           .verifying("Invalid email or password", result => result.isDefined)
       }
     
-      /** Describe the login page action according to your application. */
+      /** Alter the login page action to suit your application. */
       def login = Action { implicit request =>
         Ok(html.login(loginForm))
       }
@@ -198,15 +198,15 @@ Usage
     }
     ```
 
-1. Last step, mix `jp.t2v.lab.play20.auth.Auth` trait and the trait that was created in first step
-   into your Controllers.
+1. Lastly, mix `jp.t2v.lab.play20.auth.Auth` trait and the trait that was created in the first step
+   into your Controllers:
 
     ```scala
     object Message extends Controller with Auth with AuthConfigImpl {
     
       // The `authorizedAction` method
-      //    takes an `Authority` as a first argument and
-      //    takes a function whose type is `User => Request[AnyContent] => Result` as a second argument and
+      //    takes `Authority` as the first argument and
+      //    a function signature `User => Request[AnyContent] => Result` as the second argument and
       //    returns an `Action`
     
       def main = authorizedAction(NormalUser) { user => implicit request =>
@@ -237,13 +237,13 @@ Usage
 Advanced usage
 ---------------------------------------
 
-### Changing the authorization according to request parameters.
+### Changing the authorization depending on the request parameters.
 
-For example, a SNS application has a function that edit messages.
+For example, a Social networking application has a function to edit messages.
 
-Your application should make it possible for a user to edit their own messages and impossible to edit other people's messages.
+A user must be able to edit their own messages but not other people's messages.
 
-In this case, it is easy if `Authority` is a `Function` as follows.
+To achieve this you could define `Authority` as a `Function`:
 
 ```scala
 trait AuthConfigImpl extends AuthConfig {
@@ -274,11 +274,10 @@ object Application extends Controller with Auth with AuthConfigImpl {
 
 ### Returning to the originally requested page after login
 
-For example, when an unauthenticated user requests access to non-login page, 
-your application redirects the user to the login page.
-Then, when the user successfully logs in, your application redirects the user to the originally requested page.
+When an unauthenticated user requests access to page requiring authentication, 
+you first redirect the user to the login page, then, after the user successfully logs in, you redirect the user to the page they originally requested.
 
-In this case, you only have to change `authenticationFailed` and `loginSucceeded` as follows.
+To achieve this change `authenticationFailed` and `loginSucceeded`:
 
 ```scala
 trait AuthConfigImpl extends AuthConfig {
@@ -289,7 +288,7 @@ trait AuthConfigImpl extends AuthConfig {
     Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
 
   def loginSucceeded[A](request: Request[A]): PlainResult = {
-    val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url)
+    val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url.toString)
     request.session - "access_uri"
     Redirect(uri)
   }
@@ -297,15 +296,15 @@ trait AuthConfigImpl extends AuthConfig {
 }
 ```
 
-### changing a disply by the login state 
+### Changing the display depending on whether the user is logged in 
 
-When you want to display the application's index to un-logged-in users
-and logged-in users, you only have to user `optionalUserAction` as follows.
+If you want to display the application's index differently to non-logged-in users
+and logged-in users, you can use `optionalUserAction`:
 
 ```scala
 object Application extends Controller with Auth with AuthConfigImpl {
 
-  // maybeUser is an Option[User] instance.
+  // maybeUser is an instance of `Option[User]`.
   def index = optionalUserAction { maybeUser => request =>
     val user: User = maybeUser.getOrElse(GuestUser)
     Ok(html.index(user))
@@ -317,9 +316,9 @@ object Application extends Controller with Auth with AuthConfigImpl {
 
 ### Action composition
 
-For example, you want to validate token at every action to defeat a CSRF attack.
+Suppose you want to validate a token at every action in order to defeat a [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF) attack.
 
-Since it is impractical to perform the validation in all actions, Usually a method is defined as follows.
+Since it is impractical to perform the validation in all actions, usually you would define a method like this:
 
 ```scala
 object Application extends Controller {
@@ -351,9 +350,9 @@ object Application extends Controller {
 }
 ```
 
-How do you incorporate a function that authenticates and authorizes a user in `validateToken` ?
+Authenticating and authorizing a user using a `validateToken`
 
-You need to use the `authorized` method insted of `authorizedAction` method.
+You need to use the `authorized` method instead of the `authorizedAction` method.
 
 ```scala
 object Application extends Controller with Auth with AuthConfigImpl {
@@ -388,11 +387,8 @@ object Application extends Controller with Auth with AuthConfigImpl {
 }
 ```
 
-This example is complex.
+A complex example: Changing templates dynamically using [pjax](http://pjax.heroku.com/dinosaurs.html) 
 
-Then, how do you incorporate function that changes templates dynamically by pjax ?
-
-This is easy:
 
 ```scala
 
@@ -426,25 +422,24 @@ This is easy:
   }
 ```
 
-Thus, you can combine functions for action methods.
+Note that you can _combine functions_ for action methods.
 
 
-### Stateless
+### Stateless vs Stateful implementation.
 
-We respect the Play framework stateless policy.
-But, this module's default implementation is statefull, 
-since the stateless implementation has the security risk as follow.
+Play20-auth follows the Play framework's stateless policy.
+However, Play20-auth's default implementation is stateful, 
+because the stateless implementation has the following security risk:
 
-For example, A user log-in your application in a internet-cafe.
-And the user returns home without logout.
-By the stateless implementation, he(or she) can not invalidate the session.
+If user logs-in to your application in a internet-cafe, then returns home neglecting to logout.
+If the user logs in again at home they will *not* invalidate the session.
 
-Nevertheless, you want to use stateless, override the `resolver` method on `AuthConfig` as follows
+Nevertheless, you want to use a fully stateless implementation then just override the `resolver` method of `AuthConfig` like this:
 
 ```scala
 trait AuthConfigImpl extends AuthConfig {
 
-  // Other settings are omitted.
+  // Other settings omitted.
 
   override def resolver[A](implicit request: Request[A]) =
     new CookieRelationResolver[Id, A](request)
@@ -452,12 +447,12 @@ trait AuthConfigImpl extends AuthConfig {
 }
 ```
 
-You make your application possible to save the authentication data on RDBMS by overriding the resolver.
+You could also store the session data in a Relational Database by overriding the resolver.
 
-`CookieRelationResolver` is not support session timeout.
+Note: `CookieRelationResolver` doesn't support session timeout.
 
 
-Sample Application
+Running The Sample Application
 ---------------------------------------
 
 1. `git clone https://github.com/t2v/play20-auth.git`
@@ -476,16 +471,12 @@ Sample Application
             chris@example.com | secret   | NormalUser
 
 
-Attention
+Attention -- Distributed Servers
 ---------------------------------------
 
-This module uses the [Cache API](http://www.playframework.org/documentation/2.0/ScalaCache) of Play2.0.
+[Ehcache](http://ehcache.org), the default cache implementation used by Play2.0, does not work on distributed application servers.
 
-[Ehcache](http://ehcache.org), the default implementation, 
-can not treat authentication information appropriately when the application servers are distributed.
-
-If you have distributed servers, 
-you should rather use the [Memcached Plugin](https://github.com/mumoshu/play2-memcached) or something similar.
+If you have distributed servers, use the [Memcached Plugin](https://github.com/mumoshu/play2-memcached) or something similar.
 
 
 License
