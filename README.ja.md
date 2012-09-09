@@ -45,17 +45,17 @@ Play2.0final および Play2.0.1 で動作確認をしています。
 1. `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
     1. 安定版
 
-            "jp.t2v" %% "play20.auth" % "0.2"
+            "jp.t2v" % "play20.auth_2.9.1" % "0.3"
 
     1. 開発版
 
-            "jp.t2v" %% "play20.auth" % "0.3-SNAPSHOT"
+            "jp.t2v" % "play20.auth_2.9.1" % "0.4-SNAPSHOT"
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play20.auth" % "0.1"
+    "jp.t2v" % "play20.auth_2.9.1" % "0.3"
   )
 
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(

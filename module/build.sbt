@@ -1,13 +1,13 @@
 name := "play20.auth"
 
-version := "0.3-SNAPSHOT"
+version := "0.4-SNAPSHOT"
 
 resolvers ++= Seq(
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 )
 
 libraryDependencies ++= Seq(
-  "play" %% "play" % "2.0.1"
+  "play" %% "play" % "2.0.3"
 )
 
 organization := "jp.t2v"
