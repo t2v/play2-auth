@@ -117,21 +117,29 @@ For example: `Build.scala`
        * ログインが成功した際に遷移する先を指定します。
        */
       def loginSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Message.main)
+//    0.4-SNAPSHOT では以下のシグネチャになります。 
+//    def loginSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Message.main)
     
       /**
        * ログアウトが成功した際に遷移する先を指定します。
        */
       def logoutSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
+//    0.4-SNAPSHOT では以下のシグネチャになります。 
+//    def logoutSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
       /**
        * 認証が失敗した場合に遷移する先を指定します。
        */
       def authenticationFailed[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
+//    0.4-SNAPSHOT では以下のシグネチャになります。 
+//    def authenticationFailed(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
       /**
        * 認可(権限チェック)が失敗した場合に遷移する先を指定します。
        */
       def authorizationFailed[A](request: Request[A]): PlainResult = Forbidden("no permission")
+//    0.4-SNAPSHOT では以下のシグネチャになります。
+//    def authorizationFailed(request: RequestHeader): PlainResult = Forbidden("no permission")
     
       /**
        * 権限チェックのアルゴリズムを指定します。

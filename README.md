@@ -119,21 +119,29 @@ Usage
        * Where to redirect the user after a successful login.
        */
       def loginSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Message.main)
+//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
+//    def loginSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Message.main)
     
       /**
        * Where to redirect the user after logging out
        */
       def logoutSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
+//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
+//    def logoutSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
       /**
        * If the user is not logged in and tries to access a protected resource then redirct them as follows:
        */
       def authenticationFailed[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
+//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
+//    def authenticationFailed(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
       /**
        * If authorization failed (usually incorrect password) redirect the user as follows:
        */
       def authorizationFailed[A](request: Request[A]): PlainResult = Forbidden("no permission")
+//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
+//    def authorizationFailed(request: RequestHeader): PlainResult = Forbidden("no permission")
     
       /**
        * A function that determines what `Authority` a user has.

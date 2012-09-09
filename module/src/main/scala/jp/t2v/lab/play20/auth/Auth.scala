@@ -17,12 +17,12 @@ trait Auth {
   def optionalUserAction[A](p: BodyParser[A])(f: Option[User] => Request[A] => Result): Action[A] =
     Action(p)(req => f(restoreUser(req))(req))
 
-  def authorized[A](authority: Authority)(implicit request: Request[A]): Either[PlainResult, User] = for {
+  def authorized(authority: Authority)(implicit request: RequestHeader): Either[PlainResult, User] = for {
     user <- restoreUser(request).toRight(authenticationFailed(request)).right
     _ <- Either.cond(authorize(user, authority), (), authorizationFailed(request)).right
   } yield user
 
-  private def restoreUser[A](implicit request: Request[A]): Option[User] = for {
+  private def restoreUser(implicit request: RequestHeader): Option[User] = for {
     sessionId <- request.session.get("sessionId")
     userId <- resolver.sessionId2userId(sessionId)
     user <- resolveUser(userId)

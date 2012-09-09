@@ -72,13 +72,13 @@ trait AuthConfigImpl extends AuthConfig {
 
   def resolveUser(id: Id) = Account.findById(id)
 
-  def loginSucceeded[A](request: Request[A]) = Redirect(routes.Message.main)
+  def loginSucceeded(request: RequestHeader) = Redirect(routes.Message.main)
 
-  def logoutSucceeded[A](request: Request[A]) = Redirect(routes.Application.login)
+  def logoutSucceeded(request: RequestHeader) = Redirect(routes.Application.login)
 
-  def authenticationFailed[A](request: Request[A]) = Redirect(routes.Application.login)
+  def authenticationFailed(request: RequestHeader) = Redirect(routes.Application.login)
 
-  def authorizationFailed[A](request: Request[A]) = Forbidden("no permission")
+  def authorizationFailed(request: RequestHeader) = Forbidden("no permission")
 
   def authorize(user: User, authority: Authority) = (user.permission, authority) match {
     case (Administrator, _) => true
@@ -93,7 +93,7 @@ trait AuthConfigImpl extends AuthConfig {
 
 trait Base extends Controller with Auth with Pjax with AuthConfigImpl {
 
-  def compositeAction(permission: Permission)(f: Account => Template => Request[AnyContent] => PlainResult) =
+  def compositeAction(permission: Permission)(f: Account => Template => RequestHeader => PlainResult) =
     Action { implicit request =>
       (for {
         user     <- authorized(permission).right
@@ -107,7 +107,7 @@ trait Pjax {
   self: Controller =>
 
   type Template = String => Html => Html
-  def pjax(user: Account)(implicit request: Request[Any]): Either[PlainResult, Template] = Right {
+  def pjax(user: Account)(implicit request: RequestHeader): Either[PlainResult, Template] = Right {
     if (request.headers.keys("X-PJAX")) html.pjaxTemplate.apply
     else html.fullTemplate.apply(user)
   }
