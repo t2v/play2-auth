@@ -1,6 +1,6 @@
 package jp.t2v.lab.play20.auth
 
-import play.api.mvc.{Request, PlainResult}
+import play.api.mvc.{RequestHeader, PlainResult}
 
 trait AuthConfig {
 
@@ -16,16 +16,16 @@ trait AuthConfig {
 
   def resolveUser(id: Id): Option[User]
 
-  def loginSucceeded[A](request: Request[A]): PlainResult
+  def loginSucceeded(request: RequestHeader): PlainResult
 
-  def logoutSucceeded[A](request: Request[A]): PlainResult
+  def logoutSucceeded(request: RequestHeader): PlainResult
 
-  def authenticationFailed[A](request: Request[A]): PlainResult
+  def authenticationFailed(request: RequestHeader): PlainResult
 
-  def authorizationFailed[A](request: Request[A]): PlainResult
+  def authorizationFailed(request: RequestHeader): PlainResult
 
   def authorize(user: User, authority: Authority): Boolean
 
-  def resolver[A](implicit request: Request[A]): RelationResolver[Id] = new CacheRelationResolver[Id]
+  def resolver(implicit request: RequestHeader): RelationResolver[Id] = new CacheRelationResolver[Id]
 
 }

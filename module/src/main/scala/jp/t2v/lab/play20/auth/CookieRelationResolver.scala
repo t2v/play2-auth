@@ -3,7 +3,7 @@ package jp.t2v.lab.play20.auth
 import play.api.mvc._
 import scala.util.control.Exception._
 
-class CookieRelationResolver[Id : ToString : FromString, A](request: Request[A]) extends RelationResolver[Id] {
+class CookieRelationResolver[Id : ToString : FromString](request: RequestHeader) extends RelationResolver[Id] {
 
   private[auth] val UserIdKey = "AUTH_USER_ID"
 
