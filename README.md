@@ -1,4 +1,4 @@
-Play2.0 module for Authentication and Authorization
+Play2.0 module for Authentication and Authorization [![Build Status](https://secure.travis-ci.org/t2v/play20-auth.png)](http://travis-ci.org/t2v/play20-auth)
 ===========================================================
 
 This module offers Authentication and Authorization features to Play2.0 applications
