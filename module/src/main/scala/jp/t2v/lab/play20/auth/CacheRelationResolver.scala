@@ -26,10 +26,10 @@ class CacheRelationResolver[Id: ClassManifest] extends RelationResolver[Id] {
     unsetUserId(userId)
   }
   private[auth] def unsetSessionId(sessionId: String) {
-    Cache.set(sessionId + sessionIdSuffix, null, 1)
+    Cache.set(sessionId + sessionIdSuffix, None, 1)
   }
   private[auth] def unsetUserId(userId: Id) {
-    Cache.set(userId.toString + userIdSuffix, null, 1)
+    Cache.set(userId.toString + userIdSuffix, None, 1)
   }
 
   def store(sessionId: String, userId: Id, timeoutInSeconds: Int) = {
