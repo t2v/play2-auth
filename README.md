@@ -10,7 +10,7 @@ This module targets the __Scala__ version of __Play2.0__.
 
 For the Java version of Play2.0, there is an authorization module called [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
 
-This module has been tested on Play2.0final and Play2.0.1.
+This module has been tested on Play2.0final, Play2.0.1 and Play2.0.3. 
 
 Motivation
 ---------------------------------------
