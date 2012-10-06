@@ -33,7 +33,32 @@ class IntegrationSpec extends Specification {
 
       }
     }
-    
+
+    "authorize" in {
+      running(TestServer(3333), HTMLUNIT) { browser =>
+
+        // login succeded
+        browser.goTo("http://localhost:3333/")
+        browser.$("#email").text("bob@example.com")
+        browser.$("#password").text("secret")
+        browser.$("#loginbutton").click()
+        browser.$("dl.error").size must equalTo(0)
+        browser.pageSource must not contain("Sign in")
+        browser.pageSource must contain("logout")
+
+        browser.goTo("http://localhost:3333/message/write")
+        browser.pageSource must contain("no permission")
+
+        browser.goTo("http://localhost:3333/logout")
+        browser.$("#email").text("alice@example.com")
+        browser.$("#password").text("secret")
+        browser.$("#loginbutton").click()
+        browser.$("dl.error").size must equalTo(0)
+        browser.goTo("http://localhost:3333/message/write")
+        browser.pageSource must not contain("no permission")
+      }
+    }
+
   }
   
 }
