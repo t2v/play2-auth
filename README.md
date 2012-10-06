@@ -1,23 +1,25 @@
-Play2.0 module for Authentication and Authorization [![Build Status](https://secure.travis-ci.org/t2v/play20-auth.png)](http://travis-ci.org/t2v/play20-auth)
+Play2.1 module for Authentication and Authorization [![Build Status](https://secure.travis-ci.org/t2v/play20-auth.png)](http://travis-ci.org/t2v/play20-auth)
 ===========================================================
 
-This module offers Authentication and Authorization features to Play2.0 applications
+This module offers Authentication and Authorization features to Play2.1 applications
 
 Target
 ----------------------------------------
 
-This module targets the __Scala__ version of __Play2.0__.
+This module targets the __Scala__ version of __Play2.1__.
 
+<!-- TODO: Uncomment this if they target Play 2.1 at some point
 For the Java version of Play2.0, there is an authorization module called [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
+-->
 
-This module has been tested on Play2.0final, Play2.0.1 and Play2.0.3. 
+This module has been tested on Play2.1-SNAPSHOT. 
 
 Motivation
 ---------------------------------------
 
-### Play2.0's Existing Security trait
+### Play2.1's Existing Security trait
 
-The existing `Security` trait in Play2.0 API does not define an identifier that identifies a user.
+The existing `Security` trait in Play2.1 API does not define an identifier that identifies a user.
 
 If you use an Email or a userID as an identier, 
 users can not invalidate their session if the session cookie is intercepted.
@@ -29,7 +31,7 @@ Your application can expire sessions after a set time limit.
 
 ### Flexiblity
 
-Since the `Security` trait in Play2.0 API returns `Action`, 
+Since the `Security` trait in Play2.1 API returns `Action`, 
 complicated action methods wind up deeply nested.
 
 Play2.0-auth provides an interface that returns an [`Either[PlainResult, User]`](http://www.scala-lang.org/api/current/scala/Either.html)
@@ -39,29 +41,41 @@ making writing complicated action methods easier.   [`Either`](http://www.scala-
 Installation
 ---------------------------------------
 
-1. Add a repository resolver into your `Build.scala` or `build.sbt` file:
+1. Start tracking Play 2.1-SNAPSHOT in your own project.
 
-        resolvers += "t2v.jp repo" at "http://www.t2v.jp/maven-repo/"
-
-1. Add a dependency declaration into your `Build.scala` or `build.sbt` file:
-    1. For the stable release:
-
-            "jp.t2v" % "play20.auth_2.9.1" % "0.3"
-
-    1. Current snapshot version:
-
-            "jp.t2v" % "play20.auth_2.9.1" % "0.4-SNAPSHOT"
-
-For example your `Build.scala` might look like this:
+This can normally be done by editing `project/plguins.sbt` to something like:
 
 ```scala
-  val appDependencies = Seq(
-    "jp.t2v" % "play20.auth_2.9.1" % "0.3"
-  )
+logLevel := Level.Warn
 
-  val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
-    resolvers += "t2v.jp repo" at "http://www.t2v.jp/maven-repo/"
-  )
+resolvers ++= Seq(
+  "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
+  "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
+  Resolver.url("Typesafe Ivy Snapshots", url("http://repo.typesafe.com/typesafe/ivy-snapshots/"))(Resolver.ivyStylePatterns)
+)
+
+// Use the Play sbt plugin for Play projects
+addSbtPlugin("play" % "sbt-plugin" % "2.1-SNAPSHOT")
+```
+
+Then, tell Play 2.1 to use the proper version of SBT, in `project/build.properties`:
+
+```scala
+sbt.version=0.12.1
+```
+
+**Keep in mind that these values might change as Play 2.1 is developed.
+Track [upstream's](https://github.com/playframework/Play20/) documentation for the latest information.**
+
+2. Add a dependency on play20-auth.
+
+In your `project/Build.scala`, do the following:
+
+```scala
+val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
+).dependsOn(play21auth)
+
+lazy val play21auth = uri("https://github.com/t2v/play20-auth.git#play21")
 ```
 
 You don't need to create a `play.plugins` file.
@@ -118,30 +132,22 @@ Usage
       /**
        * Where to redirect the user after a successful login.
        */
-      def loginSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Message.main)
-//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
-//    def loginSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Message.main)
+      def loginSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Message.main)
     
       /**
        * Where to redirect the user after logging out
        */
-      def logoutSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
-//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
-//    def logoutSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
+      def logoutSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
       /**
        * If the user is not logged in and tries to access a protected resource then redirct them as follows:
        */
-      def authenticationFailed[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
-//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
-//    def authenticationFailed(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
+      def authenticationFailed(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
       /**
        * If authorization failed (usually incorrect password) redirect the user as follows:
        */
-      def authorizationFailed[A](request: Request[A]): PlainResult = Forbidden("no permission")
-//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
-//    def authorizationFailed(request: RequestHeader): PlainResult = Forbidden("no permission")
+      def authorizationFailed(request: RequestHeader): PlainResult = Forbidden("no permission")
     
       /**
        * A function that determines what `Authority` a user has.
@@ -292,10 +298,10 @@ trait AuthConfigImpl extends AuthConfig {
 
   // Other settings are omitted.
 
-  def authenticationFailed[A](request: Request[A]): PlainResult = 
+  def authenticationFailed(request: RequestHeader): PlainResult = 
     Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
 
-  def loginSucceeded[A](request: Request[A]): PlainResult = {
+  def loginSucceeded(request: RequestHeader): PlainResult = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url.toString)
     request.session - "access_uri"
     Redirect(uri)
@@ -459,7 +465,7 @@ You could also store the session data in a Relational Database by overriding the
 
 Note: `CookieRelationResolver` doesn't support session timeout.
 
-
+<!-- TODO: Uncomment this section when there's a demo app for play 2.1
 Running The Sample Application
 ---------------------------------------
 
@@ -478,6 +484,7 @@ Running The Sample Application
             bob@example.com   | secret   | NormalUser
             chris@example.com | secret   | NormalUser
 
+-->
 
 Attention -- Distributed Servers
 ---------------------------------------
