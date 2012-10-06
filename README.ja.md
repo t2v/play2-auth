@@ -10,7 +10,7 @@ Play2.0 module for Authentication and Authorization [![Build Status](https://sec
 Java版には [Deadbolt 2](https://github.com/schaloner/deadbolt-2) というモジュールがありますので
 こちらも参考にして下さい。
 
-Play2.0final および Play2.0.1 で動作確認をしています。
+Play2.0final、Play2.0.1 および Play2.0.3 で動作確認をしています。
 
 動機
 ---------------------------------------
