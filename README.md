@@ -4,7 +4,7 @@ Play2.0 module for Authentication and Authorization [![Build Status](https://sec
 This module offers Authentication and Authorization features to Play2.0 applications
 
 Target
----------------------------------------
+----------------------------------------
 
 This module targets the __Scala__ version of __Play2.0__.
 
