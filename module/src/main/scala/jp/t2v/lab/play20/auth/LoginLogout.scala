@@ -1,6 +1,6 @@
 package jp.t2v.lab.play20.auth
 
-import play.api.mvc.{Request, PlainResult, Controller}
+import play.api.mvc.{Request, PlainResult, Controller, Session}
 import scala.annotation.tailrec
 import scala.util.Random
 import java.security.SecureRandom
@@ -11,7 +11,10 @@ trait LoginLogout {
   def gotoLoginSucceeded[A](userId: Id)(implicit request: Request[A]): PlainResult = {
     resolver.removeByUserId(userId)
     val sessionId = generateSessionId(request)
-    val session = resolver.store(sessionId, userId, sessionTimeoutInSeconds)
+    val cacheSession = resolver.store(sessionId, userId, sessionTimeoutInSeconds)
+    val sessionMap = Session.serialize(request.session)
+    val finalSessionMap = sessionMap++cacheSession.data
+    val session = Session.deserialize(finalSessionMap)
     loginSucceeded(request).withSession(session + ("sessionId" -> sessionId))
   }
 
