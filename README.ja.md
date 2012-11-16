@@ -130,7 +130,12 @@ For example: `Build.scala`
       /**
        * 認証が失敗した場合に遷移する先を指定します。
        */
-      def authenticationFailed[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
+      def authenticationFailed[A](request: Request[A]): PlainResult = {
+        request.headers.get("X-Requested-With") match {
+          case Some("XMLHttpRequest") => Unauthorized("Authentication failed")
+          case _ => Redirect(routes.Application.login) 
+        }
+      }
 //    0.4-SNAPSHOT では以下のシグネチャになります。 
 //    def authenticationFailed(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
@@ -291,8 +296,12 @@ trait AuthConfigImpl extends AuthConfig {
 
   // 他の設定省略
 
-  def authenticationFailed[A](request: Request[A]): PlainResult = 
-    Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
+  def authenticationFailed[A](request: Request[A]): PlainResult = {
+    request.headers.get("X-Requested-With") match {
+      case Some("XMLHttpRequest") => Unauthorized("Authentication failed")
+      case _ => Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
+    }
+  }
 
   def loginSucceeded[A](request: Request[A]): PlainResult = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url)

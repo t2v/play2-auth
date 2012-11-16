@@ -132,7 +132,12 @@ Usage
       /**
        * If the user is not logged in and tries to access a protected resource then redirct them as follows:
        */
-      def authenticationFailed[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
+      def authenticationFailed[A](request: Request[A]): PlainResult = {
+        request.headers.get("X-Requested-With") match {
+          case Some("XMLHttpRequest") => Unauthorized("Authentication failed")
+          case _ => Redirect(routes.Application.login) 
+        }
+      }
 //    At 0.4-SNAPSHOT or grator, the signature becomes the following.
 //    def authenticationFailed(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
@@ -292,8 +297,12 @@ trait AuthConfigImpl extends AuthConfig {
 
   // Other settings are omitted.
 
-  def authenticationFailed[A](request: Request[A]): PlainResult = 
-    Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
+  def authenticationFailed[A](request: Request[A]): PlainResult = {
+    request.headers.get("X-Requested-With") match {
+      case Some("XMLHttpRequest") => Unauthorized("Authentication failed")
+      case _ => Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
+    }
+  }
 
   def loginSucceeded[A](request: Request[A]): PlainResult = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url.toString)
