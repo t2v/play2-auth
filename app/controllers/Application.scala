@@ -76,7 +76,13 @@ trait AuthConfigImpl extends AuthConfig {
 
   def logoutSucceeded(request: RequestHeader) = Redirect(routes.Application.login)
 
-  def authenticationFailed(request: RequestHeader) = Redirect(routes.Application.login)
+  def authenticationFailed(request: RequestHeader) = {
+    // Redirect to login for page requests, return HTTP 401 (Unauthorized) for AJAX requests.
+    request.headers.get("X-Requested-With") match {
+      case Some("XMLHttpRequest") => Unauthorized("Authentication failed")
+      case _ => Redirect(routes.Application.login) 
+    }
+  }
 
   def authorizationFailed(request: RequestHeader) = Forbidden("no permission")
 
