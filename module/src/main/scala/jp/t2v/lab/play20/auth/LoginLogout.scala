@@ -22,7 +22,7 @@ trait LoginLogout {
 
   @tailrec
   private def generateSessionId[A](implicit request: Request[A]): String = {
-    val table = "abcdefghijklmnopqrstuvwxyz1234567890-_.!~*'()"
+    val table = "abcdefghijklmnopqrstuvwxyz1234567890_.!~*'()"
     val token = Stream.continually(random.nextInt(table.size)).map(table).take(64).mkString
     if (resolver.exists(token)) generateSessionId(request) else token
   }
