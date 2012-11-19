@@ -10,7 +10,7 @@ Play2.0 module for Authentication and Authorization [![Build Status](https://sec
 Java版には [Deadbolt 2](https://github.com/schaloner/deadbolt-2) というモジュールがありますので
 こちらも参考にして下さい。
 
-Play2.0final、Play2.0.1 および Play2.0.3 で動作確認をしています。
+Play2.0.4 で動作確認をしています。
 
 動機
 ---------------------------------------
@@ -45,17 +45,17 @@ Play2.0final、Play2.0.1 および Play2.0.3 で動作確認をしています�
 1. `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
     1. 安定版
 
-            "jp.t2v" % "play20.auth_2.9.1" % "0.3"
+            "jp.t2v" % "play20.auth_2.9.1" % "0.4"
 
     1. 開発版
 
-            "jp.t2v" % "play20.auth_2.9.1" % "0.4-SNAPSHOT"
+            "jp.t2v" % "play20.auth_2.9.1" % "0.5-SNAPSHOT"
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" % "play20.auth_2.9.1" % "0.3"
+    "jp.t2v" % "play20.auth_2.9.1" % "0.4"
   )
 
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
@@ -116,30 +116,22 @@ For example: `Build.scala`
       /**
        * ログインが成功した際に遷移する先を指定します。
        */
-      def loginSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Message.main)
-//    0.4-SNAPSHOT では以下のシグネチャになります。 
-//    def loginSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Message.main)
+      def loginSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Message.main)
     
       /**
        * ログアウトが成功した際に遷移する先を指定します。
        */
-      def logoutSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
-//    0.4-SNAPSHOT では以下のシグネチャになります。 
-//    def logoutSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
+      def logoutSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
       /**
        * 認証が失敗した場合に遷移する先を指定します。
        */
-      def authenticationFailed[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
-//    0.4-SNAPSHOT では以下のシグネチャになります。 
-//    def authenticationFailed(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
+      def authenticationFailed(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
       /**
        * 認可(権限チェック)が失敗した場合に遷移する先を指定します。
        */
-      def authorizationFailed[A](request: Request[A]): PlainResult = Forbidden("no permission")
-//    0.4-SNAPSHOT では以下のシグネチャになります。
-//    def authorizationFailed(request: RequestHeader): PlainResult = Forbidden("no permission")
+      def authorizationFailed(request: RequestHeader): PlainResult = Forbidden("no permission")
     
       /**
        * 権限チェックのアルゴリズムを指定します。
@@ -291,10 +283,10 @@ trait AuthConfigImpl extends AuthConfig {
 
   // 他の設定省略
 
-  def authenticationFailed[A](request: Request[A]): PlainResult = 
+  def authenticationFailed(request: RequestHeader): PlainResult =
     Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
 
-  def loginSucceeded[A](request: Request[A]): PlainResult = {
+  def loginSucceeded(request: RequestHeader): PlainResult = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url)
     request.session - "access_uri"
     Redirect(uri)
@@ -455,8 +447,8 @@ trait AuthConfigImpl extends AuthConfig {
 
   // 他の設定省略
 
-  override def resolver[A](implicit request: Request[A]) =
-    new CookieRelationResolver[Id, A](request)
+  override def resolver(implicit request: RequestHeader) =
+    new CookieRelationResolver[Id](request)
 
 }
 ```

@@ -10,7 +10,7 @@ This module targets the __Scala__ version of __Play2.0__.
 
 For the Java version of Play2.0, there is an authorization module called [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
 
-This module has been tested on Play2.0final, Play2.0.1 and Play2.0.3. 
+This module has been tested on Play2.0.4.
 
 Motivation
 ---------------------------------------
@@ -46,17 +46,17 @@ Installation
 1. Add a dependency declaration into your `Build.scala` or `build.sbt` file:
     1. For the stable release:
 
-            "jp.t2v" % "play20.auth_2.9.1" % "0.3"
+            "jp.t2v" % "play20.auth_2.9.1" % "0.4"
 
     1. Current snapshot version:
 
-            "jp.t2v" % "play20.auth_2.9.1" % "0.4-SNAPSHOT"
+            "jp.t2v" % "play20.auth_2.9.1" % "0.5-SNAPSHOT"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" % "play20.auth_2.9.1" % "0.3"
+    "jp.t2v" % "play20.auth_2.9.1" % "0.4"
   )
 
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
@@ -118,30 +118,22 @@ Usage
       /**
        * Where to redirect the user after a successful login.
        */
-      def loginSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Message.main)
-//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
-//    def loginSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Message.main)
+      def loginSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Message.main)
     
       /**
        * Where to redirect the user after logging out
        */
-      def logoutSucceeded[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
-//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
-//    def logoutSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
+      def logoutSucceeded(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
       /**
        * If the user is not logged in and tries to access a protected resource then redirct them as follows:
        */
-      def authenticationFailed[A](request: Request[A]): PlainResult = Redirect(routes.Application.login)
-//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
-//    def authenticationFailed(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
+      def authenticationFailed(request: RequestHeader): PlainResult = Redirect(routes.Application.login)
     
       /**
        * If authorization failed (usually incorrect password) redirect the user as follows:
        */
-      def authorizationFailed[A](request: Request[A]): PlainResult = Forbidden("no permission")
-//    At 0.4-SNAPSHOT or grator, the signature becomes the following.
-//    def authorizationFailed(request: RequestHeader): PlainResult = Forbidden("no permission")
+      def authorizationFailed(request: RequestHeader): PlainResult = Forbidden("no permission")
     
       /**
        * A function that determines what `Authority` a user has.
@@ -292,10 +284,10 @@ trait AuthConfigImpl extends AuthConfig {
 
   // Other settings are omitted.
 
-  def authenticationFailed[A](request: Request[A]): PlainResult = 
+  def authenticationFailed(request: RequestHeader): PlainResult =
     Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
 
-  def loginSucceeded[A](request: Request[A]): PlainResult = {
+  def loginSucceeded(request: RequestHeader): PlainResult = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url.toString)
     request.session - "access_uri"
     Redirect(uri)
@@ -449,8 +441,8 @@ trait AuthConfigImpl extends AuthConfig {
 
   // Other settings omitted.
 
-  override def resolver[A](implicit request: Request[A]) =
-    new CookieRelationResolver[Id, A](request)
+  override def resolver(implicit request: RequestHeader) =
+    new CookieRelationResolver[Id](request)
 
 }
 ```
