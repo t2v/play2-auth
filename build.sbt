@@ -2,6 +2,8 @@ name := "play20.auth"
 
 version := "0.4-SNAPSHOT"
 
+scalaVersion := "2.10.0-RC1"
+
 resolvers ++= Seq(
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
   "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
