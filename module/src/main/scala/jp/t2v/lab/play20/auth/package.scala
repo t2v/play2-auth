@@ -15,7 +15,7 @@ class ResultWrapper(result: Result) {
   private def applyRecursively(f: PlainResult => Result): Result = {
     def apply(r: Result): Result = r match {
       case p: PlainResult => f(p)
-      case a: AsyncResult => AsyncResult(a.result.map(apply))
+      case AsyncResult(p) => AsyncResult(p.map(apply))
     }
     apply(result)
   }
