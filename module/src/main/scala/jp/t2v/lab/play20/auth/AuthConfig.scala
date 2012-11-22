@@ -26,7 +26,7 @@ trait AuthConfig {
 
   def authorize(user: User, authority: Authority): Boolean
 
-  def idContainer: IdContainer[Id] = new CacheIdContainer[Id]
+  lazy val idContainer: IdContainer[Id] = new CacheIdContainer[Id]
 
   lazy val cookieName: String = "PLAY2AUTH_SESS_ID"
 

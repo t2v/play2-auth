@@ -8,7 +8,8 @@ import views._
 import play.api.mvc._
 import play.api.mvc.Results._
 import jp.t2v.lab.play20.auth._
-
+import play.api.Play._
+import play.api.cache.Cache
 
 object Application extends Controller with LoginLogout with AuthConfigImpl {
 
@@ -22,9 +23,9 @@ object Application extends Controller with LoginLogout with AuthConfigImpl {
   }
 
   def logout = Action { implicit request =>
-    gotoLogoutSucceeded// .flashing(
-//      "success" -> "You've been logged out"
-//    )
+    gotoLogoutSucceeded.flashing(
+      "success" -> "You've been logged out"
+    )
   }
 
   def authenticate = Action { implicit request =>
@@ -39,11 +40,12 @@ object Message extends Base {
 
   def main = compositeAction(NormalUser) { user => implicit template => implicit request =>
     val title = "message main"
+    Cache.set("hoge", "testtttttt")
     Ok(html.message.main(title))
   }
 
   def list = compositeAction(NormalUser) { user => implicit template => implicit request =>
-    val title = "all messages"
+    val title = Cache.getAs[String]("hoge").getOrElse("all messages")
     Ok(html.message.list(title))
   }
 
@@ -86,7 +88,7 @@ trait AuthConfigImpl extends AuthConfig {
     case _ => false
   }
 
-//  override def idContainer = new CookieIdContainer[Id]
+//  override lazy val idContainer = new CookieIdContainer[Id]
 
 }
 

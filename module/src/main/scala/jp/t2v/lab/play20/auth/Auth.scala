@@ -25,11 +25,12 @@ trait Auth {
 
   def authorized(authority: Authority)(implicit request: RequestHeader): Either[Result, User] = for {
     user <- restoreUser(request).toRight(authenticationFailed(request)).right
-    _ <- Either.cond(authorize(user, authority), (), authorizationFailed(request)).right
+    _    <- Either.cond(authorize(user, authority), (), authorizationFailed(request)).right
   } yield user
 
   private def restoreUser(implicit request: RequestHeader): Option[User] = for {
-    token  <- request.cookies.get(cookieName).map(_.value)
+    cookie <- request.cookies.get(cookieName)
+    token  <- CookieUtil.verifyHmac(cookie)
     userId <- idContainer.get(token)
     user   <- resolveUser(userId)
   } yield {
