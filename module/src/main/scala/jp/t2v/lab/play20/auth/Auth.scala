@@ -6,17 +6,19 @@ import play.api.libs.iteratee.{Input, Done}
 trait Auth {
   self: Controller with AuthConfig =>
 
-  def authorizedAction(authority: Authority)(f: User => Request[AnyContent] => Result): Action[AnyContent] =
+  def authorizedAction(authority: Authority)(f: User => Request[AnyContent] => Result): Action[(AnyContent, User)] =
     authorizedAction(BodyParsers.parse.anyContent, authority)(f)
 
-  def authorizedAction[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Result): Action[A] =
-    Action(BodyParser(req => authorized(authority)(req) match {
-      case Right(_) => p(req)
-      case Left(result) => Done(Left(result), Input.Empty)
-    })) { req =>
-      authorized(authority)(req).right.map(u => f(u)(req)).merge
+  def authorizedAction[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Result): Action[(A, User)] = {
+    val parser = BodyParser {
+      req => authorized(authority)(req) match {
+        case Right(user)  => p.map((_, user))(req)
+        case Left(result) => Done(Left(result), Input.Empty)
+      }
     }
-      
+    Action(parser) { req => f(req.body._2)(req.map(_._1)) }
+  }
+
   def optionalUserAction(f: Option[User] => Request[AnyContent] => Result): Action[AnyContent] =
     optionalUserAction(BodyParsers.parse.anyContent)(f)
 
