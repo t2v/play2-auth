@@ -1,6 +1,6 @@
 package jp.t2v.lab.play20.auth
 
-import play.api.mvc.{RequestHeader, PlainResult}
+import play.api.mvc._
 
 trait AuthConfig {
 
@@ -16,16 +16,26 @@ trait AuthConfig {
 
   def resolveUser(id: Id): Option[User]
 
-  def loginSucceeded(request: RequestHeader): PlainResult
+  def loginSucceeded(request: RequestHeader): Result
 
-  def logoutSucceeded(request: RequestHeader): PlainResult
+  def logoutSucceeded(request: RequestHeader): Result
 
-  def authenticationFailed(request: RequestHeader): PlainResult
+  def authenticationFailed(request: RequestHeader): Result
 
-  def authorizationFailed(request: RequestHeader): PlainResult
+  def authorizationFailed(request: RequestHeader): Result
 
   def authorize(user: User, authority: Authority): Boolean
 
-  def resolver(implicit request: RequestHeader): RelationResolver[Id] = new CacheRelationResolver[Id]
+  def idContainer: IdContainer[Id] = new CacheIdContainer[Id]
+
+  lazy val cookieName: String = "PLAY2AUTH_SESS_ID"
+
+  lazy val cookieSecureOption: Boolean = false
+
+  lazy val cookieHttpOnlyOption: Boolean = true
+
+  lazy val cookieDomainOption: Option[String] = None
+
+  lazy val cookiePathOption: String = "/"
 
 }

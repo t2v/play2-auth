@@ -22,9 +22,9 @@ object Application extends Controller with LoginLogout with AuthConfigImpl {
   }
 
   def logout = Action { implicit request =>
-    gotoLogoutSucceeded.flashing(
-      "success" -> "You've been logged out"
-    )
+    gotoLogoutSucceeded// .flashing(
+//      "success" -> "You've been logged out"
+//    )
   }
 
   def authenticate = Action { implicit request =>
@@ -86,8 +86,7 @@ trait AuthConfigImpl extends AuthConfig {
     case _ => false
   }
 
-//  override def resolver[A](implicit request: Request[A]) =
-//    new CookieRelationResolver[Id, A](request)
+//  override def idContainer = new CookieIdContainer[Id]
 
 }
 

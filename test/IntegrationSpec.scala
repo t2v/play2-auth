@@ -31,6 +31,9 @@ class IntegrationSpec extends Specification {
         browser.$("a").click()
         browser.pageSource must contain("Sign in")
 
+        browser.goTo("http://localhost:3333/message/write")
+        browser.pageSource must contain("Sign in")
+
       }
     }
 
