@@ -67,7 +67,7 @@ For example your `Build.scala` might look like this:
 You don't need to create a `play.plugins` file.
 
 
-Usage
+Usage(0.4 stable)
 ---------------------------------------
 
 1. First create a trait that extends `jp.t2v.lab.play20.auth.AuthConfig` in `app/controllers`.
@@ -234,6 +234,179 @@ Usage
     ```
 
 
+Usage(0.5 snapshot)
+---------------------------------------
+
+1. First create a trait that extends `jp.t2v.lab.play20.auth.AuthConfig` in `app/controllers`.
+
+    ```scala
+    // Example
+    trait AuthConfigImpl extends AuthConfig {
+
+      /**
+       * A type that is used to identify a user.
+       * `String`, `Int`, `Long` and so on.
+       */
+      type Id = String
+
+      /**
+       * A type that represents a user in your application.
+       * `User`, `Account` and so on.
+       */
+      type User = Account
+
+      /**
+       * A type that is defined by every action for authorization.
+       * This sample uses the following trait:
+       *
+       * sealed trait Permission
+       * case object Administrator extends Permission
+       * case object NormalUser extends Permission
+       */
+      type Authority = Permission
+
+      /**
+       * A `ClassManifest` is used to retrieve an id from the Cache API.
+       * Use something like this:
+       */
+      val idManifest: ClassManifest[Id] = classManifest[Id]
+
+      /**
+       * The session timeout in seconds
+       */
+      val sessionTimeoutInSeconds: Int = 3600
+
+      /**
+       * A function that returns a `User` object from an `Id`.
+       * You can alter the procedure to suit your application.
+       */
+      def resolveUser(id: Id): Option[User] = Account.findById(id)
+
+      /**
+       * Where to redirect the user after a successful login.
+       */
+      def loginSucceeded(request: RequestHeader): Result = Redirect(routes.Message.main)
+
+      /**
+       * Where to redirect the user after logging out
+       */
+      def logoutSucceeded(request: RequestHeader): Result = Redirect(routes.Application.login)
+
+      /**
+       * If the user is not logged in and tries to access a protected resource then redirct them as follows:
+       */
+      def authenticationFailed(request: RequestHeader): Result = Redirect(routes.Application.login)
+
+      /**
+       * If authorization failed (usually incorrect password) redirect the user as follows:
+       */
+      def authorizationFailed(request: RequestHeader): Result = Forbidden("no permission")
+
+      /**
+       * A function that determines what `Authority` a user has.
+       * You should alter this procedure to suit your application.
+       */
+      def authorize(user: User, authority: Authority): Boolean =
+        (user.permission, authority) match {
+          case (Administrator, _) => true
+          case (NormalUser, NormalUser) => true
+          case _ => false
+        }
+
+      /**
+       * Whether use the secure option or not use it in the cookie.
+       * However default is false, I strongly recommend using true in a production.
+       */
+      override lazy val cookieSecureOption: Boolean = play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse("true")
+
+    }
+    ```
+
+1. Next create a `Controller` that defines both login and logout actions.
+   This `Controller` mixes in the `jp.t2v.lab.play20.auth.LoginLogout` trait and
+   the trait that you created in first step.
+
+    ```scala
+    object Application extends Controller with LoginLogout with AuthConfigImpl {
+
+      /** Your application's login form.  Alter it to fit your application */
+      val loginForm = Form {
+        mapping("email" -> email, "password" -> text)(Account.authenticate)(_.map(u => (u.email, "")))
+          .verifying("Invalid email or password", result => result.isDefined)
+      }
+
+      /** Alter the login page action to suit your application. */
+      def login = Action { implicit request =>
+        Ok(html.login(loginForm))
+      }
+
+      /**
+       * Return the `gotoLogoutSucceeded` method's result in the logout action.
+       *
+       * Since the `gotoLogoutSucceeded` returns `Result`,
+       * If you import `jp.t2v.lab.play20.auth._`, you can add a procedure like the following.
+       *
+       *   gotoLogoutSucceeded.flashing(
+       *     "success" -> "You've been logged out"
+       *   )
+       */
+      def logout = Action { implicit request =>
+        // do something...
+        gotoLogoutSucceeded
+      }
+
+      /**
+       * Return the `gotoLoginSucceeded` method's result in the login action.
+       *
+       * Since the `gotoLoginSucceeded` returns `Result`,
+       * If you import `jp.t2v.lab.play20.auth._`, you can add a procedure like the `gotoLogoutSucceeded`.
+       */
+      def authenticate = Action { implicit request =>
+        loginForm.bindFromRequest.fold(
+          formWithErrors => BadRequest(html.login(formWithErrors)),
+          user => gotoLoginSucceeded(user.get.id)
+        )
+      }
+
+    }
+    ```
+
+1. Lastly, mix `jp.t2v.lab.play20.auth.Auth` trait and the trait that was created in the first step
+   into your Controllers:
+
+    ```scala
+    object Message extends Controller with Auth with AuthConfigImpl {
+
+      // The `authorizedAction` method
+      //    takes `Authority` as the first argument and
+      //    a function signature `User => Request[AnyContent] => Result` as the second argument and
+      //    returns an `Action`
+
+      def main = authorizedAction(NormalUser) { user => implicit request =>
+        val title = "message main"
+        Ok(html.message.main(title))
+      }
+
+      def list = authorizedAction(NormalUser) { user => implicit request =>
+        val title = "all messages"
+        Ok(html.message.list(title))
+      }
+
+      def detail(id: Int) = authorizedAction(NormalUser) { user => implicit request =>
+        val title = "messages detail "
+        Ok(html.message.detail(title + id))
+      }
+
+      // Only Administrator can execute this action.
+      def write = authorizedAction(Administrator) { user => implicit request =>
+        val title = "write message"
+        Ok(html.message.write(title))
+      }
+
+    }
+    ```
+
+
 Advanced usage
 ---------------------------------------
 
@@ -279,6 +452,8 @@ you first redirect the user to the login page, then, after the user successfully
 
 To achieve this change `authenticationFailed` and `loginSucceeded`:
 
+#### 0.4 stable
+
 ```scala
 trait AuthConfigImpl extends AuthConfig {
 
@@ -289,12 +464,30 @@ trait AuthConfigImpl extends AuthConfig {
 
   def loginSucceeded(request: RequestHeader): PlainResult = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url.toString)
-    request.session - "access_uri"
-    Redirect(uri)
+    Redirect(uri).withSession(request.session - "access_uri")
   }
 
 }
 ```
+
+#### 0.5 snapshot
+
+```scala
+trait AuthConfigImpl extends AuthConfig {
+
+  // Other settings are omitted.
+
+  def authenticationFailed(request: RequestHeader): Result =
+    Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
+
+  def loginSucceeded(request: RequestHeader): Result = {
+    val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url.toString)
+    Redirect(uri).withSession(request.session - "access_uri")
+  }
+
+}
+```
+
 
 ### Changing the display depending on whether the user is logged in 
 
@@ -434,7 +627,9 @@ because the stateless implementation has the following security risk:
 If user logs-in to your application in a internet-cafe, then returns home neglecting to logout.
 If the user logs in again at home they will *not* invalidate the session.
 
-Nevertheless, you want to use a fully stateless implementation then just override the `resolver` method of `AuthConfig` like this:
+Nevertheless, you want to use a fully stateless implementation then just override the `resolver` or `idContainer` method of `AuthConfig` like this:
+
+#### 0.4 stable
 
 ```scala
 trait AuthConfigImpl extends AuthConfig {
@@ -450,6 +645,22 @@ trait AuthConfigImpl extends AuthConfig {
 You could also store the session data in a Relational Database by overriding the resolver.
 
 Note: `CookieRelationResolver` doesn't support session timeout.
+
+#### 0.5 snapshot
+
+```scala
+trait AuthConfigImpl extends AuthConfig {
+
+  // Other settings omitted.
+
+  override lazy val idContainer: IdContainer[Id] = new CookieIdContainer[Id]
+
+}
+```
+
+You could also store the session data in a Relational Database by overriding the id container.
+
+Note: `CookieIdContainer` doesn't support session timeout.
 
 
 Running The Sample Application

@@ -66,7 +66,7 @@ For example: `Build.scala`
 このモジュールはシンプルな Scala ライブラリとして作成されています。 `play.plugins` ファイルは作成する必要ありません。
 
 
-使い方
+使い方(0.4安定版)
 ---------------------------------------
 
 1. `app/controllers` 以下に `jp.t2v.lab.play20.auth.AuthConfig` を実装した `trait` を作成します。
@@ -231,6 +231,182 @@ For example: `Build.scala`
     ```
 
 
+使い方(0.5開発版)
+---------------------------------------
+
+1. `app/controllers` 以下に `jp.t2v.lab.play20.auth.AuthConfig` を実装した `trait` を作成します。
+
+    ```scala
+    // (例)
+    trait AuthConfigImpl extends AuthConfig {
+
+      /**
+       * ユーザを識別するIDの型です。String や Int や Long などが使われるでしょう。
+       */
+      type Id = String
+
+      /**
+       * あなたのアプリケーションで認証するユーザを表す型です。
+       * User型やAccount型など、アプリケーションに応じて設定してください。
+       */
+      type User = Account
+
+      /**
+       * 認可(権限チェック)を行う際に、アクション毎に設定するオブジェクトの型です。
+       * このサンプルでは例として以下のような trait を使用しています。
+       *
+       * sealed trait Permission
+       * case object Administrator extends Permission
+       * case object NormalUser extends Permission
+       */
+      type Authority = Permission
+
+      /**
+       * CacheからユーザIDを取り出すための ClassManifest です。
+       * 基本的にはこの例と同じ記述をして下さい。
+       */
+      val idManifest: ClassManifest[Id] = classManifest[Id]
+
+      /**
+       * セッションタイムアウトの時間(秒)です。
+       */
+      val sessionTimeoutInSeconds: Int = 3600
+
+      /**
+       * ユーザIDからUserブジェクトを取得するアルゴリズムを指定します。
+       * 任意の処理を記述してください。
+       */
+      def resolveUser(id: Id): Option[User] = Account.findById(id)
+
+      /**
+       * ログインが成功した際に遷移する先を指定します。
+       */
+      def loginSucceeded(request: RequestHeader): Result = Redirect(routes.Message.main)
+
+      /**
+       * ログアウトが成功した際に遷移する先を指定します。
+       */
+      def logoutSucceeded(request: RequestHeader): Result = Redirect(routes.Application.login)
+
+      /**
+       * 認証が失敗した場合に遷移する先を指定します。
+       */
+      def authenticationFailed(request: RequestHeader): Result = Redirect(routes.Application.login)
+
+      /**
+       * 認可(権限チェック)が失敗した場合に遷移する先を指定します。
+       */
+      def authorizationFailed(request: RequestHeader): Result = Forbidden("no permission")
+
+      /**
+       * 権限チェックのアルゴリズムを指定します。
+       * 任意の処理を記述してください。
+       */
+      def authorize(user: User, authority: Authority): Boolean =
+        (user.permission, authority) match {
+          case (Administrator, _) => true
+          case (NormalUser, NormalUser) => true
+          case _ => false
+        }
+
+      /**
+       * SessionID Cookieにsecureオプションを指定するか否かの設定です。
+       * デフォルトでは利便性のために false になっていますが、
+       * 実際のアプリケーションでは true にすることを強く推奨します。
+       */
+      override lazy val cookieSecureOption: Boolean = play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse("true")
+
+    }
+    ```
+
+1. 次にログイン、ログアウトを行う `Controller` を作成します。
+   この `Controller` に、先ほど作成した `AuthConfigImpl` トレイトと、
+   `jp.t2v.lab.play20.auth.LoginLogout` トレイトを mixin します。
+
+    ```scala
+    object Application extends Controller with LoginLogout with AuthConfigImpl {
+
+      /** ログインFormはアプリケーションに応じて自由に作成してください。 */
+      val loginForm = Form {
+        mapping("email" -> email, "password" -> text)(Account.authenticate)(_.map(u => (u.email, "")))
+          .verifying("Invalid email or password", result => result.isDefined)
+      }
+
+      /** ログインページはアプリケーションに応じて自由に作成してください。 */
+      def login = Action { implicit request =>
+        Ok(html.login(loginForm))
+      }
+
+      /**
+       * ログアウト処理では任意の処理を行った後、
+       * gotoLogoutSucceeded メソッドを呼び出した結果を返して下さい。
+       *
+       * gotoLogoutSucceeded メソッドは Result を返します。
+       * jp.t2v.lab.play20.auth._ を import していた場合、
+       * 以下のようにflashingなどを追加することもできます。
+       *
+       *   gotoLogoutSucceeded.flashing(
+       *     "success" -> "You've been logged out"
+       *   )
+       */
+      def logout = Action { implicit request =>
+        // do something...
+        gotoLogoutSucceeded
+      }
+
+      /**
+       * ログイン処理では認証が成功した場合、
+       * gotoLoginSucceeded メソッドを呼び出した結果を返して下さい。
+       *
+       * gotoLoginSucceeded メソッドも gotoLogoutSucceeded と同じく Result を返します。
+       * jp.t2v.lab.play20.auth._ を import して、任意の処理を追加することも可能です。
+       */
+      def authenticate = Action { implicit request =>
+        loginForm.bindFromRequest.fold(
+          formWithErrors => BadRequest(html.login(formWithErrors)),
+          user => gotoLoginSucceeded(user.get.id)
+        )
+      }
+
+    }
+    ```
+
+1. 最後は、好きな `Controller` に 先ほど作成した `AuthConfigImpl` トレイトと
+   `jp.t2v.lab.play20.auth.Auth` トレイト を mixin すれば、認証/認可の仕組みを導入することができます。
+
+    ```scala
+    object Message extends Controller with Auth with AuthConfigImpl {
+
+      // authorizedAction は 第一引数に権限チェック用の Authority を取り、
+      // 第二引数に User => Request[AnyContent] => Result な関数を取り、
+      // Action を返します。
+
+      def main = authorizedAction(NormalUser) { user => implicit request =>
+        val title = "message main"
+        Ok(html.message.main(title))
+      }
+
+      def list = authorizedAction(NormalUser) { user => implicit request =>
+        val title = "all messages"
+        Ok(html.message.list(title))
+      }
+
+      def detail(id: Int) = authorizedAction(NormalUser) { user => implicit request =>
+        val title = "messages detail "
+        Ok(html.message.detail(title + id))
+      }
+
+      // このActionだけ、Administrator でなければ実行できなくなります。
+      def write = authorizedAction(Administrator) { user => implicit request =>
+        val title = "write message"
+        Ok(html.message.write(title))
+      }
+
+    }
+    ```
+
+
+
 高度な使い方
 ---------------------------------------
 
@@ -278,6 +454,8 @@ object Application extends Controller with Auth with AuthConfigImpl {
 
 その場合も以下のようにするだけで簡単に実現できます。
 
+#### 0.4安定版
+
 ```scala
 trait AuthConfigImpl extends AuthConfig {
 
@@ -288,12 +466,30 @@ trait AuthConfigImpl extends AuthConfig {
 
   def loginSucceeded(request: RequestHeader): PlainResult = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url)
-    request.session - "access_uri"
-    Redirect(uri)
+    Redirect(uri).withSession(request.session - "access_uri")
   }
 
 }
 ```
+
+#### 0.5開発版
+
+```scala
+trait AuthConfigImpl extends AuthConfig {
+
+  // 他の設定省略
+
+  def authenticationFailed(request: RequestHeader): Result =
+    Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
+
+  def loginSucceeded(request: RequestHeader): Result = {
+    val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url)
+    Redirect(uri).withSession(request.session - "access_uri")
+  }
+
+}
+```
+
 
 ### ログイン状態と未ログイン状態で表示を変える
 
@@ -440,7 +636,9 @@ Play framefork が推奨するステートレスなポリシーを尊重した�
 したがってこの様な事態に気付いた場合、即座に再ログインすることでSessionを無効化することができます。
 
 このようなリスクを踏まえ、それでもステートレスにしたい場合、
-以下のように `RelationResolver` の実装を `CookieRelationResolver` 切り替えることでステートレスにすることができます。
+以下のように設定することでステートレスにすることができます。
+
+#### 0.4安定版
 
 ```scala
 trait AuthConfigImpl extends AuthConfig {
@@ -457,6 +655,23 @@ trait AuthConfigImpl extends AuthConfig {
 この実装を切り替えることで、例えば RDBMS に認証情報を登録するといった事も可能です。
 
 なお、`CookieRelationResolver` ではSessionタイムアウトは未サポートとなっています。
+
+#### 0.5開発版
+
+```scala
+trait AuthConfigImpl extends AuthConfig {
+
+  // 他の設定省略
+
+  override lazy val idContainer: IdContainer[Id] = new CookieIdContainer[Id]
+
+}
+```
+
+`IdContainer` は SessionID および UserID を紐付ける責務を負っています。
+この実装を切り替えることで、例えば RDBMS に認証情報を登録するといった事も可能です。
+
+なお、`CookieIdContainer` ではSessionタイムアウトは未サポートとなっています。
 
 
 サンプルアプリケーション
