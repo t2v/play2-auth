@@ -510,6 +510,24 @@ object Application extends Controller with Auth with AuthConfigImpl {
 ```
 
 
+### Ajaxリクエスト時の認証失敗で401を返す
+
+通常のアクセスで認証が失敗した場合にはログイン画面にリダイレクトさせたいけれども、
+Ajaxリクエストの場合には単に401を返したい場合があります。
+
+その場合でも以下の様に `authenticationFailed` で分岐すれば実現することができます。
+
+
+```scala
+def authenticationFailed(request: RequestHeader) = {
+  request.headers.get("X-Requested-With") match {
+    case Some("XMLHttpRequest") => Unauthorized("Authentication failed")
+    case _ => Redirect(routes.Application.login)
+  }
+}
+```
+
+
 ### 他のAction操作と合成する
 
 例えば、CSRF対策で各Actionでトークンのチェックをしたい、としましょう。

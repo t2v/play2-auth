@@ -507,6 +507,23 @@ object Application extends Controller with Auth with AuthConfigImpl {
 ```
 
 
+### return 401 when a request is sent by Ajax
+
+Normally, you want to return a login page redirection at a authentication failed.
+Although, when the request is sent by Ajax you want to return 301.
+
+You can do it as follows.
+
+```scala
+def authenticationFailed(request: RequestHeader) = {
+  request.headers.get("X-Requested-With") match {
+    case Some("XMLHttpRequest") => Unauthorized("Authentication failed")
+    case _ => Redirect(routes.Application.login)
+  }
+}
+```
+
+
 ### Action composition
 
 Suppose you want to validate a token at every action in order to defeat a [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF) attack.
