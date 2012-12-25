@@ -1,5 +1,3 @@
-import com.typesafe.sbt.pgp._
-
 name := "play20.auth"
 
 version := "0.5"
