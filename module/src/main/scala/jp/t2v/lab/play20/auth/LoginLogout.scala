@@ -10,7 +10,7 @@ trait LoginLogout {
   def gotoLoginSucceeded(userId: Id)(implicit request: RequestHeader): Result = {
     val token = idContainer.startNewSession(userId, sessionTimeoutInSeconds)
     val value = Crypto.sign(token) + token
-    loginSucceeded(request).withCookies(Cookie(cookieName, value, -1, cookiePathOption, cookieDomainOption, cookieSecureOption, cookieHttpOnlyOption))
+    loginSucceeded(request).withCookies(Cookie(cookieName, value, None, cookiePathOption, cookieDomainOption, cookieSecureOption, cookieHttpOnlyOption))
   }
 
   def gotoLogoutSucceeded(implicit request: RequestHeader): Result = {
