@@ -37,10 +37,10 @@ class CacheIdContainer[Id: ClassManifest] extends IdContainer[Id] {
   }
 
   private[auth] def unsetToken(token: AuthenticityToken) {
-    Cache.set(token + tokenSuffix, None, 1)
+    Cache.remove(token + tokenSuffix)
   }
   private[auth] def unsetUserId(userId: Id) {
-    Cache.set(userId.toString + userIdSuffix, None, 1)
+    Cache.remove(userId.toString + userIdSuffix)
   }
 
   def get(token: AuthenticityToken) = Cache.get(token + tokenSuffix).map(_.asInstanceOf[Id])
