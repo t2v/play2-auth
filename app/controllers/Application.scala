@@ -10,6 +10,7 @@ import play.api.mvc.Results._
 import jp.t2v.lab.play20.auth._
 import play.api.Play._
 import play.api.cache.Cache
+import scala.reflect.classTag
 
 object Application extends Controller with LoginLogout with AuthConfigImpl {
 
@@ -68,7 +69,7 @@ trait AuthConfigImpl extends AuthConfig {
 
   type Authority = Permission
 
-  val idManifest = classManifest[Id]
+  val idManifest = classTag[Id]
 
   val sessionTimeoutInSeconds = 3600
 
