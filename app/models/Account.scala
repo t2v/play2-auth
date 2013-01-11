@@ -6,6 +6,7 @@ import anorm.SqlParser._
 import play.api.Play.current
 import java.sql.Clob
 import org.mindrot.jbcrypt.BCrypt
+import scala.language.postfixOps
 
 case class Account(id: String, email: String, password: String, name: String, permission: Permission)
 

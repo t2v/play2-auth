@@ -1,6 +1,7 @@
 package jp.t2v.lab.play20.auth
 
 import play.api.mvc._
+import scala.reflect.ClassTag
 
 trait AuthConfig {
 
@@ -10,7 +11,7 @@ trait AuthConfig {
 
   type Authority
 
-  implicit def idManifest: ClassManifest[Id]
+  implicit def idManifest: ClassTag[Id]
 
   def sessionTimeoutInSeconds: Int
 
