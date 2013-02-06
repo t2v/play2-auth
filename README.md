@@ -10,7 +10,7 @@ This module targets the __Scala__ version of __Play2.x__.
 
 For the Java version of Play2.x, there is an authorization module called [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
 
-This module has been tested on Play2.0.4 and Play2.1-RC1
+This module has been tested on Play2.0.4 and Play2.1.0
 
 Motivation
 ---------------------------------------
@@ -45,15 +45,15 @@ Add a dependency declaration into your `Build.scala` or `build.sbt` file:
 
         "jp.t2v" %% "play20.auth" % "0.5"
 
-* __for Play2.1.x__
+* __for Play2.1.0__
 
-        "jp.t2v" %% "play21.auth" % "0.6"
+        "jp.t2v" %% "play21.auth" % "0.7"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play21.auth" % "0.6"
+    "jp.t2v" %% "play21.auth" % "0.7"
   )
 
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA)
@@ -96,7 +96,9 @@ Usage
        * A `ClassManifest` is used to retrieve an id from the Cache API.
        * Use something like this:
        */
-      val idManifest: ClassManifest[Id] = classManifest[Id]
+      val idTag: ClassTag[Id] = classTag[Id]
+      // for version 0.5 as follows
+      // val idManifest: ClassManifest[Id] = classManifest[Id]
 
       /**
        * The session timeout in seconds
@@ -144,7 +146,7 @@ Usage
        * Whether use the secure option or not use it in the cookie.
        * However default is false, I strongly recommend using true in a production.
        */
-      override lazy val cookieSecureOption: Boolean = play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse("true")
+      override lazy val cookieSecureOption: Boolean = play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse(true)
 
     }
     ```

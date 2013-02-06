@@ -1,6 +1,6 @@
-name := "play20.auth"
+name := "play21.auth"
 
-version := "0.6"
+version := "0.7"
 
 scalaVersion := "2.10.0"
 
@@ -9,7 +9,7 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "play" %% "play" % "2.1-RC1"
+  "play" %% "play" % "2.1.0"
 )
 
 organization := "jp.t2v"

@@ -10,7 +10,7 @@ Play2.x module for Authentication and Authorization [![Build Status](https://sec
 Java版には [Deadbolt 2](https://github.com/schaloner/deadbolt-2) というモジュールがありますので
 こちらも参考にして下さい。
 
-Play2.0.4 及び Play2.1-RC1 で動作確認をしています。
+Play2.0.4 及び Play2.1.0 で動作確認をしています。
 
 動機
 ---------------------------------------
@@ -46,13 +46,13 @@ Play2.0.4 及び Play2.1-RC1 で動作確認をしています。
 
 * __Play2.1-RC1版__
 
-        "jp.t2v" %% "play21.auth" % "0.6"
+        "jp.t2v" %% "play21.auth" % "0.7"
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play21.auth" % "0.6"
+    "jp.t2v" %% "play21.auth" % "0.7"
   )
 
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA)
@@ -95,7 +95,9 @@ For example: `Build.scala`
        * CacheからユーザIDを取り出すための ClassManifest です。
        * 基本的にはこの例と同じ記述をして下さい。
        */
-      val idManifest: ClassManifest[Id] = classManifest[Id]
+      val idTag: ClassTag[Id] = classTag[Id]
+      // for version 0.5 as follows
+      // val idManifest: ClassManifest[Id] = classManifest[Id]
 
       /**
        * セッションタイムアウトの時間(秒)です。
@@ -144,7 +146,7 @@ For example: `Build.scala`
        * デフォルトでは利便性のために false になっていますが、
        * 実際のアプリケーションでは true にすることを強く推奨します。
        */
-      override lazy val cookieSecureOption: Boolean = play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse("true")
+      override lazy val cookieSecureOption: Boolean = play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse(true)
 
     }
     ```
