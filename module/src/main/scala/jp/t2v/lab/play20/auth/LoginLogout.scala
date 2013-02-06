@@ -15,7 +15,7 @@ trait LoginLogout {
 
   def gotoLogoutSucceeded(implicit request: RequestHeader): Result = {
     request.cookies.get(cookieName) flatMap CookieUtil.verifyHmac foreach idContainer.remove
-    logoutSucceeded(request).discardingCookies(cookieName)
+    logoutSucceeded(request).discardingCookies(DiscardingCookie(cookieName))
   }
 
 }
