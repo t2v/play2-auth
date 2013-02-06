@@ -69,7 +69,7 @@ trait AuthConfigImpl extends AuthConfig {
 
   type Authority = Permission
 
-  val idManifest = classTag[Id]
+  val idTag = classTag[Id]
 
   val sessionTimeoutInSeconds = 3600
 

@@ -58,7 +58,7 @@ object Account {
 
   def findAll: Seq[Account] = {
     DB.withConnection { implicit connection =>
-      SQL("select * from account").as(simple *)
+      SQL("select * from account").as(simple.*)
     }
   }
 

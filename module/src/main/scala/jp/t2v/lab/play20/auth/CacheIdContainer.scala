@@ -5,8 +5,9 @@ import play.api.Play._
 import scala.annotation.tailrec
 import scala.util.Random
 import java.security.SecureRandom
+import scala.reflect.ClassTag
 
-class CacheIdContainer[Id: ClassManifest] extends IdContainer[Id] {
+class CacheIdContainer[Id: ClassTag] extends IdContainer[Id] {
 
   private[auth] val tokenSuffix = ":token"
   private[auth] val userIdSuffix = ":userId"
