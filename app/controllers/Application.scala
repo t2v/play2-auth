@@ -10,7 +10,8 @@ import play.api.mvc.Results._
 import jp.t2v.lab.play20.auth._
 import play.api.Play._
 import play.api.cache.Cache
-import scala.reflect.classTag
+import reflect.{ClassTag, classTag}
+import jp.t2v.lab.play2.stackc.{RequestWithAttributes, RequestAttributeKey, StackableController}
 
 object Application extends Controller with LoginLogout with AuthConfigImpl {
 
@@ -37,25 +38,25 @@ object Application extends Controller with LoginLogout with AuthConfigImpl {
   }
 
 }
-object Message extends Base {
+object Message extends Controller with Pjax with AuthElement with AuthConfigImpl {
 
-  def main = compositeAction(NormalUser) { user => implicit template => implicit request =>
+  def main = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     val title = "message main"
     Cache.set("hoge", "testtttttt")
     Ok(html.message.main(title))
   }
 
-  def list = compositeAction(NormalUser) { user => implicit template => implicit request =>
+  def list = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     val title = Cache.getAs[String]("hoge").getOrElse("all messages")
     Ok(html.message.list(title))
   }
 
-  def detail(id: Int) = compositeAction(NormalUser) { user => implicit template => implicit request =>
+  def detail(id: Int) = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     val title = "messages detail "
     Ok(html.message.detail(title + id))
   }
 
-  def write = compositeAction(Administrator) { user => implicit template => implicit request =>
+  def write = StackAction(AuthorityKey -> Administrator) { implicit request =>
     val title = "write message"
     Ok(html.message.write(title))
   }
@@ -93,25 +94,18 @@ trait AuthConfigImpl extends AuthConfig {
 
 }
 
-trait Base extends Controller with Auth with Pjax with AuthConfigImpl {
-
-  def compositeAction(permission: Permission)(f: Account => Template => RequestHeader => PlainResult) =
-    Action { implicit request =>
-      (for {
-        user     <- authorized(permission).right
-        template <- pjax(user).right
-      } yield f(user)(template)(request)).merge
-    }
-
-}
-
-trait Pjax {
-  self: Controller =>
+trait Pjax extends StackableController {
+    self: Controller with AuthElement with AuthConfigImpl =>
 
   type Template = String => Html => Html
-  def pjax(user: Account)(implicit request: RequestHeader): Either[PlainResult, Template] = Right {
-    if (request.headers.keys("X-PJAX")) html.pjaxTemplate.apply
-    else html.fullTemplate.apply(user)
+
+  case object TemplateKey extends RequestAttributeKey
+
+  abstract override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
+    val template: Template = if (req.headers.keys("X-Pjax")) html.pjaxTemplate.apply else html.fullTemplate.apply(loggedIn(req))
+    super.proceed(req.set(TemplateKey, template))(f)
   }
+
+  implicit def template[A](implicit req: RequestWithAttributes[A]): Template = req.getAs[Template](TemplateKey).get
 
 }

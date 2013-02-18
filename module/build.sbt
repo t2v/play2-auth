@@ -1,15 +1,17 @@
 name := "play21.auth"
 
-version := "0.7"
+version := "0.8-SNAPSHOT"
 
 scalaVersion := "2.10.0"
 
 resolvers ++= Seq(
-  "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+  "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
+  "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots"
 )
 
 libraryDependencies ++= Seq(
-  "play" %% "play" % "2.1.0"
+  "play"     %%   "play"                   % "2.1.0",
+  "jp.t2v"   %%   "stackable-controller"   % "0.1-SNAPSHOT"
 )
 
 organization := "jp.t2v"

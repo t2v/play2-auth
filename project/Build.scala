@@ -15,8 +15,12 @@ object ApplicationBuild extends Build {
     "org.mindrot" % "jbcrypt" % "0.3m"
   )
 
-  lazy val root = play.Project(appName, appVersion, appDependencies).settings(
-    resolvers += "jbcrypt repo" at "http://mvnrepository.com/"
+  lazy val root = play.Project(appName, appVersion, appDependencies, path = file(".")).settings(
+    resolvers ++= Seq(
+      "jbcrypt repo" at "http://mvnrepository.com/",   
+      "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots"
+    )
   ).dependsOn(module)
+
 
 }

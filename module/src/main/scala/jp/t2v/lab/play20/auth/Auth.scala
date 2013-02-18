@@ -4,7 +4,7 @@ import play.api.mvc._
 import play.api.libs.iteratee.{Input, Done}
 
 trait Auth {
-  self: Controller with AuthConfig =>
+  self: AuthConfig =>
 
   def authorizedAction(authority: Authority)(f: User => Request[AnyContent] => Result): Action[(AnyContent, User)] =
     authorizedAction(BodyParsers.parse.anyContent, authority)(f)
@@ -30,7 +30,7 @@ trait Auth {
     _    <- Either.cond(authorize(user, authority), (), authorizationFailed(request)).right
   } yield user
 
-  private def restoreUser(implicit request: RequestHeader): Option[User] = for {
+  private[auth] def restoreUser(implicit request: RequestHeader): Option[User] = for {
     cookie <- request.cookies.get(cookieName)
     token  <- CookieUtil.verifyHmac(cookie)
     userId <- idContainer.get(token)
