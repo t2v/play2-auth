@@ -66,8 +66,11 @@ object ApplicationBuild extends Build {
     .settings(baseSettings: _*)
     .settings(
       libraryDependencies += jdbc,
-      libraryDependencies += anorm,
-      libraryDependencies += "org.mindrot" % "jbcrypt" % "0.3m",
+      libraryDependencies += "org.mindrot"          % "jbcrypt"                    % "0.3m",
+      libraryDependencies += "com.github.seratch"  %% "scalikejdbc"                % "[1.4,)",
+      libraryDependencies += "com.github.seratch"  %% "scalikejdbc-test"           % "[1.4,)",
+      libraryDependencies += "com.github.seratch"  %% "scalikejdbc-play-plugin"    % "[1.4,)",
+      libraryDependencies += "com.github.seratch"  %% "scalikejdbc-interpolation"  % "[1.4,)",
       publishLocal := {},
       publish := {}
     ).dependsOn(core, test % "test")
