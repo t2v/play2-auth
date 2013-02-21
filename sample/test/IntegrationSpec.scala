@@ -9,7 +9,7 @@ class IntegrationSpec extends Specification {
   
   "Application" should {
     
-    "work from within a browser" in {
+    "work from within a browser" in new WithApplication {
       running(TestServer(3333), HTMLUNIT) { browser =>
 
         // login failed
@@ -37,7 +37,7 @@ class IntegrationSpec extends Specification {
       }
     }
 
-    "authorize" in {
+    "authorize" in new WithApplication {
       running(TestServer(3333), HTMLUNIT) { browser =>
 
         // login succeded
