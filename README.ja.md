@@ -52,7 +52,7 @@ Play2.0.x 向けの使用方法は [こちら](https://github.com/t2v/play20-aut
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2.auth"      % "0.8"
+        "jp.t2v" %% "play2.auth"      % "0.8",
         "jp.t2v" %% "play2.auth.test" % "0.8" % "test"
 
 For example: `Build.scala`
