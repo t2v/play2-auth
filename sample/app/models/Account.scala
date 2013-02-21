@@ -4,13 +4,13 @@ import org.mindrot.jbcrypt.BCrypt
 import scalikejdbc._
 import scalikejdbc.SQLInterpolation._
 
-case class Account(id: String, email: String, password: String, name: String, permission: Permission)
+case class Account(id: Int, email: String, password: String, name: String, permission: Permission)
 
 object Account {
 
   val * = { rs: WrappedResultSet => 
     Account(
-      id         = rs.string("id"),
+      id         = rs.int("id"),
       email      = rs.string("email"),
       password   = rs.string("password"),
       name       = rs.string("name"),
@@ -28,7 +28,7 @@ object Account {
     }
   }
 
-  def findById(id: String): Option[Account] = {
+  def findById(id: Int): Option[Account] = {
     DB localTx { implicit s =>
       sql"SELECT * FROM account WHERE id = ${id}".map(*).single.apply()
     }

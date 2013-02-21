@@ -1,4 +1,4 @@
-package jp.t2v.lab.play20
+package jp.t2v.lab.play2
 
 package object auth {
 

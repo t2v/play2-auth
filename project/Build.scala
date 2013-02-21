@@ -4,10 +4,10 @@ import play.Project._
 
 object ApplicationBuild extends Build {
 
-  val appName = "play21.auth"
+  val appName    = "play2.auth"
 
   lazy val baseSettings = Seq(
-    version            := "0.8-SNAPSHOT",
+    version            := "0.8",
     scalaVersion       := "2.10.0",
     scalaBinaryVersion := "2.10",
     crossScalaVersions := Seq("2.10.0"),
@@ -16,23 +16,17 @@ object ApplicationBuild extends Build {
     resolvers += "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots"
   )
 
-  lazy val core = Project("core", base = file("module"))
-    .settings(baseSettings: _*)
-    .settings(
-      name := appName,
-      libraryDependencies += "play"     %%   "play"                   % "2.1.0",
-      libraryDependencies += "jp.t2v"   %%   "stackable-controller"   % "0.1-SNAPSHOT",
-      publishMavenStyle := true,
-      publishArtifact in Test := false,
-      pomIncludeRepository := { _ => false },
-      publishTo <<= version { (v: String) =>
-        val nexus = "https://oss.sonatype.org/"
-        if (v.trim.endsWith("SNAPSHOT")) 
-          Some("snapshots" at nexus + "content/repositories/snapshots") 
-        else
-          Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-      },
-      pomExtra := (
+  lazy val appPublishMavenStyle = true
+  lazy val appPublishArtifactInTest = false
+  lazy val appPomIncludeRepository = { _: MavenRepository => false }
+  lazy val appPublishTo = { (v: String) =>
+    val nexus = "https://oss.sonatype.org/"
+    if (v.trim.endsWith("SNAPSHOT")) 
+      Some("snapshots" at nexus + "content/repositories/snapshots") 
+    else
+      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+  }
+  lazy val appPomExtra = {
         <url>https://github.com/t2v/play20-auth</url>
         <licenses>
           <license>
@@ -52,14 +46,32 @@ object ApplicationBuild extends Build {
             <url>https://github.com/gakuzzzz</url>
           </developer>
         </developers>
-      )
+  }
+
+
+  lazy val core = Project("core", base = file("module"))
+    .settings(baseSettings: _*)
+    .settings(
+      libraryDependencies += "play"     %%   "play"                   % "2.1.0",
+      libraryDependencies += "jp.t2v"   %%   "stackable-controller"   % "0.1",
+      name                    := appName,
+      publishMavenStyle       := appPublishMavenStyle,
+      publishArtifact in Test := appPublishArtifactInTest,
+      pomIncludeRepository    := appPomIncludeRepository,
+      publishTo               <<=(version)(appPublishTo),
+      pomExtra                := appPomExtra
     )
 
   lazy val test = Project("test", base = file("test"))
     .settings(baseSettings: _*)
     .settings(
-      name := appName + ".test",
-      libraryDependencies += "play" %% "play-test" % "2.1.0"
+      libraryDependencies += "play" %% "play-test" % "2.1.0",
+      name                    := appName + ".test",
+      publishMavenStyle       := appPublishMavenStyle,
+      publishArtifact in Test := appPublishArtifactInTest,
+      pomIncludeRepository    := appPomIncludeRepository,
+      publishTo               <<=(version)(appPublishTo),
+      pomExtra                := appPomExtra
     ).dependsOn(core)
 
   lazy val sample = play.Project("sample", path = file("sample"))

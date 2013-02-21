@@ -10,10 +10,10 @@ POST    /login                      controllers.Application.authenticate
 GET     /logout                     controllers.Application.logout
 
 # Message
-GET     /message/main               controllers.Message.main
-GET     /message/list               controllers.Message.list
-GET     /message/detail/:id         controllers.Message.detail(id: Int)
-GET     /message/write              controllers.Message.write
+GET     /message/main               controllers.Messages.main
+GET     /message/list               controllers.Messages.list
+GET     /message/detail/:id         controllers.Messages.detail(id: Int)
+GET     /message/write              controllers.Messages.write
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

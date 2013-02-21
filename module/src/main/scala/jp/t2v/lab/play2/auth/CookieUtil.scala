@@ -1,4 +1,4 @@
-package jp.t2v.lab.play20.auth
+package jp.t2v.lab.play2.auth
 
 import play.api.libs.Crypto
 import play.api.mvc.Cookie

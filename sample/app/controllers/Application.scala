@@ -7,10 +7,10 @@ import models._
 import views._
 import play.api.mvc._
 import play.api.mvc.Results._
-import jp.t2v.lab.play20.auth._
+import jp.t2v.lab.play2.auth._
 import play.api.Play._
 import play.api.cache.Cache
-import reflect.{ClassTag, classTag}
+import reflect.classTag
 import jp.t2v.lab.play2.stackc.{RequestWithAttributes, RequestAttributeKey, StackableController}
 
 object Application extends Controller with LoginLogout with AuthConfigImpl {
@@ -38,16 +38,15 @@ object Application extends Controller with LoginLogout with AuthConfigImpl {
   }
 
 }
-object Message extends Controller with Pjax with AuthElement with AuthConfigImpl {
+trait Messages extends Controller with Pjax with AuthElement with AuthConfigImpl {
 
   def main = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     val title = "message main"
-    Cache.set("hoge", "testtttttt")
     Ok(html.message.main(title))
   }
 
   def list = StackAction(AuthorityKey -> NormalUser) { implicit request =>
-    val title = Cache.getAs[String]("hoge").getOrElse("all messages")
+    val title = "all messages"
     Ok(html.message.list(title))
   }
 
@@ -62,9 +61,10 @@ object Message extends Controller with Pjax with AuthElement with AuthConfigImpl
   }
 
 }
+object Messages extends Messages
 trait AuthConfigImpl extends AuthConfig {
 
-  type Id = String
+  type Id = Int
 
   type User = Account
 
@@ -76,7 +76,7 @@ trait AuthConfigImpl extends AuthConfig {
 
   def resolveUser(id: Id) = Account.findById(id)
 
-  def loginSucceeded(request: RequestHeader) = Redirect(routes.Message.main)
+  def loginSucceeded(request: RequestHeader) = Redirect(routes.Messages.main)
 
   def logoutSucceeded(request: RequestHeader) = Redirect(routes.Application.login)
 

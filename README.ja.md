@@ -10,7 +10,7 @@ Play2.x module for Authentication and Authorization [![Build Status](https://sec
 Java版には [Deadbolt 2](https://github.com/schaloner/deadbolt-2) というモジュールがありますので
 こちらも参考にして下さい。
 
-Play2.0.4 及び Play2.1.0 で動作確認をしています。
+Play2.1.0 で動作確認をしています。
 
 動機
 ---------------------------------------
@@ -35,27 +35,35 @@ Play2.0.4 及び Play2.1.0 で動作確認をしています。
 柔軟に他の操作を組み合わせて使用することができます。
 
 
+以前のバージョン
+---------------------------------------
+
+Play2.0.x 向けの使用方法は [こちら](https://github.com/t2v/play20-auth/blob/release0.7/README.ja.md)をご参照ください。
+
+0.8以前をお使いの方へ
+---------------------------------------
+
+<strong style="font-size: 200%; color: red;">version 0.8以降、アーティファクトIDとパッケージ名が変更になっています。</strong>
+
+<strong style="font-size: 200%;">0.7以前からバージョンアップを行う方はご注意ください。</strong>
+
 導入
 ---------------------------------------
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-* __Play2.0.4版__
-
-        "jp.t2v" %% "play20.auth" % "0.5"
-
-* __Play2.1-RC1版__
-
-        "jp.t2v" %% "play21.auth" % "0.7"
+        "jp.t2v" %% "play2.auth"      % "0.8"
+        "jp.t2v" %% "play2.auth.test" % "0.8" % "test"
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play21.auth" % "0.7"
+    "jp.t2v" %% "play2.auth"      % "0.8",
+    "jp.t2v" %% "play2.auth.test" % "0.8" % "test"
   )
 
-  val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA)
+  val main = play.Project(appName, appVersion, appDependencies)
 ```
 
 このモジュールはシンプルな Scala ライブラリとして作成されています。 `play.plugins` ファイルは作成する必要ありません。
@@ -64,7 +72,7 @@ For example: `Build.scala`
 使い方
 ---------------------------------------
 
-1. `app/controllers` 以下に `jp.t2v.lab.play20.auth.AuthConfig` を実装した `trait` を作成します。
+1. `app/controllers` 以下に `jp.t2v.lab.play2.auth.AuthConfig` を実装した `trait` を作成します。
 
     ```scala
     // (例)
@@ -153,7 +161,7 @@ For example: `Build.scala`
 
 1. 次にログイン、ログアウトを行う `Controller` を作成します。
    この `Controller` に、先ほど作成した `AuthConfigImpl` トレイトと、
-   `jp.t2v.lab.play20.auth.LoginLogout` トレイトを mixin します。
+   `jp.t2v.lab.play2.auth.LoginLogout` トレイトを mixin します。
 
     ```scala
     object Application extends Controller with LoginLogout with AuthConfigImpl {
@@ -174,7 +182,7 @@ For example: `Build.scala`
        * gotoLogoutSucceeded メソッドを呼び出した結果を返して下さい。
        *
        * gotoLogoutSucceeded メソッドは Result を返します。
-       * jp.t2v.lab.play20.auth._ を import していた場合、
+       * jp.t2v.lab.play2.auth._ を import していた場合、
        * 以下のようにflashingなどを追加することもできます。
        *
        *   gotoLogoutSucceeded.flashing(
@@ -191,7 +199,7 @@ For example: `Build.scala`
        * gotoLoginSucceeded メソッドを呼び出した結果を返して下さい。
        *
        * gotoLoginSucceeded メソッドも gotoLogoutSucceeded と同じく Result を返します。
-       * jp.t2v.lab.play20.auth._ を import して、任意の処理を追加することも可能です。
+       * jp.t2v.lab.play2.auth._ を import して、任意の処理を追加することも可能です。
        */
       def authenticate = Action { implicit request =>
         loginForm.bindFromRequest.fold(
@@ -204,38 +212,88 @@ For example: `Build.scala`
     ```
 
 1. 最後は、好きな `Controller` に 先ほど作成した `AuthConfigImpl` トレイトと
-   `jp.t2v.lab.play20.auth.Auth` トレイト を mixin すれば、認証/認可の仕組みを導入することができます。
+   `jp.t2v.lab.play2.auth.AuthElement` トレイト を mixin すれば、認証/認可の仕組みを導入することができます。
 
     ```scala
-    object Message extends Controller with Auth with AuthConfigImpl {
+    object Message extends Controller with AuthElement with AuthConfigImpl {
 
-      // authorizedAction は 第一引数に権限チェック用の Authority を取り、
-      // 第二引数に User => Request[AnyContent] => Result な関数を取り、
-      // Action を返します。
+      // StackAction の 引数に権限チェック用の (AuthorityKey, Authority) 型のオブジェクトを指定します。
+      // 第二引数に RequestWithAttribute[AnyContent] => Result な関数を渡します。
 
-      def main = authorizedAction(NormalUser) { user => implicit request =>
+      // AuthElement は loggedIn[A](implicit RequestWithAttribute[A]): User というメソッドをもっています。
+      // このメソッドから認証/認可済みのユーザを取得することができます。
+
+      def main = StackAction(AuthorityKey -> NormalUser) { implicit request =>
+        val user = loggedIn
         val title = "message main"
         Ok(html.message.main(title))
       }
 
-      def list = authorizedAction(NormalUser) { user => implicit request =>
+      def list = StackAction(AuthorityKey -> NormalUser) { implicit request =>
+        val user = loggedIn
         val title = "all messages"
         Ok(html.message.list(title))
       }
 
-      def detail(id: Int) = authorizedAction(NormalUser) { user => implicit request =>
+      def detail(id: Int) = StackAction(AuthorityKey -> NormalUser) { implicit request =>
+        val user = loggedIn
         val title = "messages detail "
         Ok(html.message.detail(title + id))
       }
 
       // このActionだけ、Administrator でなければ実行できなくなります。
-      def write = authorizedAction(Administrator) { user => implicit request =>
+      def write = aStackAction(AuthorityKey -> Administrator) { implicit request =>
+        val user = loggedIn
         val title = "write message"
         Ok(html.message.write(title))
       }
 
     }
     ```
+
+テスト
+---------------------------------------
+
+play2.auth では、version 0.8 からテスト用のサポートを提供しています。
+
+`FakeRequest` を使って `Controller` のテストを行う際に、
+ログイン状態のユーザを指定することができます。
+
+```scala
+package test
+
+import org.specs2.mutable._
+
+import play.api.test._
+import play.api.test.Helpers._
+import controllers.{AuthConfigImpl, Messages}
+import jp.t2v.lab.play2.auth.test.Helpers._
+
+class ApplicationSpec extends Specification {
+
+  object config extends AuthConfigImpl
+
+  "Messages" should {
+    "return list when user is authorized" in new WithApplication {
+      val res = Messages.list(FakeRequest().withLoggedIn(config)(1))
+      contentType(res) must equalTo("text/html")
+    }
+  }
+
+}
+```
+
+1. まず `jp.t2v.lab.play2.auth.test.Helpers._` を import します。
+1. 次にテスト対象に mixin されているものと同じ `AuthConfigImpl` のインスタンスを生成します。
+
+        object config extends AuthConfigImpl
+
+1. `FakeRequest` の `withLoggedIn` メソッドを呼び出します。
+    * 第一引数には、先ほど定義した `AuthConfigImpl` インスタンス
+    * 第二引数には、このリクエストがログインしている事にする、対象のユーザIDを指定します。
+
+
+以上で play2.auth を使用したコントローラのテストを行うことができます。
 
 
 
@@ -264,12 +322,12 @@ trait AuthConfigImpl extends AuthConfig {
 ```
 
 ```scala
-object Application extends Controller with Auth with AuthConfigImpl {
+object Application extends Controller with AuthElement with AuthConfigImpl {
 
   private def sameAuthor(messageId: Int)(account: Account): Boolean =
     Message.getAuther(messageId) == account
 
-  def edit(messageId: Int) = authorizedAction(sameAuthor(messageId)) { user => request =>
+  def edit(messageId: Int) = StackAction(AuthorityKey -> sameAuthor(messageId)) { request =>
     val target = Message.findById(messageId)
     Ok(html.message.edit(messageForm.fill(target)))
   }
@@ -307,14 +365,36 @@ trait AuthConfigImpl extends AuthConfig {
 
 トップページなどにおいて、未ログイン状態でも画面を正常に表示し、
 ログイン状態であればユーザ名などを表示する、といったことがしたい場合、
-以下のように `optionalUserAction` を使用することで実現することができます。
+以下のように `AuthElement` の代わりに `OptionalAuthElement` を使用することで実現することができます。
+
+`OptionalAuthElement` を使用する場合、`Authority` は必要ありません。
 
 ```scala
-object Application extends Controller with Auth with AuthConfigImpl {
+object Application extends Controller with OptionalAuthElement with AuthConfigImpl {
 
   // maybeUser is an Option[User] instance.
-  def index = optionalUserAction { maybeUser => request =>
+  def index = StackAction { implicit request =>
+    val maybeUser: Option[User] = loggedIn
     val user: User = maybeUser.getOrElse(GuestUser)
+    Ok(html.index(user))
+  }
+
+}
+```
+
+
+### 認証だけ行って認可は行わない。
+
+認証だけ行うこともできます。
+
+`AuthElement` の代わりに `AuthenticationElement` を使うだけです。
+この場合、 `AuthorityKey` の指定は必要ありません。
+
+```scala
+object Application extends Controller with AuthenticationElement with AuthConfigImpl {
+
+  def index = StackAction { implicit request =>
+    val user: User = loggedIn
     Ok(html.index(user))
   }
 
@@ -342,116 +422,53 @@ def authenticationFailed(request: RequestHeader) = {
 
 ### 他のAction操作と合成する
 
+[stackable-controller](https://github.com/t2v/stackable-controller) の仕組みを使用します。
+
 例えば、CSRF対策で各Actionでトークンのチェックをしたい、としましょう。
 
-全てのActionで毎回チェックロジックを書くのは大変なので、普通はこんなActionの拡張をすると思います。
+全てのActionで毎回チェックロジックを書くのは大変なので、以下のようなトレイトを作成します。
 
 ```scala
-object Application extends Controller {
+trait TokenValidateElement extends StackableController {
+    self: Controller =>
 
   // Token の発行処理は省略
 
-  val tokenForm = Form("token" -> text)
+  private val tokenForm = Form("token" -> text)
 
   private def validateToken(request: Request[AnyContent]): Boolean = (for {
     tokenInForm <- tokenForm.bindFromRequest(request).value
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
 
-  private def validAction(f: Request[AnyContent] => Result) = Action { request =>
-    if (validateToken(request)) f(request)
+  abstract override proceed[A](reqest: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
+    if (validateToken(request)) super.proceed(request)(f)
     else BadRequest
   }
 
-  def page1 = validAction { request =>
-    // do something
-    Ok(html.page1("result"))
-  }
-
-  def page2 = validAction { request =>
-    // do something
-    Ok(html.page2("result"))
-  }
-
 }
 ```
 
-この validateToken に認証/認可の仕組みを組み込むにはどうすればいいでしょうか？
-
-`authorizedAction` メソッドの代わりに `authorized` メソッドを使うことで簡単に実現ができます。
+この `TokenValidateElement` トレイトと `AuthElement` トレイトを両方mixinすることで、
+CSRFトークンチェックと認証/認可を両方行うことができます。
 
 ```scala
-object Application extends Controller with Auth with AuthConfigImpl {
+object Application extends Controller with TokenValidateElement with AuthElement with AuthConfigImpl {
 
   // Token の発行処理は省略
 
-  val tokenForm = Form("token" -> text)
-
-  private def validateToken(implicit request: Request[AnyContent]): Boolean = (for {
-    tokenInForm <- tokenForm.bindFromRequest(request).value
-    tokenInSession <- request.session.get("token")
-  } yield tokenInForm == tokenInSession).getOrElse(false)
-
-  private authAndValidAction(authority: Authority)(f: User => Request[AnyContent] => Result) =
-    Action { implicit request =>
-      (for {
-        user <- authorized(authority).right
-        _    <- Either.cond(validateToken, (), BadRequest).right
-      } yield f(user)(request)).merge
-    }
-
-  def page1 = authAndValidAction { user => request =>
+  def page1 = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     // do something
     Ok(html.page1("result"))
   }
 
-  def page2 = authAndValidAction { user => request =>
+  def page2 = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     // do something
     Ok(html.page2("result"))
   }
 
 }
 ```
-
-この例だけでは簡単さが実感できないかもしれません。
-ではこれに更に pjax によって動的に Template を切り替えたいといったらどうでしょう？
-
-その場合でも柔軟に取込むことができます。
-
-```scala
-
-  private type Template = String => Html
-  private def pjax(implicit request: Request[AnyContent]): Template = {
-    if (request.headers.keys("X-PJAX")) {
-      html.pjaxTemplate.apply
-    } else {
-      val displayValues = DomainLogic.getDisplayValues()
-      html.fullTemplate.apply(displayValues)
-    }
-  }
-
-  private complexAction(authority: Authority)(f: User => Template => Request[AnyContent] => Result) =
-    Action { implicit request =>
-      (for {
-        user     <- authorized(authority).right
-        _        <- Either.cond(validateToken, (), BadRequest).right
-        template <- Right(pjax).right
-      } yield f(user)(template)(request)).merge
-    }
-
-  def page1 = complexAction { user => template => request =>
-    // do something
-    Ok(template("result"))
-  }
-
-  def page2 = complexAction { user => template => request =>
-    // do something
-    Ok(template("result"))
-  }
-```
-
-このようにどんどん Action に対して操作の合成を行っていくことができます。
-
 
 ### Stateless
 
@@ -489,8 +506,7 @@ trait AuthConfigImpl extends AuthConfig {
 
 1. `git clone https://github.com/t2v/play20-auth.git`
 1. `cd play20-auth`
-1. `play`
-1. `run`
+1. `play "project sample" play run`
 1. ブラウザで `http://localhost:9000/` にアクセス
     1. 「Database 'default' needs evolution!」と聞かれるので `Apply this script now!` を押して実行します
     1. 適当にログインします

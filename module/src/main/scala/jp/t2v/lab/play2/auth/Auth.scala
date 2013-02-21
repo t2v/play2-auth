@@ -1,4 +1,4 @@
-package jp.t2v.lab.play20.auth
+package jp.t2v.lab.play2.auth
 
 import play.api.mvc._
 import play.api.libs.iteratee.{Input, Done}

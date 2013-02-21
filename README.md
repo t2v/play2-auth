@@ -10,7 +10,7 @@ This module targets the __Scala__ version of __Play2.x__.
 
 For the Java version of Play2.x, there is an authorization module called [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
 
-This module has been tested on Play2.0.4 and Play2.1.0
+Play2.1.0
 
 Motivation
 ---------------------------------------
@@ -36,27 +36,39 @@ Play2x-Auth provides an interface that returns an [`Either[PlainResult, User]`](
 making writing complicated action methods easier.   [`Either`](http://www.scala-lang.org/api/current/scala/Either.html) is a wrapper similar to `Option`
 
 
+Previous Version
+---------------------------------------
+
+for Play2.0.x, Please see [previous version README](https://github.com/t2v/play20-auth/tree/release0.7)
+
+
+Attention
+---------------------------------------
+
+<strong style="font-size: 200%; color: red;">The artifact ID and package name was changed at version 0.8</strong>
+
+<strong style="font-size: 200%;">you should be careful to version up from 0.7</strong>
+
+
 Installation
 ---------------------------------------
 
 Add a dependency declaration into your `Build.scala` or `build.sbt` file:
 
-* __for Play2.0.x__
-
-        "jp.t2v" %% "play20.auth" % "0.5"
-
 * __for Play2.1.0__
 
-        "jp.t2v" %% "play21.auth" % "0.7"
+        "jp.t2v" %% "play2.auth"      % "0.8"
+        "jp.t2v" %% "play2.auth.test" % "0.8"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play21.auth" % "0.7"
+    "jp.t2v" %% "play2.auth"      % "0.8",
+    "jp.t2v" %% "play2.auth.test" % "0.8"
   )
 
-  val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA)
+  val main = play.Project(appName, appVersion, appDependencies)
 ```
 
 You don't need to create a `play.plugins` file.
@@ -64,7 +76,7 @@ You don't need to create a `play.plugins` file.
 Usage
 ---------------------------------------
 
-1. First create a trait that extends `jp.t2v.lab.play20.auth.AuthConfig` in `app/controllers`.
+1. First create a trait that extends `jp.t2v.lab.play2.auth.AuthConfig` in `app/controllers`.
 
     ```scala
     // Example
@@ -97,8 +109,6 @@ Usage
        * Use something like this:
        */
       val idTag: ClassTag[Id] = classTag[Id]
-      // for version 0.5 as follows
-      // val idManifest: ClassManifest[Id] = classManifest[Id]
 
       /**
        * The session timeout in seconds
@@ -152,7 +162,7 @@ Usage
     ```
 
 1. Next create a `Controller` that defines both login and logout actions.
-   This `Controller` mixes in the `jp.t2v.lab.play20.auth.LoginLogout` trait and
+   This `Controller` mixes in the `jp.t2v.lab.play2.auth.LoginLogout` trait and
    the trait that you created in first step.
 
     ```scala
@@ -173,7 +183,7 @@ Usage
        * Return the `gotoLogoutSucceeded` method's result in the logout action.
        *
        * Since the `gotoLogoutSucceeded` returns `Result`,
-       * If you import `jp.t2v.lab.play20.auth._`, you can add a procedure like the following.
+       * If you import `jp.t2v.lab.play2.auth._`, you can add a procedure like the following.
        *
        *   gotoLogoutSucceeded.flashing(
        *     "success" -> "You've been logged out"
@@ -188,7 +198,7 @@ Usage
        * Return the `gotoLoginSucceeded` method's result in the login action.
        *
        * Since the `gotoLoginSucceeded` returns `Result`,
-       * If you import `jp.t2v.lab.play20.auth._`, you can add a procedure like the `gotoLogoutSucceeded`.
+       * If you import `jp.t2v.lab.play2.auth._`, you can add a procedure like the `gotoLogoutSucceeded`.
        */
       def authenticate = Action { implicit request =>
         loginForm.bindFromRequest.fold(
@@ -200,40 +210,91 @@ Usage
     }
     ```
 
-1. Lastly, mix `jp.t2v.lab.play20.auth.Auth` trait and the trait that was created in the first step
+1. Lastly, mix `jp.t2v.lab.play2.auth.AuthElement` trait and the trait that was created in the first step
    into your Controllers:
 
     ```scala
-    object Message extends Controller with Auth with AuthConfigImpl {
+    object Message extends Controller with AuthElement with AuthConfigImpl {
 
-      // The `authorizedAction` method
-      //    takes `Authority` as the first argument and
-      //    a function signature `User => Request[AnyContent] => Result` as the second argument and
+      // The `StackAction` method
+      //    takes `(AuthorityKey, Authority)` as the first argument and
+      //    a function signature `RequestWithAttributes[AnyContent] => Result` as the second argument and
       //    returns an `Action`
 
-      def main = authorizedAction(NormalUser) { user => implicit request =>
+      // thw `loggedIn` method
+      //     returns current logged in user
+
+      def main = StackAction(AuthorityKey -> NormalUser) { implicit request =>
+        val user = loggedIn
         val title = "message main"
         Ok(html.message.main(title))
       }
 
-      def list = authorizedAction(NormalUser) { user => implicit request =>
+      def list = StackAction(AuthorityKey -> NormalUser) { implicit request =>
+        val user = loggedIn
         val title = "all messages"
         Ok(html.message.list(title))
       }
 
-      def detail(id: Int) = authorizedAction(NormalUser) { user => implicit request =>
+      def detail(id: Int) = StackAction(AuthorityKey -> NormalUser) { implicit request =>
+        val user = loggedIn
         val title = "messages detail "
         Ok(html.message.detail(title + id))
       }
 
       // Only Administrator can execute this action.
-      def write = authorizedAction(Administrator) { user => implicit request =>
+      def write = StackAction(AuthorityKey -> Administrator) { implicit request =>
+        val user = loggedIn
         val title = "write message"
         Ok(html.message.write(title))
       }
 
     }
     ```
+
+
+Test
+---------------------------------------
+
+play2.auth provides test module at version 0.8
+
+You can use `FakeRequest` with logged-in status.
+
+```scala
+package test
+
+import org.specs2.mutable._
+
+import play.api.test._
+import play.api.test.Helpers._
+import controllers.{AuthConfigImpl, Messages}
+import jp.t2v.lab.play2.auth.test.Helpers._
+
+class ApplicationSpec extends Specification {
+
+  object config extends AuthConfigImpl
+
+  "Messages" should {
+    "return list when user is authorized" in new WithApplication {
+      val res = Messages.list(FakeRequest().withLoggedIn(config)(1))
+      contentType(res) must equalTo("text/html")
+    }
+  }
+
+}
+```
+
+1. Import `jp.t2v.lab.play2.auth.test.Helpers._`
+1. Define instance what is mixed-in `AuthConfigImpl`
+
+        object config extends AuthConfigImpl
+
+1. Call `withLoggedIn` method on `FakeRequest`
+    * first argument: `AuthConfigImpl` instance.
+    * second argument: user ID of the user who is logged-in at this request
+
+
+It makes enable to test controllers with play2.auth
 
 
 Advanced usage
@@ -260,12 +321,13 @@ trait AuthConfigImpl extends AuthConfig {
 ```
 
 ```scala
-object Application extends Controller with Auth with AuthConfigImpl {
+object Application extends Controller with AuthElement with AuthConfigImpl {
 
   private def sameAuthor(messageId: Int)(account: Account): Boolean =
     Message.getAuther(messageId) == account
 
-  def edit(messageId: Int) = authorizedAction(sameAuthor(messageId)) { user => request =>
+  def edit(messageId: Int) = StackAction(AuthorityKey -> sameAuthor(messageId)) { implicit request =>
+    val user = loggedIn
     val target = Message.findById(messageId)
     Ok(html.message.edit(messageForm.fill(target)))
   }
@@ -301,14 +363,32 @@ trait AuthConfigImpl extends AuthConfig {
 ### Changing the display depending on whether the user is logged in 
 
 If you want to display the application's index differently to non-logged-in users
-and logged-in users, you can use `optionalUserAction`:
+and logged-in users, you can use `OptionalAuthElement` insted of `AuthElement`:
 
 ```scala
-object Application extends Controller with Auth with AuthConfigImpl {
+object Application extends Controller with OptionalAuthElement with AuthConfigImpl {
 
   // maybeUser is an instance of `Option[User]`.
-  def index = optionalUserAction { maybeUser => request =>
+  // `OptionalAuthElement` dont need `AuthorityKey`
+  def index = StackAction { implicit request =>
+    val maybeUser: Option[User] = loggedIn
     val user: User = maybeUser.getOrElse(GuestUser)
+    Ok(html.index(user))
+  }
+
+}
+```
+
+
+### For action that doesn't require authorization
+
+you can `AuthenticationElement` insted of `AuthElement` for authentication without authorization.
+
+```scala
+object Application extends Controller with AuthenticationElement with AuthConfigImpl {
+
+  def index = StackAction { implicit request =>
+    val user: User = loggedIn
     Ok(html.index(user))
   }
 
@@ -335,113 +415,48 @@ def authenticationFailed(request: RequestHeader) = {
 
 ### Action composition
 
+play2.auth use [stackable-controller](https://github.com/t2v/stackable-controller)
+
 Suppose you want to validate a token at every action in order to defeat a [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF) attack.
 
-Since it is impractical to perform the validation in all actions, usually you would define a method like this:
+Since it is impractical to perform the validation in all actions, you would define a trait like this:
 
 ```scala
-object Application extends Controller {
+trait TokenValidateElement extends StackableController {
+    self: Controller =>
 
-  // Other settings are omitted.
-
-  val tokenForm = Form("token" -> text)
+  private val tokenForm = Form("token" -> text)
 
   private def validateToken(request: Request[AnyContent]): Boolean = (for {
     tokenInForm <- tokenForm.bindFromRequest(request).value
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
 
-  private def validAction(f: Request[AnyContent] => Result) = Action { request =>
-    if (validateToken(request)) f(request)
+  abstract override proceed[A](reqest: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
+    if (validateToken(request)) super.proceed(request)(f)
     else BadRequest
   }
 
-  def page1 = validAction { request =>
+}
+```
+
+You can use `TokenValidateElement` trait with `AuthElement` trait.
+
+```scala
+object Application extends Controller with TokenValidateElement with AuthElement with AuthConfigImpl {
+
+  def page1 = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     // do something
     Ok(html.page1("result"))
   }
 
-  def page2 = validAction { request =>
+  def page2 = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     // do something
     Ok(html.page2("result"))
   }
 
 }
 ```
-
-Authenticating and authorizing a user using a `validateToken`
-
-You need to use the `authorized` method instead of the `authorizedAction` method.
-
-```scala
-object Application extends Controller with Auth with AuthConfigImpl {
-
-  // The token publication is omitted.
-
-  val tokenForm = Form("token" -> text)
-
-  private def validateToken(implicit request: Request[AnyContent]): Boolean = (for {
-    tokenInForm <- tokenForm.bindFromRequest(request).value
-    tokenInSession <- request.session.get("token")
-  } yield tokenInForm == tokenInSession).getOrElse(false)
-
-  private authAndValidAction(authority: Authority)(f: User => Request[AnyContent] => Result) =
-    Action { implicit request =>
-      (for {
-        user <- authorized(authority).right
-        _    <- Either.cond(validateToken, (), BadRequest).right
-      } yield f(user)(request)).merge
-    }
-
-  def page1 = authAndValidAction(NormalUser) { user => request =>
-    // do something
-    Ok(html.page1("result"))
-  }
-
-  def page2 = authAndValidAction(NormalUser) { user => request =>
-    // do something
-    Ok(html.page2("result"))
-  }
-
-}
-```
-
-A complex example: Changing templates dynamically using [pjax](http://pjax.heroku.com/dinosaurs.html) 
-
-
-```scala
-
-  private type Template = String => Html
-  private def pjax(implicit request: Request[AnyContent]): Template = {
-    if (request.headers.keys("X-PJAX")) {
-      html.pjaxTemplate.apply
-    } else {
-      val displayValues = DomainLogic.getDisplayValues()
-      html.fullTemplate.apply(displayValues)
-    }
-  }
-
-  private complexAction(authority: Authority)(f: User => Template => Request[AnyContent] => Result) =
-    Action { implicit request =>
-      (for {
-        user     <- authorized(authority).right
-        _        <- Either.cond(validateToken, (), BadRequest).right
-        template <- Right(pjax).right
-      } yield f(user)(template)(request)).merge
-    }
-
-  def page1 = complexAction(NormalUser) { user => template => request =>
-    // do something
-    Ok(template("result"))
-  }
-
-  def page2 = complexAction(NormalUser) { user => template => request =>
-    // do something
-    Ok(template("result"))
-  }
-```
-
-Note that you can _combine functions_ for action methods.
 
 
 ### Stateless vs Stateful implementation.
@@ -475,8 +490,7 @@ Running The Sample Application
 
 1. `git clone https://github.com/t2v/play20-auth.git`
 1. `cd play20-auth`
-1. `play`
-1. `run`
+1. `play "project sample" play run`
 1. access to `http://localhost:9000/` on your browser.
     1. click `Apply this script now!`
     1. login
