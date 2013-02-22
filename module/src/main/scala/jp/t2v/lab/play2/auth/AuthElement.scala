@@ -9,7 +9,7 @@ trait AuthElement extends StackableController with Auth {
   private[auth] case object AuthKey extends RequestAttributeKey
   case object AuthorityKey extends RequestAttributeKey
 
-  abstract override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
+  override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
     (for {
       authority <- req.getAs[Authority](AuthorityKey).toRight(authorizationFailed(req)).right
       user      <- authorized(authority)(req).right
@@ -25,7 +25,7 @@ trait OptionalAuthElement extends StackableController with Auth {
 
   private[auth] case object AuthKey extends RequestAttributeKey
 
-  abstract override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
+  override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
     val maybeUser = restoreUser(req)
     super.proceed(req.set(AuthKey, maybeUser.getOrElse(null)))(f)
   }
@@ -38,7 +38,7 @@ trait AuthenticationElement extends StackableController with Auth {
 
   private[auth] case object AuthKey extends RequestAttributeKey
 
-  abstract override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
+  override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
     restoreUser(req).map {
       user => super.proceed(req.set(AuthKey, user))(f)
     }.getOrElse(authenticationFailed(req))

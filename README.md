@@ -432,7 +432,7 @@ trait TokenValidateElement extends StackableController {
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
 
-  abstract override proceed[A](reqest: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
+  override proceed[A](reqest: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
     if (validateToken(request)) super.proceed(request)(f)
     else BadRequest
   }
