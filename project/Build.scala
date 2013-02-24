@@ -7,7 +7,7 @@ object ApplicationBuild extends Build {
   val appName    = "play2.auth"
 
   lazy val baseSettings = Seq(
-    version            := "0.8",
+    version            := "0.9-SNAPSHOT",
     scalaVersion       := "2.10.0",
     scalaBinaryVersion := "2.10",
     crossScalaVersions := Seq("2.10.0"),
