@@ -21,6 +21,7 @@ object Application extends Controller with LoginLogout with AuthConfigImpl {
   }
 
   def login = Action { implicit request =>
+println("start login")
     Ok(html.login(loginForm))
   }
 
@@ -31,8 +32,9 @@ object Application extends Controller with LoginLogout with AuthConfigImpl {
   }
 
   def authenticate = Action { implicit request =>
+println("start act")
     loginForm.bindFromRequest.fold(
-      formWithErrors => BadRequest(html.login(formWithErrors)),
+      formWithErrors => { println("form eror"); BadRequest(html.login(formWithErrors))},
       user => gotoLoginSucceeded(user.get.id)
     )
   }
