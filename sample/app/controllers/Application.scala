@@ -101,13 +101,13 @@ trait Pjax extends StackableController {
 
   type Template = String => Html => Html
 
-  case object TemplateKey extends RequestAttributeKey
+  case object TemplateKey extends RequestAttributeKey[Template]
 
   abstract override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
     val template: Template = if (req.headers.keys("X-Pjax")) html.pjaxTemplate.apply else html.fullTemplate.apply(loggedIn(req))
     super.proceed(req.set(TemplateKey, template))(f)
   }
 
-  implicit def template[A](implicit req: RequestWithAttributes[A]): Template = req.getAs[Template](TemplateKey).get
+  implicit def template[A](implicit req: RequestWithAttributes[A]): Template = req.get(TemplateKey).get
 
 }

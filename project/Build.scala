@@ -7,13 +7,14 @@ object ApplicationBuild extends Build {
   val appName    = "play2.auth"
 
   lazy val baseSettings = Seq(
-    version            := "0.9-SNAPSHOT",
+    version            := "0.9",
     scalaVersion       := "2.10.0",
     scalaBinaryVersion := "2.10",
     crossScalaVersions := Seq("2.10.0"),
     organization       := "jp.t2v",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-    resolvers += "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots"
+    resolvers += "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots",
+    resolvers += "Sonatype Releases"  at "https://oss.sonatype.org/content/repositories/releases"
   )
 
   lazy val appPublishMavenStyle = true
@@ -53,7 +54,7 @@ object ApplicationBuild extends Build {
     .settings(baseSettings: _*)
     .settings(
       libraryDependencies += "play"     %%   "play"                   % "2.1.0",
-      libraryDependencies += "jp.t2v"   %%   "stackable-controller"   % "0.1",
+      libraryDependencies += "jp.t2v"   %%   "stackable-controller"   % "0.2",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
