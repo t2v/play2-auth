@@ -3,7 +3,7 @@
 # --- !Ups
 
 CREATE TABLE account (
-    id         text NOT NULL PRIMARY KEY,
+    id         integer NOT NULL PRIMARY KEY,
     email      text NOT NULL UNIQUE,
     password   text NOT NULL,
     name       text NOT NULL,
