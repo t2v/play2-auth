@@ -2,6 +2,7 @@ package jp.t2v.lab.play2.auth
 
 import play.api.mvc._
 import scala.reflect.ClassTag
+import concurrent.{ExecutionContext, Future}
 
 trait AuthConfig {
 
@@ -16,6 +17,8 @@ trait AuthConfig {
   def sessionTimeoutInSeconds: Int
 
   def resolveUser(id: Id): Option[User]
+
+  def resolveUserAsync(id: Id)(implicit context: ExecutionContext): Future[Option[User]] = Future(resolveUser(id))
 
   def loginSucceeded(request: RequestHeader): Result
 

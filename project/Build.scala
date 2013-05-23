@@ -54,7 +54,7 @@ object ApplicationBuild extends Build {
     .settings(baseSettings: _*)
     .settings(
       libraryDependencies += "play"     %%   "play"                   % "2.1.0",
-      libraryDependencies += "jp.t2v"   %%   "stackable-controller"   % "0.2",
+      libraryDependencies += "jp.t2v"   %%   "stackable-controller"   % "[0.2,)",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
