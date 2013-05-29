@@ -396,10 +396,10 @@ object Application extends Controller with AuthenticationElement with AuthConfig
 ```
 
 
-### return 401 when a request is sent by Ajax
+### Return 401 when a request is sent by Ajax
 
 Normally, you want to return a login page redirection at a authentication failed.
-Although, when the request is sent by Ajax you want to return 301.
+Although, when the request is sent by Ajax you want to instead return 401, Unauthorized.
 
 You can do it as follows.
 
