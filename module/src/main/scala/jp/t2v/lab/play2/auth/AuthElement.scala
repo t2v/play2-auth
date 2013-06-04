@@ -3,17 +3,24 @@ package jp.t2v.lab.play2.auth
 import play.api.mvc.{Result, Controller}
 import jp.t2v.lab.play2.stackc.{RequestWithAttributes, RequestAttributeKey, StackableController}
 
-trait AuthElement extends StackableController with Auth {
+trait AuthElement extends StackableController with AsyncAuth {
     self: Controller with AuthConfig =>
 
   private[auth] case object AuthKey extends RequestAttributeKey[User]
   case object AuthorityKey extends RequestAttributeKey[Authority]
 
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
-    (for {
-      authority <- req.get(AuthorityKey).toRight(authorizationFailed(req)).right
-      user      <- authorized(authority)(req).right
-    } yield super.proceed(req.set(AuthKey, user))(f)).merge
+    implicit val r = req
+    req.get(AuthorityKey) map { authority =>
+//      Async {
+//        authorized(authority).map { user =>
+//          super.proceed(req.set(AuthKey, user))(f)
+//        }
+//      }
+      ???
+    } getOrElse {
+      authorizationFailed(req)
+    }
   }
 
   implicit def loggedIn[A](implicit req: RequestWithAttributes[A]): User = req.get(AuthKey).get
