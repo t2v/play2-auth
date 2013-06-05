@@ -2,8 +2,8 @@ package jp.t2v.lab.play2.auth
 
 import play.api.mvc._
 import play.api.libs.iteratee.{Iteratee, Input, Done}
-import concurrent.{ExecutionContext, Future}
-import util.Success
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
 trait AsyncAuth {
     self: AuthConfig with Controller =>
@@ -33,12 +33,12 @@ trait AsyncAuth {
     } recover {
       case _ => Left(authenticationFailed(request))
     } flatMap {
-      case Left(result) => Future.successful(Left(result))
       case Right(user)  => authorizeAsync(user, authority) collect {
         case true => Right(user)
       } recover {
         case _ => Left(authorizationFailed(request))
       }
+      case Left(result) => Future.successful(Left(result))
     }
   }
 
@@ -50,7 +50,7 @@ trait AsyncAuth {
     } yield (token, userId)
     userIdOpt map { case (token, userId) =>
       resolveUserAsync(userId) andThen {
-        case Success(_) => idContainer.prolongTimeout(token, sessionTimeoutInSeconds)
+        case Success(Some(_)) => idContainer.prolongTimeout(token, sessionTimeoutInSeconds)
       }
     } getOrElse {
       Future.successful(Option.empty)
