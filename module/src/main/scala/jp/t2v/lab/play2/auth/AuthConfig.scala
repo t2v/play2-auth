@@ -30,7 +30,7 @@ trait AuthConfig {
 
   def authorize(user: User, authority: Authority): Boolean
 
-  def authorizeAsync(user: User, authority: Authority): Future[Boolean] = Future.successful(authorize(user, authority))
+  def authorizeAsync(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean] = Future.successful(authorize(user, authority))
 
   lazy val idContainer: IdContainer[Id] = new CacheIdContainer[Id]
 
