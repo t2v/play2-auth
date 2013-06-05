@@ -18,7 +18,7 @@ trait AuthConfig {
 
   def resolveUser(id: Id): Option[User]
 
-  def resolveUserAsync(id: Id)(implicit context: ExecutionContext): Future[Option[User]] = Future(resolveUser(id))
+  def resolveUserAsync(id: Id)(implicit context: ExecutionContext): Future[Option[User]] = Future.successful(resolveUser(id))
 
   def loginSucceeded(request: RequestHeader): Result
 
@@ -29,6 +29,8 @@ trait AuthConfig {
   def authorizationFailed(request: RequestHeader): Result
 
   def authorize(user: User, authority: Authority): Boolean
+
+  def authorizeAsync(user: User, authority: Authority): Future[Boolean] = Future.successful(authorize(user, authority))
 
   lazy val idContainer: IdContainer[Id] = new CacheIdContainer[Id]
 
