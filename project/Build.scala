@@ -7,7 +7,7 @@ object ApplicationBuild extends Build {
   val appName    = "play2.auth"
 
   lazy val baseSettings = Seq(
-    version            := "0.9",
+    version            := "0.10-SNAPSHOT",
     scalaVersion       := "2.10.0",
     scalaBinaryVersion := "2.10",
     crossScalaVersions := Seq("2.10.0"),
@@ -53,7 +53,7 @@ object ApplicationBuild extends Build {
   lazy val core = Project("core", base = file("module"))
     .settings(baseSettings: _*)
     .settings(
-      libraryDependencies += "play"     %%   "play"                   % "2.1.0",
+      libraryDependencies += "play"     %%   "play"                   % "2.1.1",
       libraryDependencies += "jp.t2v"   %%   "stackable-controller"   % "[0.2,)",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
@@ -66,7 +66,7 @@ object ApplicationBuild extends Build {
   lazy val test = Project("test", base = file("test"))
     .settings(baseSettings: _*)
     .settings(
-      libraryDependencies += "play" %% "play-test" % "2.1.0",
+      libraryDependencies += "play" %% "play-test" % "2.1.1",
       name                    := appName + ".test",
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
