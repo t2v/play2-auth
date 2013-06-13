@@ -57,18 +57,20 @@ Add a dependency declaration into your `Build.scala` or `build.sbt` file:
 
 * __for Play2.1.0__
 
-        "jp.t2v" %% "play2.auth"      % "0.9",
-        "jp.t2v" %% "play2.auth.test" % "0.9" % "test"
+        "jp.t2v" %% "play2.auth"      % "0.10-SHAPTHOT",
+        "jp.t2v" %% "play2.auth.test" % "0.10-SHAPTHOT" % "test"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2.auth"      % "0.9",
-    "jp.t2v" %% "play2.auth.test" % "0.9" % "test"
+    "jp.t2v" %% "play2.auth"      % "0.10-SHAPTHOT",
+    "jp.t2v" %% "play2.auth.test" % "0.10-SHAPTHOT" % "test"
   )
 
-  val main = play.Project(appName, appVersion, appDependencies)
+  val main = play.Project(appName, appVersion, appDependencies){
+  resolvers += "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots"
+}
 ```
 
 You don't need to create a `play.plugins` file.
