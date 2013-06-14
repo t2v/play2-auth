@@ -32,8 +32,8 @@ Your application can expire sessions after a set time limit.
 Since the `Security` trait in Play2.x API returns `Action`, 
 complicated action methods wind up deeply nested.
 
-Play2x-Auth provides an interface that returns an [`Either[PlainResult, User]`](http://www.scala-lang.org/api/current/scala/Either.html)
-making writing complicated action methods easier.   [`Either`](http://www.scala-lang.org/api/current/scala/Either.html) is a wrapper similar to `Option`
+Play2x-Auth provides an interface that returns an [`Either[PlainResult, User]`](http://www.scala-lang.org/api/current/scala/util/Either.html)
+making writing complicated action methods easier.   [`Either`](http://www.scala-lang.org/api/current/scala/util/Either.html) is a wrapper similar to `Option`
 
 
 Previous Version
