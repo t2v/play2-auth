@@ -10,10 +10,11 @@ class IntegrationSpec extends Specification {
   
   "Application" should {
     
-    "work from within a browser" in new WithBrowser(port = 3333, webDriver = HTMLUNIT, app = FakeApplication(path = new File("sample"))) {
+    "work from within a browser" in new WithBrowser(webDriver = HTMLUNIT, app = FakeApplication(path = new File("sample"))) {
 
+      val baseURL = s"http://localhost:${port}"
       // login failed
-      browser.goTo("http://localhost:3333/")
+      browser.goTo(baseURL)
       browser.$("#email").text("alice@example.com")
       browser.$("#password").text("secretxxx")
       browser.$("#loginbutton").click()
@@ -31,15 +32,17 @@ class IntegrationSpec extends Specification {
       browser.$("a").click()
       browser.pageSource must contain("Sign in")
 
-      browser.goTo("http://localhost:3333/message/write")
+      browser.goTo(s"$baseURL/message/write")
       browser.pageSource must contain("Sign in")
 
     }
 
-    "authorize" in new WithBrowser(port = 3333, webDriver = HTMLUNIT, app = FakeApplication(path = new File("sample"))) {
+    "authorize" in new WithBrowser(webDriver = HTMLUNIT, app = FakeApplication(path = new File("sample"))) {
+
+      val baseURL = s"http://localhost:${port}"
 
       // login succeded
-      browser.goTo("http://localhost:3333/")
+      browser.goTo(baseURL)
       browser.$("#email").text("bob@example.com")
       browser.$("#password").text("secret")
       browser.$("#loginbutton").click()
@@ -47,15 +50,15 @@ class IntegrationSpec extends Specification {
       browser.pageSource must not contain("Sign in")
       browser.pageSource must contain("logout")
 
-      browser.goTo("http://localhost:3333/message/write")
+      browser.goTo(s"${baseURL}/message/write")
       browser.pageSource must contain("no permission")
 
-      browser.goTo("http://localhost:3333/logout")
+      browser.goTo(s"${baseURL}/logout")
       browser.$("#email").text("alice@example.com")
       browser.$("#password").text("secret")
       browser.$("#loginbutton").click()
       browser.$("dl.error").size must equalTo(0)
-      browser.goTo("http://localhost:3333/message/write")
+      browser.goTo(s"${baseURL}/message/write")
       browser.pageSource must not contain("no permission")
 
     }
