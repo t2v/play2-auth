@@ -78,6 +78,7 @@ object ApplicationBuild extends Build {
   lazy val sample = play.Project("sample", path = file("sample"))
     .settings(baseSettings: _*)
     .settings(
+      resolvers           += "scct" at "http://mtkopone.github.io/scct/maven-repo/",
       libraryDependencies += jdbc,
       libraryDependencies += "org.mindrot"          % "jbcrypt"                    % "0.3m",
       libraryDependencies += "com.github.seratch"  %% "scalikejdbc"                % "[1.6,)",
