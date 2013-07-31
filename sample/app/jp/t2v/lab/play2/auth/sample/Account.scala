@@ -1,4 +1,4 @@
-package models
+package jp.t2v.lab.play2.auth.sample
 
 import org.mindrot.jbcrypt.BCrypt
 import scalikejdbc._, SQLInterpolation._

@@ -7,7 +7,7 @@ object ApplicationBuild extends Build {
   val appName    = "play2.auth"
 
   lazy val baseSettings = Seq(
-    version            := "0.9",
+    version            := "0.10",
     scalaVersion       := "2.10.0",
     scalaBinaryVersion := "2.10",
     crossScalaVersions := Seq("2.10.0"),
@@ -78,13 +78,13 @@ object ApplicationBuild extends Build {
   lazy val sample = play.Project("sample", path = file("sample"))
     .settings(baseSettings: _*)
     .settings(
-      resolvers           += "scct" at "http://mtkopone.github.io/scct/maven-repo/",
       libraryDependencies += jdbc,
       libraryDependencies += "org.mindrot"          % "jbcrypt"                    % "0.3m",
       libraryDependencies += "com.github.seratch"  %% "scalikejdbc"                % "[1.6,)",
       libraryDependencies += "com.github.seratch"  %% "scalikejdbc-test"           % "[1.6,)",
       libraryDependencies += "com.github.seratch"  %% "scalikejdbc-play-plugin"    % "[1.6,)",
       libraryDependencies += "com.github.seratch"  %% "scalikejdbc-interpolation"  % "[1.6,)",
+      templatesImport     += "jp.t2v.lab.play2.auth.sample._",
       publishLocal := {},
       publish := {}
     ).dependsOn(core, test % "test")

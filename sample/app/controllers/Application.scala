@@ -3,7 +3,7 @@ package controllers
 import play.api.data._
 import play.api.data.Forms._
 import play.api.templates._
-import models._
+import jp.t2v.lab.play2.auth.sample._
 import views._
 import play.api.mvc._
 import play.api.mvc.Results._
@@ -21,7 +21,6 @@ object Application extends Controller with LoginLogout with AuthConfigImpl {
   }
 
   def login = Action { implicit request =>
-println("start login")
     Ok(html.login(loginForm))
   }
 
@@ -32,10 +31,9 @@ println("start login")
   }
 
   def authenticate = Action { implicit request =>
-println("start act")
     loginForm.bindFromRequest.fold(
-      formWithErrors => { println("form eror"); BadRequest(html.login(formWithErrors))},
-      user => gotoLoginSucceeded(user.get.id)
+      formWithErrors => BadRequest(html.login(formWithErrors)),
+      user           => gotoLoginSucceeded(user.get.id)
     )
   }
 

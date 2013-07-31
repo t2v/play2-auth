@@ -1,4 +1,4 @@
-package models
+package jp.t2v.lab.play2.auth.sample
 
 sealed trait Permission
 case object Administrator extends Permission
