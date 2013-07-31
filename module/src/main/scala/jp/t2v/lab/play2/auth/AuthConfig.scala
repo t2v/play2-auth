@@ -2,6 +2,7 @@ package jp.t2v.lab.play2.auth
 
 import play.api.mvc._
 import scala.reflect.ClassTag
+import concurrent.{ExecutionContext, Future}
 
 trait AuthConfig {
 
@@ -17,6 +18,8 @@ trait AuthConfig {
 
   def resolveUser(id: Id): Option[User]
 
+  def resolveUserAsync(id: Id)(implicit context: ExecutionContext): Future[Option[User]] = Future.successful(resolveUser(id))
+
   def loginSucceeded(request: RequestHeader): Result
 
   def logoutSucceeded(request: RequestHeader): Result
@@ -26,6 +29,8 @@ trait AuthConfig {
   def authorizationFailed(request: RequestHeader): Result
 
   def authorize(user: User, authority: Authority): Boolean
+
+  def authorizeAsync(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean] = Future.successful(authorize(user, authority))
 
   lazy val idContainer: IdContainer[Id] = new CacheIdContainer[Id]
 

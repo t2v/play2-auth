@@ -15,5 +15,10 @@ GET     /message/list               controllers.Messages.list
 GET     /message/detail/:id         controllers.Messages.detail(id: Int)
 GET     /message/write              controllers.Messages.write
 
+GET     /message2/main               controllers.OldMessages.main
+GET     /message2/list               controllers.OldMessages.list
+GET     /message2/detail/:id         controllers.OldMessages.detail(id: Int)
+GET     /message2/write              controllers.OldMessages.write
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

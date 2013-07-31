@@ -64,6 +64,35 @@ trait Messages extends Controller with Pjax with AuthElement with AuthConfigImpl
 
 }
 object Messages extends Messages
+
+trait OldMessages extends Controller with AsyncAuth with AuthConfigImpl {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  def main = authorizedAction(NormalUser) { user => implicit request =>
+    val title = "message main"
+    Ok(html.message.main(title)(html.fullTemplate.apply(user)))
+  }
+
+  def list = authorizedAction(NormalUser) { user => implicit request =>
+    val title = "all messages"
+    Ok(html.message.list(title)(html.fullTemplate.apply(user)))
+  }
+
+  def detail(id: Int) = authorizedAction(NormalUser) { user => implicit request =>
+    val title = "messages detail "
+    Ok(html.message.detail(title + id)(html.fullTemplate.apply(user)))
+  }
+
+  def write = authorizedAction(Administrator) { user => implicit request =>
+    val title = "write message"
+    Ok(html.message.write(title)(html.fullTemplate.apply(user)))
+  }
+
+}
+object OldMessages extends OldMessages
+
+
 trait AuthConfigImpl extends AuthConfig {
 
   type Id = Int
