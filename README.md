@@ -10,8 +10,6 @@ This module targets the __Scala__ version of __Play2.x__.
 
 For the Java version of Play2.x, there is an authorization module called [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
 
-Play2.1.0
-
 Motivation
 ---------------------------------------
 
@@ -55,17 +53,17 @@ Installation
 
 Add a dependency declaration into your `Build.scala` or `build.sbt` file:
 
-* __for Play2.1.0__
+* __for Play2.1.x__
 
-        "jp.t2v" %% "play2.auth"      % "0.9",
-        "jp.t2v" %% "play2.auth.test" % "0.9" % "test"
+        "jp.t2v" %% "play2.auth"      % "0.10",
+        "jp.t2v" %% "play2.auth.test" % "0.10" % "test"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2.auth"      % "0.9",
-    "jp.t2v" %% "play2.auth.test" % "0.9" % "test"
+    "jp.t2v" %% "play2.auth"      % "0.10",
+    "jp.t2v" %% "play2.auth.test" % "0.10" % "test"
   )
 
   val main = play.Project(appName, appVersion, appDependencies)
@@ -457,6 +455,52 @@ object Application extends Controller with TokenValidateElement with AuthElement
 
 }
 ```
+
+### Asynchronous Libraries Support
+
+You can use asynchronous libraries ( for example: [ReactiveMongo](http://reactivemongo.org/), [ScalikeJDBC-Async](https://github.com/seratch/scalikejdbc-async), and so on ) for User resolver.
+
+```scala
+trait AuthConfigImpl extends AuthConfig {
+
+  ...snip
+
+  def resolveUser(id: Id): Option[User] = throw new AssertionError("dont use!")
+
+  override def resolveUserAsync(id: Id)(implicit context: ExecutionContext): Future[Option[User]] = 
+    AsyncDB.withPool { implicit s => User.findById(id) }
+
+}
+```
+
+That's it. No big deal.
+
+`AuthElement` trait use the `resolveUserAsync` method always.
+
+
+#### Old Style
+
+If you use old style ( that `Auth` trait was used ), you can use `AsyncAuth` instead of `Auth`.
+
+```scala
+trait Messages extends Controller with AsyncAuth with AuthConfigImpl {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  def main = authorizedAction(NormalUser) { user => request =>
+    val title = "message main"
+    Ok(html.message.main(title))
+  }
+
+  def list = authorizedAction(NormalUser) { user => request =>
+    val title = "all messages"
+    Ok(html.message.list(title))
+  }
+
+}
+```
+
+This feature is available since 0.10.
 
 
 ### Stateless vs Stateful implementation.
