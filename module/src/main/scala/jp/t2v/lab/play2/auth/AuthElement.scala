@@ -10,7 +10,7 @@ trait AuthElement extends StackableController with AsyncAuth {
   case object AuthorityKey extends RequestAttributeKey[Authority]
 
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
-    implicit val r = req
+    implicit val (r, ctx) = (req, StackActionExecutionContext(req))
     req.get(AuthorityKey) map { authority =>
       Async {
         authorized(authority) map {
@@ -33,7 +33,7 @@ trait OptionalAuthElement extends StackableController with AsyncAuth {
   private[auth] case object AuthKey extends RequestAttributeKey[User]
 
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
-    implicit val r = req
+    implicit val (r, ctx) = (req, StackActionExecutionContext(req))
     val maybeUserFuture = restoreUser.recover { case _ => Option.empty }
     Async {
       maybeUserFuture.map(maybeUser => super.proceed(maybeUser.map(u => req.set(AuthKey, u)).getOrElse(req))(f))
@@ -49,7 +49,7 @@ trait AuthenticationElement extends StackableController with AsyncAuth {
   private[auth] case object AuthKey extends RequestAttributeKey[User]
 
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
-    implicit val r = req
+    implicit val (r, ctx) = (req, StackActionExecutionContext(req))
     Async {
       restoreUser collect {
         case Some(u) => super.proceed(req.set(AuthKey, u))(f)
