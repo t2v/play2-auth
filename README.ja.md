@@ -52,15 +52,15 @@ Play2.0.x 向けの使用方法は [こちら](https://github.com/t2v/play20-aut
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2.auth"      % "0.10",
-        "jp.t2v" %% "play2.auth.test" % "0.10" % "test"
+        "jp.t2v" %% "play2.auth"      % "0.10.1",
+        "jp.t2v" %% "play2.auth.test" % "0.10.1" % "test"
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2.auth"      % "0.10",
-    "jp.t2v" %% "play2.auth.test" % "0.10" % "test"
+    "jp.t2v" %% "play2.auth"      % "0.10.1",
+    "jp.t2v" %% "play2.auth.test" % "0.10.1" % "test"
   )
 
   val main = play.Project(appName, appVersion, appDependencies)

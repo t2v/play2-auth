@@ -55,15 +55,15 @@ Add a dependency declaration into your `Build.scala` or `build.sbt` file:
 
 * __for Play2.1.x__
 
-        "jp.t2v" %% "play2.auth"      % "0.10",
-        "jp.t2v" %% "play2.auth.test" % "0.10" % "test"
+        "jp.t2v" %% "play2.auth"      % "0.10.1",
+        "jp.t2v" %% "play2.auth.test" % "0.10.1" % "test"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2.auth"      % "0.10",
-    "jp.t2v" %% "play2.auth.test" % "0.10" % "test"
+    "jp.t2v" %% "play2.auth"      % "0.10.1",
+    "jp.t2v" %% "play2.auth.test" % "0.10.1" % "test"
   )
 
   val main = play.Project(appName, appVersion, appDependencies)
