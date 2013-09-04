@@ -1,4 +1,4 @@
-Play2.x module for Authentication and Authorization [![Build Status](https://secure.travis-ci.org/t2v/play20-auth.png)](http://travis-ci.org/t2v/play20-auth)
+Play2.x module for Authentication and Authorization [![Build Status](https://secure.travis-ci.org/t2v/play2-auth.png)](http://travis-ci.org/t2v/play2-auth)
 ===========================================================
 
 これは Play2.x のアプリケーションに認証/認可の機能を手軽に組み込むためのモジュールです。
@@ -38,7 +38,7 @@ Play2.1.2 で動作確認をしています。
 以前のバージョン
 ---------------------------------------
 
-Play2.0.x 向けの使用方法は [こちら](https://github.com/t2v/play20-auth/blob/release0.7/README.ja.md)をご参照ください。
+Play2.0.x 向けの使用方法は [こちら](https://github.com/t2v/play2-auth/blob/release0.7/README.ja.md)をご参照ください。
 
 0.8以前をお使いの方へ
 ---------------------------------------
@@ -553,8 +553,8 @@ trait AuthConfigImpl extends AuthConfig {
 サンプルアプリケーション
 ---------------------------------------
 
-1. `git clone https://github.com/t2v/play20-auth.git`
-1. `cd play20-auth`
+1. `git clone https://github.com/t2v/play2-auth.git`
+1. `cd play2-auth`
 1. `play "project sample" play run`
 1. ブラウザで `http://localhost:9000/` にアクセス
     1. 「Database 'default' needs evolution!」と聞かれるので `Apply this script now!` を押して実行します
