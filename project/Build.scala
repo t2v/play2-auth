@@ -28,7 +28,7 @@ object ApplicationBuild extends Build {
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
   }
   lazy val appPomExtra = {
-        <url>https://github.com/t2v/play20-auth</url>
+        <url>https://github.com/t2v/play2-auth</url>
         <licenses>
           <license>
             <name>Apache License, Version 2.0</name>
@@ -37,8 +37,8 @@ object ApplicationBuild extends Build {
           </license>
         </licenses>
         <scm>
-          <url>git@github.com:t2v/play20-auth.git</url>
-          <connection>scm:git:git@github.com:t2v/play20-auth.git</connection>
+          <url>git@github.com:t2v/play2-auth.git</url>
+          <connection>scm:git:git@github.com:t2v/play2-auth.git</connection>
         </scm>
         <developers>
           <developer>
