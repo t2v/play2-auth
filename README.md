@@ -1,4 +1,4 @@
-Play2.x module for Authentication and Authorization [![Build Status](https://secure.travis-ci.org/t2v/play20-auth.png)](http://travis-ci.org/t2v/play20-auth)
+Play2.x module for Authentication and Authorization [![Build Status](https://secure.travis-ci.org/t2v/play2-auth.png)](http://travis-ci.org/t2v/play2-auth)
 ===========================================================
 
 This module offers Authentication and Authorization features to Play2.x applications
@@ -37,7 +37,7 @@ making writing complicated action methods easier.   [`Either`](http://www.scala-
 Previous Version
 ---------------------------------------
 
-for Play2.0.x, Please see [previous version README](https://github.com/t2v/play20-auth/tree/release0.7)
+for Play2.0.x, Please see [previous version README](https://github.com/t2v/play2-auth/tree/release0.7)
 
 
 Attention
@@ -532,8 +532,8 @@ Note: `CookieIdContainer` doesn't support session timeout.
 Running The Sample Application
 ---------------------------------------
 
-1. `git clone https://github.com/t2v/play20-auth.git`
-1. `cd play20-auth`
+1. `git clone https://github.com/t2v/play2-auth.git`
+1. `cd play2-auth`
 1. `play "project sample" play run`
 1. access to `http://localhost:9000/` on your browser.
     1. click `Apply this script now!`
