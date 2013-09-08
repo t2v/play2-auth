@@ -6,11 +6,13 @@ object ApplicationBuild extends Build {
 
   val appName    = "play2.auth"
 
+  val playVersion = "2.2.0-RC1"
+
   lazy val baseSettings = Seq(
-    version            := "0.10.1",
-    scalaVersion       := "2.10.0",
+    version            := "0.11.0-SNAPSHOT",
+    scalaVersion       := "2.10.2",
     scalaBinaryVersion := "2.10",
-    crossScalaVersions := Seq("2.10.0"),
+    crossScalaVersions := Seq("2.10.2"),
     organization       := "jp.t2v",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
     resolvers += "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots",
@@ -53,8 +55,9 @@ object ApplicationBuild extends Build {
   lazy val core = Project("core", base = file("module"))
     .settings(baseSettings: _*)
     .settings(
-      libraryDependencies += "play"     %%   "play"                   % "2.1.0",
-      libraryDependencies += "jp.t2v"   %%   "stackable-controller"   % "0.2.1",
+      libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion,
+      libraryDependencies += "com.typesafe.play"  %%   "play-cache"             % playVersion,
+      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.3.0-SNAPSHOT",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
@@ -66,7 +69,7 @@ object ApplicationBuild extends Build {
   lazy val test = Project("test", base = file("test"))
     .settings(baseSettings: _*)
     .settings(
-      libraryDependencies += "play" %% "play-test" % "2.1.0",
+      libraryDependencies += "com.typesafe.play"  %% "play-test"   % playVersion,
       name                    := appName + ".test",
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,

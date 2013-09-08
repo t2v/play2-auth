@@ -2,39 +2,44 @@ package jp.t2v.lab.play2.auth
 
 import play.api.mvc._
 import play.api.libs.iteratee.{Input, Done}
+import scala.concurrent.{Future, Await}
+import scala.concurrent.duration._
 
+@deprecated
 trait Auth {
   self: AuthConfig =>
 
-  def authorizedAction(authority: Authority)(f: User => Request[AnyContent] => Result): Action[(AnyContent, User)] =
+  private implicit val ctx = play.api.libs.concurrent.Execution.defaultContext
+
+  def authorizedAction(authority: Authority)(f: User => Request[AnyContent] => Future[SimpleResult]): Action[(AnyContent, User)] =
     authorizedAction(BodyParsers.parse.anyContent, authority)(f)
 
-  def authorizedAction[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Result): Action[(A, User)] = {
+  def authorizedAction[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Future[SimpleResult]): Action[(A, User)] = {
     val parser = BodyParser {
       req => authorized(authority)(req) match {
         case Right(user)  => p.map((_, user))(req)
         case Left(result) => Done(Left(result), Input.Empty)
       }
     }
-    Action(parser) { req => f(req.body._2)(req.map(_._1)) }
+    Action.async(parser) { req => f(req.body._2)(req.map(_._1)) }
   }
 
-  def optionalUserAction(f: Option[User] => Request[AnyContent] => Result): Action[AnyContent] =
+  def optionalUserAction(f: Option[User] => Request[AnyContent] => Future[SimpleResult]): Action[AnyContent] =
     optionalUserAction(BodyParsers.parse.anyContent)(f)
 
-  def optionalUserAction[A](p: BodyParser[A])(f: Option[User] => Request[A] => Result): Action[A] =
-    Action(p)(req => f(restoreUser(req))(req))
+  def optionalUserAction[A](p: BodyParser[A])(f: Option[User] => Request[A] => Future[SimpleResult]): Action[A] =
+    Action.async(p)(req => f(restoreUser(req))(req))
 
-  def authorized(authority: Authority)(implicit request: RequestHeader): Either[Result, User] = for {
-    user <- restoreUser(request).toRight(authenticationFailed(request)).right
-    _    <- Either.cond(authorize(user, authority), (), authorizationFailed(request)).right
+  def authorized(authority: Authority)(implicit request: RequestHeader): Either[SimpleResult, User] = for {
+    user <- restoreUser(request).toRight(Await.result(authenticationFailed(request), 10.seconds)).right
+    _    <- Either.cond(Await.result(authorize(user, authority), 10.seconds), (), Await.result(authorizationFailed(request), 10.seconds)).right
   } yield user
 
   private[auth] def restoreUser(implicit request: RequestHeader): Option[User] = for {
     cookie <- request.cookies.get(cookieName)
     token  <- CookieUtil.verifyHmac(cookie)
     userId <- idContainer.get(token)
-    user   <- resolveUser(userId)
+    user   <- Await.result(resolveUser(userId), 10.seconds)
   } yield {
     idContainer.prolongTimeout(token, sessionTimeoutInSeconds)
     user
