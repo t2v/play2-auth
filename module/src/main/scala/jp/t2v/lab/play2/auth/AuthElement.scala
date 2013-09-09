@@ -45,14 +45,20 @@ trait AuthenticationElement extends StackableController with AsyncAuth {
 
   private[auth] case object AuthKey extends RequestAttributeKey[User]
 
+  private case class AuthenticationFailedException(cause: Throwable) extends Exception(cause)
+
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[SimpleResult]): Future[SimpleResult] = {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
-    restoreUser collect {
-      case Some(u) => u
-    } flatMap {
+    restoreUser transform (
+      {
+        case Some(u) => u
+        case None => throw AuthenticationFailedException(new NoSuchElementException)
+      },
+      AuthenticationFailedException.apply
+    ) flatMap {
       u => super.proceed(req.set(AuthKey, u))(f)
     } recoverWith {
-      case _ => authenticationFailed(req)
+      case AuthenticationFailedException(_) => authenticationFailed(req)
     }
   }
 
