@@ -6,8 +6,8 @@ import scalikejdbc._
 object Global extends GlobalSettings {
 
   override def onStart(app: Application) {
-    Class.forName("org.h2.Driver")
-    ConnectionPool.singleton("jdbc:h2:mem:play", "sa", "")
+//    Class.forName("org.h2.Driver")
+//    ConnectionPool.singleton("jdbc:h2:mem:play", "sa", "")
 
     if (Account.findAll.isEmpty) {
       Seq(

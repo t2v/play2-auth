@@ -12,6 +12,7 @@ import play.api.Play._
 import jp.t2v.lab.play2.stackc.{RequestWithAttributes, RequestAttributeKey, StackableController}
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
+import reflect.{ClassTag, classTag}
 
 object Application extends Controller with LoginLogout with AuthConfigImpl {
 
@@ -96,6 +97,8 @@ trait AuthConfigImpl extends AuthConfig {
   type User = Account
 
   type Authority = Permission
+
+  val idTag: ClassTag[Id] = classTag[Id]
 
   val sessionTimeoutInSeconds = 3600
 

@@ -12,6 +12,8 @@ trait AuthConfig {
 
   type Authority
 
+  implicit def idTag: ClassTag[Id]
+
   def sessionTimeoutInSeconds: Int
 
   def resolveUser(id: Id)(implicit context: ExecutionContext): Future[Option[User]]
@@ -25,8 +27,6 @@ trait AuthConfig {
   def authorizationFailed(request: RequestHeader)(implicit context: ExecutionContext): Future[SimpleResult]
 
   def authorize(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean]
-
-  private implicit def idTag: ClassTag[Id] = classTag
 
   lazy val idContainer: IdContainer[Id] = new CacheIdContainer[Id]
 

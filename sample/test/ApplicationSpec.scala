@@ -13,7 +13,7 @@ class ApplicationSpec extends Specification {
   object config extends AuthConfigImpl
 
   "Messages" should {
-    "return list when user is authorized" in new WithApplication(FakeApplication(path = new File("sample"))) {
+    "return list when user is authorized" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase(name = "default", options = Map("DB_CLOSE_DELAY" -> "-1")))) {
       val res = Messages.list(FakeRequest().withLoggedIn(config)(1))
       contentType(res) must beSome("text/html")
     }

@@ -80,17 +80,20 @@ object ApplicationBuild extends Build {
 
   lazy val sample = play.Project("sample", path = file("sample"))
     .settings(baseSettings: _*)
+    .settings(playScalaSettings: _*)
     .settings(
       libraryDependencies += jdbc,
-      libraryDependencies += "org.mindrot"          % "jbcrypt"                    % "0.3m",
-      libraryDependencies += "com.github.seratch"  %% "scalikejdbc"                % "[1.6,)",
-      libraryDependencies += "com.github.seratch"  %% "scalikejdbc-test"           % "[1.6,)",
-      libraryDependencies += "com.github.seratch"  %% "scalikejdbc-play-plugin"    % "[1.6,)",
-      libraryDependencies += "com.github.seratch"  %% "scalikejdbc-interpolation"  % "[1.6,)",
+      libraryDependencies += "org.mindrot"           % "jbcrypt"                    % "0.3m",
+      libraryDependencies += "com.github.seratch"   %% "scalikejdbc"                % "[1.6,)",
+      libraryDependencies += "com.github.seratch"   %% "scalikejdbc-test"           % "[1.6,)",
+      libraryDependencies += "com.github.seratch"   %% "scalikejdbc-play-plugin"    % "[1.6,)",
+      libraryDependencies += "com.github.seratch"   %% "scalikejdbc-interpolation"  % "[1.6,)",
+      libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "0.2.0",
       templatesImport     += "jp.t2v.lab.play2.auth.sample._",
       publishLocal := {},
       publish := {}
-    ).dependsOn(core, test % "test")
+    )
+    .dependsOn(core, test % "test")
 
   lazy val root = Project("root", base = file("."))
     .settings(baseSettings: _*)
