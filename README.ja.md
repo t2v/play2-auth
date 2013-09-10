@@ -10,7 +10,7 @@ Play2.x module for Authentication and Authorization [![Build Status](https://sec
 Java版には [Deadbolt 2](https://github.com/schaloner/deadbolt-2) というモジュールがありますので
 こちらも参考にして下さい。
 
-Play2.1.2 で動作確認をしています。
+Play2.2.0-RC1 で動作確認をしています。
 
 動機
 ---------------------------------------
@@ -38,29 +38,30 @@ Play2.1.2 で動作確認をしています。
 以前のバージョン
 ---------------------------------------
 
-Play2.0.x 向けの使用方法は [こちら](https://github.com/t2v/play2-auth/blob/release0.7/README.ja.md)をご参照ください。
+Play2.1.x 向けの使用方法は [0.10.1 README](https://github.com/t2v/play2-auth/blob/release0.10.1/README.ja.md)をご参照ください。
+Play2.0.x 向けの使用方法は [0.7 README](https://github.com/t2v/play2-auth/blob/release0.7/README.ja.md)をご参照ください。
 
-0.8以前をお使いの方へ
+Play2.1以前をお使いの方へ
 ---------------------------------------
 
-<strong style="font-size: 200%; color: red;">version 0.8以降、アーティファクトIDとパッケージ名が変更になっています。</strong>
+<strong style="font-size: 200%; color: red;">Play2.2 から `Result` が非推奨になりました。その影響で play2.auth のインターフェイスも変更されています。</strong>
 
-<strong style="font-size: 200%;">0.7以前からバージョンアップを行う方はご注意ください。</strong>
+<strong style="font-size: 200%;">0.10.1以前からバージョンアップを行う方はご注意ください。</strong>
 
 導入
 ---------------------------------------
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2.auth"      % "0.10.1",
-        "jp.t2v" %% "play2.auth.test" % "0.10.1" % "test"
+        "jp.t2v" %% "play2.auth"      % "0.11.0-SNAPSHT",
+        "jp.t2v" %% "play2.auth.test" % "0.11.0-SNAPSHT" % "test"
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2.auth"      % "0.10.1",
-    "jp.t2v" %% "play2.auth.test" % "0.10.1" % "test"
+    "jp.t2v" %% "play2.auth"      % "0.11.0-SNAPSHT",
+    "jp.t2v" %% "play2.auth.test" % "0.11.0-SNAPSHT" % "test"
   )
 
   val main = play.Project(appName, appVersion, appDependencies)
@@ -104,8 +105,6 @@ For example: `Build.scala`
        * 基本的にはこの例と同じ記述をして下さい。
        */
       val idTag: ClassTag[Id] = classTag[Id]
-      // for version 0.5 as follows
-      // val idManifest: ClassManifest[Id] = classManifest[Id]
 
       /**
        * セッションタイムアウトの時間(秒)です。
@@ -116,38 +115,43 @@ For example: `Build.scala`
        * ユーザIDからUserブジェクトを取得するアルゴリズムを指定します。
        * 任意の処理を記述してください。
        */
-      def resolveUser(id: Id): Option[User] = Account.findById(id)
+      def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = Account.findByIdAsync(id)
 
       /**
        * ログインが成功した際に遷移する先を指定します。
        */
-      def loginSucceeded(request: RequestHeader): Result = Redirect(routes.Message.main)
+      def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+        Future.successful(Redirect(routes.Message.main))
 
       /**
        * ログアウトが成功した際に遷移する先を指定します。
        */
-      def logoutSucceeded(request: RequestHeader): Result = Redirect(routes.Application.login)
+      def logoutSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+        Future.successful(Redirect(routes.Application.login))
 
       /**
        * 認証が失敗した場合に遷移する先を指定します。
        */
-      def authenticationFailed(request: RequestHeader): Result = Redirect(routes.Application.login)
+      def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+        Future.successful(Redirect(routes.Application.login))
 
       /**
        * 認可(権限チェック)が失敗した場合に遷移する先を指定します。
        */
-      def authorizationFailed(request: RequestHeader): Result = Forbidden("no permission")
+      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] = 
+        Future.successful(Forbidden("no permission"))
 
       /**
        * 権限チェックのアルゴリズムを指定します。
        * 任意の処理を記述してください。
        */
-      def authorize(user: User, authority: Authority): Boolean =
+      def authorize(user: User, authority: Authority)(implicit ctx: ExecutionContext): Future[Boolean] = Future.successful {
         (user.permission, authority) match {
           case (Administrator, _) => true
           case (NormalUser, NormalUser) => true
           case _ => false
         }
+      }
 
       /**
        * SessionID Cookieにsecureオプションを指定するか否かの設定です。
@@ -181,15 +185,14 @@ For example: `Build.scala`
        * ログアウト処理では任意の処理を行った後、
        * gotoLogoutSucceeded メソッドを呼び出した結果を返して下さい。
        *
-       * gotoLogoutSucceeded メソッドは Result を返します。
-       * jp.t2v.lab.play2.auth._ を import していた場合、
+       * gotoLogoutSucceeded メソッドは Future[SimpleResult] を返します。
        * 以下のようにflashingなどを追加することもできます。
        *
-       *   gotoLogoutSucceeded.flashing(
+       *   gotoLogoutSucceeded.map(_.flashing(
        *     "success" -> "You've been logged out"
-       *   )
+       *   ))
        */
-      def logout = Action { implicit request =>
+      def logout = Action.async { implicit request =>
         // do something...
         gotoLogoutSucceeded
       }
@@ -198,12 +201,12 @@ For example: `Build.scala`
        * ログイン処理では認証が成功した場合、
        * gotoLoginSucceeded メソッドを呼び出した結果を返して下さい。
        *
-       * gotoLoginSucceeded メソッドも gotoLogoutSucceeded と同じく Result を返します。
-       * jp.t2v.lab.play2.auth._ を import して、任意の処理を追加することも可能です。
+       * gotoLoginSucceeded メソッドも gotoLogoutSucceeded と同じく Future[SimpleResult] を返します。
+       * 任意の処理を追加することも可能です。
        */
-      def authenticate = Action { implicit request =>
+      def authenticate = Action.async { implicit request =>
         loginForm.bindFromRequest.fold(
-          formWithErrors => BadRequest(html.login(formWithErrors)),
+          formWithErrors => Future.successful(BadRequest(html.login(formWithErrors))),
           user => gotoLoginSucceeded(user.get.id)
         )
       }
@@ -314,9 +317,9 @@ trait AuthConfigImpl extends AuthConfig {
 
   // 他の設定省略
 
-  type Authority = User => Boolean
+  type Authority = User => Future[Boolean]
 
-  def authorize(user: User, authority: Authority): Boolean = authority(user)
+  def authorize(user: User, authority: Authority)(implicit ctx: ExecutionContext): Future[Boolean] = authority(user)
 
 }
 ```
@@ -324,8 +327,8 @@ trait AuthConfigImpl extends AuthConfig {
 ```scala
 object Application extends Controller with AuthElement with AuthConfigImpl {
 
-  private def sameAuthor(messageId: Int)(account: Account): Boolean =
-    Message.getAuther(messageId) == account
+  private def sameAuthor(messageId: Int)(account: Account): Future[Boolean] =
+    Message.getAutherAsync(messageId).map(_ == account)
 
   def edit(messageId: Int) = StackAction(AuthorityKey -> sameAuthor(messageId)) { request =>
     val target = Message.findById(messageId)
@@ -349,12 +352,12 @@ trait AuthConfigImpl extends AuthConfig {
 
   // 他の設定省略
 
-  def authenticationFailed(request: RequestHeader): Result =
-    Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
+  def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+    Future.successful(Redirect(routes.Application.login).withSession("access_uri" -> request.uri))
 
-  def loginSucceeded(request: RequestHeader): Result = {
+  def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url)
-    Redirect(uri).withSession(request.session - "access_uri")
+    Future.successful(Redirect(uri).withSession(request.session - "access_uri"))
   }
 
 }
@@ -411,7 +414,7 @@ Ajaxリクエストの場合には単に401を返したい場合があります�
 
 
 ```scala
-def authenticationFailed(request: RequestHeader) = {
+def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful {
   request.headers.get("X-Requested-With") match {
     case Some("XMLHttpRequest") => Unauthorized("Authentication failed")
     case _ => Redirect(routes.Application.login)
@@ -441,9 +444,9 @@ trait TokenValidateElement extends StackableController {
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
 
-  override proceed[A](reqest: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
+  override proceed[A](reqest: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[SimpleResult]): Future[SimpleResult] = {
     if (validateToken(request)) super.proceed(request)(f)
-    else BadRequest
+    else Future.successful(BadRequest)
   }
 
 }
@@ -472,52 +475,22 @@ object Application extends Controller with TokenValidateElement with AuthElement
 
 ### 非同期サポート
 
-認証ロジックに、[ReactiveMongo](http://reactivemongo.org/) や [ScalikeJDBC-Async](https://github.com/seratch/scalikejdbc-async) 
-などといった非同期なライブラリを使用する事もできます。
+効率的なアプリケーションを作成するため、昨今ではReactiveなアプローチが人気を博しています。
+Playはこういった非同期なアプローチが得意であり、[ReactiveMongo](http://reactivemongo.org/) や [ScalikeJDBC-Async](https://github.com/seratch/scalikejdbc-async) などといった非同期なライブラリを上手に使用する事ができます。
+
+`StackAction` の代わりに `AsyncStack` を使用することで、 Future[SimpleResult] を返すアクションを簡単につくることができます。
+
 
 ```scala
-trait AuthConfigImpl extends AuthConfig {
+trait HogeController extends AuthElement with AuthConfigImpl {
 
-  ...省略
-
-  def resolveUser(id: Id): Option[User] = throw new AssertionError("dont use!")
-
-  override def resolveUserAsync(id: Id)(implicit context: ExecutionContext): Future[Option[User]] = 
-    AsyncDB.withPool { implicit s => User.findById(id) }
-
-}
-```
-
-`resolveUser` を使用しないことを明示して、`resolveUserAsync` メソッドを override するだけです。
-
-`resolveUserAsync` メソッドは `Option[User]` の代わりに `Future[Option[User]]` が返されることを期待します。
-
-
-#### 旧スタイル
-
-もしあなたが `Auth` トレイトを使う旧スタイルを採用しているのであれば、
-`Auth` トレイトの代わりに `AsyncAuth` トレイトを使うことで非同期サポート機能が使えます。
-
-```scala
-trait Messages extends Controller with AsyncAuth with AuthConfigImpl {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  def main = authorizedAction(NormalUser) { user => request =>
-    val title = "message main"
-    Ok(html.message.main(title))
-  }
-
-  def list = authorizedAction(NormalUser) { user => request =>
-    val title = "all messages"
-    Ok(html.message.list(title))
+  def hoge = AsyncStack { implicit req =>
+    val messages: Future[Seq[Message]] = AsyncDB.withPool { implicit s => Message.findAll }
+    messages.map(Ok(html.view.messages(_)))
   }
 
 }
 ```
-
-この機能は release0.10 から利用できます。
-
 
 ### Stateless
 

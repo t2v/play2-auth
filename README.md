@@ -37,15 +37,15 @@ making writing complicated action methods easier.   [`Either`](http://www.scala-
 Previous Version
 ---------------------------------------
 
-for Play2.0.x, Please see [previous version README](https://github.com/t2v/play2-auth/tree/release0.7)
+for Play2.1.x, Please see [previous version 0.10.1 README](https://github.com/t2v/play2-auth/tree/release0.10.1)
+
+for Play2.0.x, Please see [previous version 0.7 README](https://github.com/t2v/play2-auth/tree/release0.7)
 
 
 Attention
 ---------------------------------------
 
-<strong style="font-size: 200%; color: red;">The artifact ID and package name was changed at version 0.8</strong>
-
-<strong style="font-size: 200%;">you should be careful to version up from 0.7</strong>
+<strong style="font-size: 200%; color: red;">Since Play2.2's `Result` is deprecated, The play2.auth trait signatures are changed at version 0.11.0</strong>
 
 
 Installation
@@ -53,17 +53,17 @@ Installation
 
 Add a dependency declaration into your `Build.scala` or `build.sbt` file:
 
-* __for Play2.1.x__
+* __for Play2.2.x__
 
-        "jp.t2v" %% "play2.auth"      % "0.10.1",
-        "jp.t2v" %% "play2.auth.test" % "0.10.1" % "test"
+        "jp.t2v" %% "play2.auth"      % "0.11.0-SNAPSHOT",
+        "jp.t2v" %% "play2.auth.test" % "0.11.0-SNAPSHOT" % "test"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2.auth"      % "0.10.1",
-    "jp.t2v" %% "play2.auth.test" % "0.10.1" % "test"
+    "jp.t2v" %% "play2.auth"      % "0.11.0-SNAPSHOT",
+    "jp.t2v" %% "play2.auth.test" % "0.11.0-SNAPSHOT" % "test"
   )
 
   val main = play.Project(appName, appVersion, appDependencies)
@@ -117,38 +117,43 @@ Usage
        * A function that returns a `User` object from an `Id`.
        * You can alter the procedure to suit your application.
        */
-      def resolveUser(id: Id): Option[User] = Account.findById(id)
+      def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = Account.findById(id)
 
       /**
        * Where to redirect the user after a successful login.
        */
-      def loginSucceeded(request: RequestHeader): Result = Redirect(routes.Message.main)
+      def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+        Future.successful(Redirect(routes.Message.main))
 
       /**
        * Where to redirect the user after logging out
        */
-      def logoutSucceeded(request: RequestHeader): Result = Redirect(routes.Application.login)
+      def logoutSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+        Future.successful(Redirect(routes.Application.login))
 
       /**
        * If the user is not logged in and tries to access a protected resource then redirct them as follows:
        */
-      def authenticationFailed(request: RequestHeader): Result = Redirect(routes.Application.login)
+      def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+        Future.successful(Redirect(routes.Application.login))
 
       /**
        * If authorization failed (usually incorrect password) redirect the user as follows:
        */
-      def authorizationFailed(request: RequestHeader): Result = Forbidden("no permission")
+      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] = 
+        Future.successful(Forbidden("no permission"))
 
       /**
        * A function that determines what `Authority` a user has.
        * You should alter this procedure to suit your application.
        */
-      def authorize(user: User, authority: Authority): Boolean =
+      def authorize(user: User, authority: Authority)(implicit ctx: ExecutionContext): Future[Boolean] = Future.successful {
         (user.permission, authority) match {
-          case (Administrator, _) => true
+          case (Administrator, _)       => true
           case (NormalUser, NormalUser) => true
-          case _ => false
+          case _                        => false
         }
+      }
 
       /**
        * Whether use the secure option or not use it in the cookie.
@@ -180,14 +185,14 @@ Usage
       /**
        * Return the `gotoLogoutSucceeded` method's result in the logout action.
        *
-       * Since the `gotoLogoutSucceeded` returns `Result`,
-       * If you import `jp.t2v.lab.play2.auth._`, you can add a procedure like the following.
+       * Since the `gotoLogoutSucceeded` returns `Future[SimpleResult]`,
+       * you can add a procedure like the following.
        *
-       *   gotoLogoutSucceeded.flashing(
+       *   gotoLogoutSucceeded.map(_.flashing(
        *     "success" -> "You've been logged out"
-       *   )
+       *   ))
        */
-      def logout = Action { implicit request =>
+      def logout = Action.async { implicit request =>
         // do something...
         gotoLogoutSucceeded
       }
@@ -195,12 +200,12 @@ Usage
       /**
        * Return the `gotoLoginSucceeded` method's result in the login action.
        *
-       * Since the `gotoLoginSucceeded` returns `Result`,
-       * If you import `jp.t2v.lab.play2.auth._`, you can add a procedure like the `gotoLogoutSucceeded`.
+       * Since the `gotoLoginSucceeded` returns `Future[SimpleResult]`,
+       * you can add a procedure like the `gotoLogoutSucceeded`.
        */
-      def authenticate = Action { implicit request =>
+      def authenticate = Action.async { implicit request =>
         loginForm.bindFromRequest.fold(
-          formWithErrors => BadRequest(html.login(formWithErrors)),
+          formWithErrors => Future.successful(BadRequest(html.login(formWithErrors))),
           user => gotoLoginSucceeded(user.get.id)
         )
       }
@@ -311,9 +316,9 @@ trait AuthConfigImpl extends AuthConfig {
 
   // Other setup is omitted. 
 
-  type Authority = User => Boolean
+  type Authority = User => Future[Boolean]
 
-  def authorize(user: User, authority: Authority): Boolean = authority(user)
+  def authorize(user: User, authority: Authority)(implicit ctx: ExecutionContext): Future[Boolean] = authority(user)
 
 }
 ```
@@ -321,8 +326,8 @@ trait AuthConfigImpl extends AuthConfig {
 ```scala
 object Application extends Controller with AuthElement with AuthConfigImpl {
 
-  private def sameAuthor(messageId: Int)(account: Account): Boolean =
-    Message.getAuther(messageId) == account
+  private def sameAuthor(messageId: Int)(account: Account): Future[Boolean] =
+    Message.getAutherAsync(messageId).map(_ == account)
 
   def edit(messageId: Int) = StackAction(AuthorityKey -> sameAuthor(messageId)) { implicit request =>
     val user = loggedIn
@@ -346,12 +351,12 @@ trait AuthConfigImpl extends AuthConfig {
 
   // Other settings are omitted.
 
-  def authenticationFailed(request: RequestHeader): Result =
-    Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
+  def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+    Future.successful(Redirect(routes.Application.login).withSession("access_uri" -> request.uri))
 
-  def loginSucceeded(request: RequestHeader): Result = {
+  def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url.toString)
-    Redirect(uri).withSession(request.session - "access_uri")
+    Future.successful(Redirect(uri).withSession(request.session - "access_uri"))
   }
 
 }
@@ -402,7 +407,7 @@ Although, when the request is sent by Ajax you want to instead return 401, Unaut
 You can do it as follows.
 
 ```scala
-def authenticationFailed(request: RequestHeader) = {
+def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful {
   request.headers.get("X-Requested-With") match {
     case Some("XMLHttpRequest") => Unauthorized("Authentication failed")
     case _ => Redirect(routes.Application.login)
@@ -430,9 +435,9 @@ trait TokenValidateElement extends StackableController {
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
 
-  override proceed[A](reqest: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Result): Result = {
+  override proceed[A](reqest: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[SimpleResult]): Future[SimpleResult] = {
     if (validateToken(request)) super.proceed(request)(f)
-    else BadRequest
+    else Future.successful(BadRequest)
   }
 
 }
@@ -456,52 +461,24 @@ object Application extends Controller with TokenValidateElement with AuthElement
 }
 ```
 
-### Asynchronous Libraries Support
+### Asynchronous Support
 
-You can use asynchronous libraries ( for example: [ReactiveMongo](http://reactivemongo.org/), [ScalikeJDBC-Async](https://github.com/seratch/scalikejdbc-async), and so on ) for User resolver.
+There are asynchronous libraries ( for example: [ReactiveMongo](http://reactivemongo.org/), [ScalikeJDBC-Async](https://github.com/seratch/scalikejdbc-async), and so on ).
 
-```scala
-trait AuthConfigImpl extends AuthConfig {
+You should use `Future[SimpleResult]` instead of `AsyncResult` from Play2.2. 
 
-  ...snip
-
-  def resolveUser(id: Id): Option[User] = throw new AssertionError("dont use!")
-
-  override def resolveUserAsync(id: Id)(implicit context: ExecutionContext): Future[Option[User]] = 
-    AsyncDB.withPool { implicit s => User.findById(id) }
-
-}
-```
-
-That's it. No big deal.
-
-`AuthElement` trait use the `resolveUserAsync` method always.
-
-
-#### Old Style
-
-If you use old style ( that `Auth` trait was used ), you can use `AsyncAuth` instead of `Auth`.
+You can use `AsyncStack` instead of `StackAction` for Future[SimpleResult]
 
 ```scala
-trait Messages extends Controller with AsyncAuth with AuthConfigImpl {
+trait HogeController extends AuthElement with AuthConfigImpl {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  def main = authorizedAction(NormalUser) { user => request =>
-    val title = "message main"
-    Ok(html.message.main(title))
-  }
-
-  def list = authorizedAction(NormalUser) { user => request =>
-    val title = "all messages"
-    Ok(html.message.list(title))
+  def hoge = AsyncStack { implicit req =>
+    val messages: Future[Seq[Message]] = AsyncDB.withPool { implicit s => Message.findAll }
+    messages.map(Ok(html.view.messages(_)))
   }
 
 }
 ```
-
-This feature is available since 0.10.
-
 
 ### Stateless vs Stateful implementation.
 
