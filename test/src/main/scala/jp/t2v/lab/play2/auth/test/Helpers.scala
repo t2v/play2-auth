@@ -9,7 +9,7 @@ trait Helpers {
 
   implicit class AuthFakeRequest[A](fakeRequest: FakeRequest[A]) {
 
-    def withLoggedIn(implicit config: AuthConfig): config.Id => Request[A] = { id =>
+    def withLoggedIn(implicit config: AuthConfig): config.Id => FakeRequest[A] = { id =>
       val token = config.idContainer.startNewSession(id, config.sessionTimeoutInSeconds)
       val value = Crypto.sign(token) + token
       import config._
