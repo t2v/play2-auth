@@ -6,7 +6,7 @@ object ApplicationBuild extends Build {
 
   val appName    = "play2.auth"
 
-  val playVersion = "2.2.0-RC1"
+  val playVersion = "2.2.0"
 
   lazy val baseSettings = Seq(
     version            := "0.11.0-SNAPSHOT",
