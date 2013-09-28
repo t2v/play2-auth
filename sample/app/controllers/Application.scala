@@ -68,22 +68,22 @@ trait OldMessages extends Controller with AsyncAuth with AuthConfigImpl {
 
   def main = authorizedAction(NormalUser) { user => implicit request =>
     val title = "message main"
-    Future.successful(Ok(html.message.main(title)(html.fullTemplate.apply(user))))
+    Ok(html.message.main(title)(html.fullTemplate.apply(user)))
   }
 
   def list = authorizedAction(NormalUser) { user => implicit request =>
     val title = "all messages"
-    Future.successful(Ok(html.message.list(title)(html.fullTemplate.apply(user))))
+    Ok(html.message.list(title)(html.fullTemplate.apply(user)))
   }
 
   def detail(id: Int) = authorizedAction(NormalUser) { user => implicit request =>
     val title = "messages detail "
-    Future.successful(Ok(html.message.detail(title + id)(html.fullTemplate.apply(user))))
+    Ok(html.message.detail(title + id)(html.fullTemplate.apply(user)))
   }
 
   def write = authorizedAction(Administrator) { user => implicit request =>
     val title = "write message"
-    Future.successful(Ok(html.message.write(title)(html.fullTemplate.apply(user))))
+    Ok(html.message.write(title)(html.fullTemplate.apply(user)))
   }
 
 }
