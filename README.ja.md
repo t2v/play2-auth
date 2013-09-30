@@ -56,6 +56,11 @@ Play2.1以前をお使いの方へ
         "jp.t2v" %% "play2.auth"      % "0.11.0-SNAPSHT",
         "jp.t2v" %% "play2.auth.test" % "0.11.0-SNAPSHT" % "test"
 
+`Build.scala` もしくは `build.sbt` にリゾルバの定義を追加します。
+
+        resolvers += "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots"
+
+
 For example: `Build.scala`
 
 ```scala
@@ -64,7 +69,9 @@ For example: `Build.scala`
     "jp.t2v" %% "play2.auth.test" % "0.11.0-SNAPSHT" % "test"
   )
 
-  val main = play.Project(appName, appVersion, appDependencies)
+  val main = play.Project(appName, appVersion, appDependencies).settings(
+    resolvers += "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots"
+  )
 ```
 
 このモジュールはシンプルな Scala ライブラリとして作成されています。 `play.plugins` ファイルは作成する必要ありません。
