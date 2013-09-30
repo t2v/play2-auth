@@ -11,17 +11,24 @@ trait Auth {
 
   private implicit val ctx = play.api.libs.concurrent.Execution.defaultContext
 
-  def authorizedAction(authority: Authority)(f: User => Request[AnyContent] => Future[SimpleResult]): Action[(AnyContent, User)] =
-    authorizedAction(BodyParsers.parse.anyContent, authority)(f)
+  object authorizedAction {
+    def async(authority: Authority)(f: User => Request[AnyContent] => Future[SimpleResult]): Action[(AnyContent, User)] =
+      async(BodyParsers.parse.anyContent, authority)(f)
 
-  def authorizedAction[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Future[SimpleResult]): Action[(A, User)] = {
-    val parser = BodyParser {
-      req => authorized(authority)(req) match {
-        case Right(user)  => p.map((_, user))(req)
-        case Left(result) => Done(Left(result), Input.Empty)
+    def async[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Future[SimpleResult]): Action[(A, User)] = {
+      val parser = BodyParser {
+        req => authorized(authority)(req) match {
+          case Right(user)  => p.map((_, user))(req)
+          case Left(result) => Done(Left(result), Input.Empty)
+        }
       }
+      Action.async(parser) { req => f(req.body._2)(req.map(_._1)) }
     }
-    Action.async(parser) { req => f(req.body._2)(req.map(_._1)) }
+
+    def apply(authority: Authority)(f: User => (Request[AnyContent] => SimpleResult)): Action[(AnyContent, User)] =
+      async(authority)(f.andThen(_.andThen(t=>Future.successful(t))))
+    def apply[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => SimpleResult): Action[(A, User)] =
+      async(p,authority)(f.andThen(_.andThen(t=>Future.successful(t))))
   }
 
   def optionalUserAction(f: Option[User] => Request[AnyContent] => Future[SimpleResult]): Action[AnyContent] =

@@ -8,17 +8,24 @@ import scala.util.Success
 trait AsyncAuth {
     self: AuthConfig with Controller =>
 
-  def authorizedAction(authority: Authority)(f: User => Request[AnyContent] => Future[SimpleResult])(implicit context: ExecutionContext): Action[(AnyContent, User)] =
-    authorizedAction(BodyParsers.parse.anyContent, authority)(f)
+  object authorizedAction {
+    def async(authority: Authority)(f: User => Request[AnyContent] => Future[SimpleResult])(implicit context: ExecutionContext): Action[(AnyContent, User)] =
+      async(BodyParsers.parse.anyContent, authority)(f)
 
-  def authorizedAction[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Future[SimpleResult])(implicit context: ExecutionContext): Action[(A, User)] = {
-    val parser = BodyParser {
-      req => Iteratee.flatten(authorized(authority)(req, context).map {
-        case Right(user)  => p.map((_, user))(req)
-        case Left(result) => Done[Array[Byte], Either[SimpleResult, (A, User)]](Left(result))
-      })
+    def async[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Future[SimpleResult])(implicit context: ExecutionContext): Action[(A, User)] = {
+      val parser = BodyParser {
+        req => Iteratee.flatten(authorized(authority)(req, context).map {
+          case Right(user)  => p.map((_, user))(req)
+          case Left(result) => Done[Array[Byte], Either[SimpleResult, (A, User)]](Left(result))
+        })
+      }
+      Action.async(parser) { req => f(req.body._2)(req.map(_._1)) }
     }
-    Action.async(parser) { req => f(req.body._2)(req.map(_._1)) }
+
+    def apply(authority: Authority)(f: User => (Request[AnyContent] => SimpleResult))(implicit context: ExecutionContext): Action[(AnyContent, User)] =
+      async(authority)(f.andThen(_.andThen(t=>Future.successful(t))))
+    def apply[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => SimpleResult)(implicit context: ExecutionContext): Action[(A, User)] =
+      async(p,authority)(f.andThen(_.andThen(t=>Future.successful(t))))
   }
 
   def optionalUserAction(f: Option[User] => Request[AnyContent] => Future[SimpleResult])(implicit context: ExecutionContext): Action[AnyContent] =
