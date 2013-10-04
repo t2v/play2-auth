@@ -4,7 +4,7 @@ import play.Project._
 
 object ApplicationBuild extends Build {
 
-  val appName    = "play2.auth"
+  val appName    = "play2-auth"
 
   val playVersion = "2.2.0"
 
@@ -70,7 +70,7 @@ object ApplicationBuild extends Build {
     .settings(baseSettings: _*)
     .settings(
       libraryDependencies += "com.typesafe.play"  %% "play-test"   % playVersion,
-      name                    := appName + ".test",
+      name                    := appName + "-test",
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
       pomIncludeRepository    := appPomIncludeRepository,

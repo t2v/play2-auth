@@ -53,8 +53,8 @@ Play2.1以前をお使いの方へ
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2.auth"      % "0.11.0-SNAPSHT",
-        "jp.t2v" %% "play2.auth.test" % "0.11.0-SNAPSHT" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.11.0-SNAPSHT",
+        "jp.t2v" %% "play2-auth-test" % "0.11.0-SNAPSHT" % "test"
 
 `Build.scala` もしくは `build.sbt` にリゾルバの定義を追加します。
 
@@ -65,8 +65,8 @@ For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2.auth"      % "0.11.0-SNAPSHT",
-    "jp.t2v" %% "play2.auth.test" % "0.11.0-SNAPSHT" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.11.0-SNAPSHT",
+    "jp.t2v" %% "play2-auth-test" % "0.11.0-SNAPSHT" % "test"
   )
 
   val main = play.Project(appName, appVersion, appDependencies).settings(

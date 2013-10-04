@@ -55,8 +55,8 @@ Add dependency declarations into your `Build.scala` or `build.sbt` file:
 
 * __for Play2.2.x__
 
-        "jp.t2v" %% "play2.auth"      % "0.11.0-SNAPSHOT",
-        "jp.t2v" %% "play2.auth.test" % "0.11.0-SNAPSHOT" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.11.0-SNAPSHOT",
+        "jp.t2v" %% "play2-auth-test" % "0.11.0-SNAPSHOT" % "test"
 
 Add a resolver into your `Build.scala` or `build.sbt` file:
 
@@ -66,8 +66,8 @@ For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2.auth"      % "0.11.0-SNAPSHOT",
-    "jp.t2v" %% "play2.auth.test" % "0.11.0-SNAPSHOT" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.11.0-SNAPSHOT",
+    "jp.t2v" %% "play2-auth.test" % "0.11.0-SNAPSHOT" % "test"
   )
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
