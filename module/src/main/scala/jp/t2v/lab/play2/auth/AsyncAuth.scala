@@ -24,6 +24,7 @@ trait AsyncAuth {
 
     def apply(authority: Authority)(f: User => (Request[AnyContent] => SimpleResult))(implicit context: ExecutionContext): Action[(AnyContent, User)] =
       async(authority)(f.andThen(_.andThen(t=>Future.successful(t))))
+
     def apply[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => SimpleResult)(implicit context: ExecutionContext): Action[(A, User)] =
       async(p,authority)(f.andThen(_.andThen(t=>Future.successful(t))))
   }
@@ -37,6 +38,7 @@ trait AsyncAuth {
 
     def apply(f: Option[User] => (Request[AnyContent] => SimpleResult))(implicit context: ExecutionContext): Action[AnyContent] =
       async(f.andThen(_.andThen(t=>Future.successful(t))))
+
     def apply[A](p: BodyParser[A])(f: Option[User] => Request[A] => SimpleResult)(implicit context: ExecutionContext): Action[A] =
       async(p)(f.andThen(_.andThen(t=>Future.successful(t))))
   }
@@ -70,6 +72,4 @@ trait AsyncAuth {
       Future.successful(Option.empty)
     }
   }
-
-
 }
