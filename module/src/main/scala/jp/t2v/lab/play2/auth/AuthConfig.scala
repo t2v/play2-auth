@@ -26,7 +26,7 @@ trait AuthConfig {
 
   def authorizationFailed(request: RequestHeader)(implicit context: ExecutionContext): Future[SimpleResult]
 
-  def authorize(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean]
+  def authorize(user: User, authority: Authority, request: RequestHeader)(implicit context: ExecutionContext): Future[Boolean]
 
   lazy val idContainer: IdContainer[Id] = new CacheIdContainer[Id]
 
