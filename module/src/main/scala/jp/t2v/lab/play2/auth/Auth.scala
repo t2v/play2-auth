@@ -39,7 +39,7 @@ trait Auth {
 
   def authorized(authority: Authority)(implicit request: RequestHeader): Either[SimpleResult, User] = for {
     user <- restoreUser(request).toRight(Await.result(authenticationFailed(request), 10.seconds)).right
-    _    <- Either.cond(Await.result(authorize(user, authority), 10.seconds), (), Await.result(authorizationFailed(request), 10.seconds)).right
+    _    <- Either.cond(Await.result(authorize(user, authority, request), 10.seconds), (), Await.result(authorizationFailed(request), 10.seconds)).right
   } yield user
 
   private[auth] def restoreUser(implicit request: RequestHeader): Option[User] = for {

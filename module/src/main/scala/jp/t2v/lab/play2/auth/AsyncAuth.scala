@@ -49,7 +49,7 @@ trait AsyncAuth {
     } recoverWith {
       case _ => authenticationFailed(request).map(Left.apply)
     } flatMap {
-      case Right(user)  => authorize(user, authority) collect {
+      case Right(user)  => authorize(user, authority, request) collect {
         case true => Right(user)
       } recoverWith {
         case _ => authorizationFailed(request).map(Left.apply)

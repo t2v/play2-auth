@@ -112,7 +112,7 @@ trait AuthConfigImpl extends AuthConfig {
 
   def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful(Forbidden("no permission"))
 
-  def authorize(user: User, authority: Authority)(implicit ctx: ExecutionContext) = Future.successful((user.permission, authority) match {
+  def authorize(user: User, authority: Authority, request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful((user.permission, authority) match {
     case (Administrator, _) => true
     case (NormalUser, NormalUser) => true
     case _ => false
