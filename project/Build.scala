@@ -4,13 +4,15 @@ import play.Project._
 
 object ApplicationBuild extends Build {
 
-  val appName    = "play2.auth"
+  val appName    = "play2-auth"
+
+  val playVersion = "2.2.0"
 
   lazy val baseSettings = Seq(
-    version            := "0.10.1",
-    scalaVersion       := "2.10.0",
+    version            := "0.11.0-SNAPSHOT",
+    scalaVersion       := "2.10.2",
     scalaBinaryVersion := "2.10",
-    crossScalaVersions := Seq("2.10.0"),
+    crossScalaVersions := Seq("2.10.2"),
     organization       := "jp.t2v",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
     resolvers += "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots",
@@ -53,8 +55,9 @@ object ApplicationBuild extends Build {
   lazy val core = Project("core", base = file("module"))
     .settings(baseSettings: _*)
     .settings(
-      libraryDependencies += "play"     %%   "play"                   % "2.1.0",
-      libraryDependencies += "jp.t2v"   %%   "stackable-controller"   % "0.2.1",
+      libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion,
+      libraryDependencies += "com.typesafe.play"  %%   "play-cache"             % playVersion,
+      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.3.0-SNAPSHOT",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
@@ -66,8 +69,8 @@ object ApplicationBuild extends Build {
   lazy val test = Project("test", base = file("test"))
     .settings(baseSettings: _*)
     .settings(
-      libraryDependencies += "play" %% "play-test" % "2.1.0",
-      name                    := appName + ".test",
+      libraryDependencies += "com.typesafe.play"  %% "play-test"   % playVersion,
+      name                    := appName + "-test",
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
       pomIncludeRepository    := appPomIncludeRepository,
@@ -77,17 +80,20 @@ object ApplicationBuild extends Build {
 
   lazy val sample = play.Project("sample", path = file("sample"))
     .settings(baseSettings: _*)
+    .settings(playScalaSettings: _*)
     .settings(
       libraryDependencies += jdbc,
-      libraryDependencies += "org.mindrot"          % "jbcrypt"                    % "0.3m",
-      libraryDependencies += "com.github.seratch"  %% "scalikejdbc"                % "[1.6,)",
-      libraryDependencies += "com.github.seratch"  %% "scalikejdbc-test"           % "[1.6,)",
-      libraryDependencies += "com.github.seratch"  %% "scalikejdbc-play-plugin"    % "[1.6,)",
-      libraryDependencies += "com.github.seratch"  %% "scalikejdbc-interpolation"  % "[1.6,)",
+      libraryDependencies += "org.mindrot"           % "jbcrypt"                    % "0.3m",
+      libraryDependencies += "com.github.seratch"   %% "scalikejdbc"                % "[1.6,)",
+      libraryDependencies += "com.github.seratch"   %% "scalikejdbc-test"           % "[1.6,)",
+      libraryDependencies += "com.github.seratch"   %% "scalikejdbc-play-plugin"    % "[1.6,)",
+      libraryDependencies += "com.github.seratch"   %% "scalikejdbc-interpolation"  % "[1.6,)",
+      libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "0.2.0",
       templatesImport     += "jp.t2v.lab.play2.auth.sample._",
       publishLocal := {},
       publish := {}
-    ).dependsOn(core, test % "test")
+    )
+    .dependsOn(core, test % "test")
 
   lazy val root = Project("root", base = file("."))
     .settings(baseSettings: _*)

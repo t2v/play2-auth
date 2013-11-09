@@ -1,7 +1,3 @@
-# Account schema
- 
-# --- !Ups
-
 CREATE TABLE account (
     id         integer NOT NULL PRIMARY KEY,
     email      text NOT NULL UNIQUE,
@@ -9,8 +5,3 @@ CREATE TABLE account (
     name       text NOT NULL,
     permission text NOT NULL
 );
-
-# --- !Downs
-
-DROP TABLE account;
-

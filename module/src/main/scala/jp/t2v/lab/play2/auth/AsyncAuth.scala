@@ -8,35 +8,51 @@ import scala.util.Success
 trait AsyncAuth {
     self: AuthConfig with Controller =>
 
-  def authorizedAction(authority: Authority)(f: User => Request[AnyContent] => Result)(implicit context: ExecutionContext): Action[(AnyContent, User)] =
-    authorizedAction(BodyParsers.parse.anyContent, authority)(f)
+  object authorizedAction {
+    def async(authority: Authority)(f: User => Request[AnyContent] => Future[SimpleResult])(implicit context: ExecutionContext): Action[(AnyContent, User)] =
+      async(BodyParsers.parse.anyContent, authority)(f)
 
-  def authorizedAction[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Result)(implicit context: ExecutionContext): Action[(A, User)] = {
-    val parser = BodyParser {
-      req => Iteratee.flatten(authorized(authority)(req, context).map {
-        case Right(user)  => p.map((_, user))(req)
-        case Left(result) => Done[Array[Byte], Either[Result, (A, User)]](Left(result))
-      })
+    def async[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Future[SimpleResult])(implicit context: ExecutionContext): Action[(A, User)] = {
+      val parser = BodyParser {
+        req => Iteratee.flatten(authorized(authority)(req, context).map {
+          case Right(user)  => p.map((_, user))(req)
+          case Left(result) => Done[Array[Byte], Either[SimpleResult, (A, User)]](Left(result))
+        })
+      }
+      Action.async(parser) { req => f(req.body._2)(req.map(_._1)) }
     }
-    Action(parser) { req => f(req.body._2)(req.map(_._1)) }
+
+    def apply(authority: Authority)(f: User => (Request[AnyContent] => SimpleResult))(implicit context: ExecutionContext): Action[(AnyContent, User)] =
+      async(authority)(f.andThen(_.andThen(t=>Future.successful(t))))
+
+    def apply[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => SimpleResult)(implicit context: ExecutionContext): Action[(A, User)] =
+      async(p,authority)(f.andThen(_.andThen(t=>Future.successful(t))))
   }
 
-  def optionalUserAction(f: Option[User] => Request[AnyContent] => Result)(implicit context: ExecutionContext): Action[AnyContent] =
-    optionalUserAction(BodyParsers.parse.anyContent)(f)
+  object optionalUserAction {
+    def async(f: Option[User] => Request[AnyContent] => Future[SimpleResult])(implicit context: ExecutionContext): Action[AnyContent] =
+      async(BodyParsers.parse.anyContent)(f)
 
-  def optionalUserAction[A](p: BodyParser[A])(f: Option[User] => Request[A] => Result)(implicit context: ExecutionContext): Action[A] =
-    Action(p)(req => Async { restoreUser(req, context).map(user => f(user)(req)) })
+    def async[A](p: BodyParser[A])(f: Option[User] => Request[A] => Future[SimpleResult])(implicit context: ExecutionContext): Action[A] =
+      Action.async(p)(req => restoreUser(req, context).flatMap(user => f(user)(req)) )
 
-  def authorized(authority: Authority)(implicit request: RequestHeader, context: ExecutionContext): Future[Either[Result, User]] = {
+    def apply(f: Option[User] => (Request[AnyContent] => SimpleResult))(implicit context: ExecutionContext): Action[AnyContent] =
+      async(f.andThen(_.andThen(t=>Future.successful(t))))
+
+    def apply[A](p: BodyParser[A])(f: Option[User] => Request[A] => SimpleResult)(implicit context: ExecutionContext): Action[A] =
+      async(p)(f.andThen(_.andThen(t=>Future.successful(t))))
+  }
+
+  def authorized(authority: Authority)(implicit request: RequestHeader, context: ExecutionContext): Future[Either[SimpleResult, User]] = {
     restoreUser collect {
       case Some(user) => Right(user)
-    } recover {
-      case _ => Left(authenticationFailed(request))
+    } recoverWith {
+      case _ => authenticationFailed(request).map(Left.apply)
     } flatMap {
-      case Right(user)  => authorizeAsync(user, authority) collect {
+      case Right(user)  => authorize(user, authority) collect {
         case true => Right(user)
-      } recover {
-        case _ => Left(authorizationFailed(request))
+      } recoverWith {
+        case _ => authorizationFailed(request).map(Left.apply)
       }
       case Left(result) => Future.successful(Left(result))
     }
@@ -49,13 +65,11 @@ trait AsyncAuth {
       userId <- idContainer.get(token)
     } yield (token, userId)
     userIdOpt map { case (token, userId) =>
-      resolveUserAsync(userId) andThen {
+      resolveUser(userId) andThen {
         case Success(Some(_)) => idContainer.prolongTimeout(token, sessionTimeoutInSeconds)
       }
     } getOrElse {
       Future.successful(Option.empty)
     }
   }
-
-
 }
