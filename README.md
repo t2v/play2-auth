@@ -63,7 +63,7 @@ For example your `Build.scala` might look like this:
 ```scala
   val appDependencies = Seq(
     "jp.t2v" %% "play2-auth"      % "0.11.0",
-    "jp.t2v" %% "play2-auth.test" % "0.11.0" % "test"
+    "jp.t2v" %% "play2-auth-test" % "0.11.0" % "test"
   )
 ```
 
