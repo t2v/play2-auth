@@ -9,10 +9,9 @@ object ApplicationBuild extends Build {
   val playVersion = "2.2.0"
 
   lazy val baseSettings = Seq(
-    version            := "0.11.0-SNAPSHOT",
-    scalaVersion       := "2.10.2",
+    version            := "0.11.0",
+    scalaVersion       := "2.10.3",
     scalaBinaryVersion := "2.10",
-    crossScalaVersions := Seq("2.10.2"),
     organization       := "jp.t2v",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
     resolvers += "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots",
@@ -55,9 +54,9 @@ object ApplicationBuild extends Build {
   lazy val core = Project("core", base = file("module"))
     .settings(baseSettings: _*)
     .settings(
-      libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion,
+      libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion        % "provided",
       libraryDependencies += "com.typesafe.play"  %%   "play-cache"             % playVersion,
-      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.3.0-SNAPSHOT",
+      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.3.0",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
