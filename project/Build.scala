@@ -87,7 +87,7 @@ object ApplicationBuild extends Build {
       libraryDependencies += "com.github.seratch"   %% "scalikejdbc-test"           % "[1.6,)",
       libraryDependencies += "com.github.seratch"   %% "scalikejdbc-play-plugin"    % "[1.6,)",
       libraryDependencies += "com.github.seratch"   %% "scalikejdbc-interpolation"  % "[1.6,)",
-      libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "0.2.0",
+      libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "1.0.0",
       templatesImport     += "jp.t2v.lab.play2.auth.sample._",
       publishLocal := {},
       publish := {}
