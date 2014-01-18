@@ -101,7 +101,7 @@ Usage
       type Authority = Permission
 
       /**
-       * A `ClassManifest` is used to retrieve an id from the Cache API.
+       * A `ClassTag` is used to retrieve an id from the Cache API.
        * Use something like this:
        */
       val idTag: ClassTag[Id] = classTag[Id]
