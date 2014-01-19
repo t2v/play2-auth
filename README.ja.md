@@ -99,7 +99,7 @@ For example: `Build.scala`
       type Authority = Permission
 
       /**
-       * CacheからユーザIDを取り出すための ClassManifest です。
+       * CacheからユーザIDを取り出すための ClassTag です。
        * 基本的にはこの例と同じ記述をして下さい。
        */
       val idTag: ClassTag[Id] = classTag[Id]
