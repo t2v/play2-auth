@@ -156,7 +156,7 @@ For example: `Build.scala`
        * デフォルトでは利便性のために false になっていますが、
        * 実際のアプリケーションでは true にすることを強く推奨します。
        */
-      override lazy val cookieSecureOption: Boolean = play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse(true)
+      override lazy val cookieSecureOption: Boolean = play.api.Play.isProd(play.api.Play.current)
 
     }
     ```

@@ -157,7 +157,7 @@ Usage
        * Whether use the secure option or not use it in the cookie.
        * However default is false, I strongly recommend using true in a production.
        */
-      override lazy val cookieSecureOption: Boolean = play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse(true)
+      override lazy val cookieSecureOption: Boolean = play.api.Play.isProd(play.api.Play.current)
 
     }
     ```
