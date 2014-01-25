@@ -1,2 +1,3 @@
 language: scala
-script: ./travis.sh
+scala:
+  - 2.10.3
