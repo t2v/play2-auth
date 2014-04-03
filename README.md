@@ -423,17 +423,23 @@ Suppose you want to validate a token at every action in order to defeat a [Cross
 Since it is impractical to perform the validation in all actions, you would define a trait like this:
 
 ```scala
+import jp.t2v.lab.play2.stackc.{RequestWithAttributes, StackableController}
+import scala.concurrent.Future
+import play.api.mvc.{SimpleResult, Request, Controller}
+import play.api.data._
+import play.api.data.Forms._
+
 trait TokenValidateElement extends StackableController {
     self: Controller =>
 
   private val tokenForm = Form("token" -> text)
 
-  private def validateToken(request: Request[AnyContent]): Boolean = (for {
-    tokenInForm <- tokenForm.bindFromRequest(request).value
+  private def validateToken(request: Request[_]): Boolean = (for {
+    tokenInForm <- tokenForm.bindFromRequest()(request).value
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
 
-  override proceed[A](reqest: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[SimpleResult]): Future[SimpleResult] = {
+  override def proceed[A](request: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[SimpleResult]): Future[SimpleResult] = {
     if (validateToken(request)) super.proceed(request)(f)
     else Future.successful(BadRequest)
   }
