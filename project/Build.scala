@@ -6,11 +6,11 @@ object ApplicationBuild extends Build {
 
   val appName    = "play2-auth"
 
-  val playVersion = "2.2.0"
+  val playVersion = "2.3-M1"
 
   lazy val baseSettings = Seq(
-    version            := "0.11.0",
-    scalaVersion       := "2.10.3",
+    version            := "0.12.0",
+    scalaVersion       := "2.10.4",
     scalaBinaryVersion := "2.10",
     organization       := "jp.t2v",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",

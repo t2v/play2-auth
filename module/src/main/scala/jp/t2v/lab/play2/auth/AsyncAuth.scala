@@ -9,41 +9,41 @@ trait AsyncAuth {
     self: AuthConfig with Controller =>
 
   object authorizedAction {
-    def async(authority: Authority)(f: User => Request[AnyContent] => Future[SimpleResult])(implicit context: ExecutionContext): Action[(AnyContent, User)] =
+    def async(authority: Authority)(f: User => Request[AnyContent] => Future[Result])(implicit context: ExecutionContext): Action[(AnyContent, User)] =
       async(BodyParsers.parse.anyContent, authority)(f)
 
-    def async[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Future[SimpleResult])(implicit context: ExecutionContext): Action[(A, User)] = {
+    def async[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Future[Result])(implicit context: ExecutionContext): Action[(A, User)] = {
       val parser = BodyParser {
         req => Iteratee.flatten(authorized(authority)(req, context).map {
-          case Right(user)  => p.map((_, user))(req)
-          case Left(result) => Done[Array[Byte], Either[SimpleResult, (A, User)]](Left(result))
+          case Right(user)  => p.map((_, user)).apply(req)
+          case Left(result) => Done[Array[Byte], Either[Result, (A, User)]](Left(result))
         })
       }
       Action.async(parser) { req => f(req.body._2)(req.map(_._1)) }
     }
 
-    def apply(authority: Authority)(f: User => (Request[AnyContent] => SimpleResult))(implicit context: ExecutionContext): Action[(AnyContent, User)] =
+    def apply(authority: Authority)(f: User => (Request[AnyContent] => Result))(implicit context: ExecutionContext): Action[(AnyContent, User)] =
       async(authority)(f.andThen(_.andThen(t=>Future.successful(t))))
 
-    def apply[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => SimpleResult)(implicit context: ExecutionContext): Action[(A, User)] =
+    def apply[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Result)(implicit context: ExecutionContext): Action[(A, User)] =
       async(p,authority)(f.andThen(_.andThen(t=>Future.successful(t))))
   }
 
   object optionalUserAction {
-    def async(f: Option[User] => Request[AnyContent] => Future[SimpleResult])(implicit context: ExecutionContext): Action[AnyContent] =
+    def async(f: Option[User] => Request[AnyContent] => Future[Result])(implicit context: ExecutionContext): Action[AnyContent] =
       async(BodyParsers.parse.anyContent)(f)
 
-    def async[A](p: BodyParser[A])(f: Option[User] => Request[A] => Future[SimpleResult])(implicit context: ExecutionContext): Action[A] =
+    def async[A](p: BodyParser[A])(f: Option[User] => Request[A] => Future[Result])(implicit context: ExecutionContext): Action[A] =
       Action.async(p)(req => restoreUser(req, context).flatMap(user => f(user)(req)) )
 
-    def apply(f: Option[User] => (Request[AnyContent] => SimpleResult))(implicit context: ExecutionContext): Action[AnyContent] =
+    def apply(f: Option[User] => (Request[AnyContent] => Result))(implicit context: ExecutionContext): Action[AnyContent] =
       async(f.andThen(_.andThen(t=>Future.successful(t))))
 
-    def apply[A](p: BodyParser[A])(f: Option[User] => Request[A] => SimpleResult)(implicit context: ExecutionContext): Action[A] =
+    def apply[A](p: BodyParser[A])(f: Option[User] => Request[A] => Result)(implicit context: ExecutionContext): Action[A] =
       async(p)(f.andThen(_.andThen(t=>Future.successful(t))))
   }
 
-  def authorized(authority: Authority)(implicit request: RequestHeader, context: ExecutionContext): Future[Either[SimpleResult, User]] = {
+  def authorized(authority: Authority)(implicit request: RequestHeader, context: ExecutionContext): Future[Either[Result, User]] = {
     restoreUser collect {
       case Some(user) => Right(user)
     } recoverWith {

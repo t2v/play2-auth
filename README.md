@@ -120,25 +120,25 @@ Usage
       /**
        * Where to redirect the user after a successful login.
        */
-      def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+      def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] =
         Future.successful(Redirect(routes.Message.main))
 
       /**
        * Where to redirect the user after logging out
        */
-      def logoutSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+      def logoutSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] =
         Future.successful(Redirect(routes.Application.login))
 
       /**
        * If the user is not logged in and tries to access a protected resource then redirct them as follows:
        */
-      def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+      def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] =
         Future.successful(Redirect(routes.Application.login))
 
       /**
        * If authorization failed (usually incorrect password) redirect the user as follows:
        */
-      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] = 
+      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = 
         Future.successful(Forbidden("no permission"))
 
       /**
@@ -183,7 +183,7 @@ Usage
       /**
        * Return the `gotoLogoutSucceeded` method's result in the logout action.
        *
-       * Since the `gotoLogoutSucceeded` returns `Future[SimpleResult]`,
+       * Since the `gotoLogoutSucceeded` returns `Future[Result]`,
        * you can add a procedure like the following.
        *
        *   gotoLogoutSucceeded.map(_.flashing(
@@ -198,7 +198,7 @@ Usage
       /**
        * Return the `gotoLoginSucceeded` method's result in the login action.
        *
-       * Since the `gotoLoginSucceeded` returns `Future[SimpleResult]`,
+       * Since the `gotoLoginSucceeded` returns `Future[Result]`,
        * you can add a procedure like the `gotoLogoutSucceeded`.
        */
       def authenticate = Action.async { implicit request =>
@@ -349,10 +349,10 @@ trait AuthConfigImpl extends AuthConfig {
 
   // Other settings are omitted.
 
-  def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+  def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] =
     Future.successful(Redirect(routes.Application.login).withSession("access_uri" -> request.uri))
 
-  def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] = {
+  def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url.toString)
     Future.successful(Redirect(uri).withSession(request.session - "access_uri"))
   }
@@ -425,7 +425,7 @@ Since it is impractical to perform the validation in all actions, you would defi
 ```scala
 import jp.t2v.lab.play2.stackc.{RequestWithAttributes, StackableController}
 import scala.concurrent.Future
-import play.api.mvc.{SimpleResult, Request, Controller}
+import play.api.mvc.{Result, Request, Controller}
 import play.api.data._
 import play.api.data.Forms._
 
@@ -439,7 +439,7 @@ trait TokenValidateElement extends StackableController {
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
 
-  override def proceed[A](request: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[SimpleResult]): Future[SimpleResult] = {
+  override def proceed[A](request: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     if (validateToken(request)) super.proceed(request)(f)
     else Future.successful(BadRequest)
   }
@@ -469,9 +469,9 @@ object Application extends Controller with TokenValidateElement with AuthElement
 
 There are asynchronous libraries ( for example: [ReactiveMongo](http://reactivemongo.org/), [ScalikeJDBC-Async](https://github.com/seratch/scalikejdbc-async), and so on ).
 
-You should use `Future[SimpleResult]` instead of `AsyncResult` from Play2.2. 
+You should use `Future[Result]` instead of `AsyncResult` from Play2.2. 
 
-You can use `AsyncStack` instead of `StackAction` for Future[SimpleResult]
+You can use `AsyncStack` instead of `StackAction` for Future[Result]
 
 ```scala
 trait HogeController extends AuthElement with AuthConfigImpl {

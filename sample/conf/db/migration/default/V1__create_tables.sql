@@ -1,7 +1,7 @@
 CREATE TABLE account (
     id         integer NOT NULL PRIMARY KEY,
-    email      text NOT NULL UNIQUE,
-    password   text NOT NULL,
-    name       text NOT NULL,
-    permission text NOT NULL
+    email      varchar NOT NULL UNIQUE,
+    password   varchar NOT NULL,
+    name       varchar NOT NULL,
+    permission varchar NOT NULL
 );
