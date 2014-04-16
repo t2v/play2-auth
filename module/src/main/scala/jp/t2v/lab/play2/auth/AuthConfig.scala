@@ -18,13 +18,13 @@ trait AuthConfig {
 
   def resolveUser(id: Id)(implicit context: ExecutionContext): Future[Option[User]]
 
-  def loginSucceeded(request: RequestHeader)(implicit context: ExecutionContext): Future[SimpleResult]
+  def loginSucceeded(request: RequestHeader)(implicit context: ExecutionContext): Future[Result]
 
-  def logoutSucceeded(request: RequestHeader)(implicit context: ExecutionContext): Future[SimpleResult]
+  def logoutSucceeded(request: RequestHeader)(implicit context: ExecutionContext): Future[Result]
 
-  def authenticationFailed(request: RequestHeader)(implicit context: ExecutionContext): Future[SimpleResult]
+  def authenticationFailed(request: RequestHeader)(implicit context: ExecutionContext): Future[Result]
 
-  def authorizationFailed(request: RequestHeader)(implicit context: ExecutionContext): Future[SimpleResult]
+  def authorizationFailed(request: RequestHeader)(implicit context: ExecutionContext): Future[Result]
 
   def authorize(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean]
 

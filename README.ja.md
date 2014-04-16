@@ -118,25 +118,25 @@ For example: `Build.scala`
       /**
        * ログインが成功した際に遷移する先を指定します。
        */
-      def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+      def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] =
         Future.successful(Redirect(routes.Message.main))
 
       /**
        * ログアウトが成功した際に遷移する先を指定します。
        */
-      def logoutSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+      def logoutSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] =
         Future.successful(Redirect(routes.Application.login))
 
       /**
        * 認証が失敗した場合に遷移する先を指定します。
        */
-      def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+      def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] =
         Future.successful(Redirect(routes.Application.login))
 
       /**
        * 認可(権限チェック)が失敗した場合に遷移する先を指定します。
        */
-      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] = 
+      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = 
         Future.successful(Forbidden("no permission"))
 
       /**
@@ -183,7 +183,7 @@ For example: `Build.scala`
        * ログアウト処理では任意の処理を行った後、
        * gotoLogoutSucceeded メソッドを呼び出した結果を返して下さい。
        *
-       * gotoLogoutSucceeded メソッドは Future[SimpleResult] を返します。
+       * gotoLogoutSucceeded メソッドは Future[Result] を返します。
        * 以下のようにflashingなどを追加することもできます。
        *
        *   gotoLogoutSucceeded.map(_.flashing(
@@ -199,7 +199,7 @@ For example: `Build.scala`
        * ログイン処理では認証が成功した場合、
        * gotoLoginSucceeded メソッドを呼び出した結果を返して下さい。
        *
-       * gotoLoginSucceeded メソッドも gotoLogoutSucceeded と同じく Future[SimpleResult] を返します。
+       * gotoLoginSucceeded メソッドも gotoLogoutSucceeded と同じく Future[Result] を返します。
        * 任意の処理を追加することも可能です。
        */
       def authenticate = Action.async { implicit request =>
@@ -350,10 +350,10 @@ trait AuthConfigImpl extends AuthConfig {
 
   // 他の設定省略
 
-  def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
+  def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] =
     Future.successful(Redirect(routes.Application.login).withSession("access_uri" -> request.uri))
 
-  def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] = {
+  def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = {
     val uri = request.session.get("access_uri").getOrElse(routes.Message.main.url)
     Future.successful(Redirect(uri).withSession(request.session - "access_uri"))
   }
@@ -432,7 +432,7 @@ def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext)
 ```scala
 import jp.t2v.lab.play2.stackc.{RequestWithAttributes, StackableController}
 import scala.concurrent.Future
-import play.api.mvc.{SimpleResult, Request, Controller}
+import play.api.mvc.{Result, Request, Controller}
 import play.api.data._
 import play.api.data.Forms._
 
@@ -448,7 +448,7 @@ trait TokenValidateElement extends StackableController {
     tokenInSession <- request.session.get("token")
   } yield tokenInForm == tokenInSession).getOrElse(false)
 
-  override def proceed[A](request: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[SimpleResult]): Future[SimpleResult] = {
+  override def proceed[A](request: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     if (validateToken(request)) super.proceed(request)(f)
     else Future.successful(BadRequest)
   }
@@ -482,7 +482,7 @@ object Application extends Controller with TokenValidateElement with AuthElement
 効率的なアプリケーションを作成するため、昨今ではReactiveなアプローチが人気を博しています。
 Playはこういった非同期なアプローチが得意であり、[ReactiveMongo](http://reactivemongo.org/) や [ScalikeJDBC-Async](https://github.com/seratch/scalikejdbc-async) などといった非同期なライブラリを上手に使用する事ができます。
 
-`StackAction` の代わりに `AsyncStack` を使用することで、 Future[SimpleResult] を返すアクションを簡単につくることができます。
+`StackAction` の代わりに `AsyncStack` を使用することで、 Future[Result] を返すアクションを簡単につくることができます。
 
 
 ```scala

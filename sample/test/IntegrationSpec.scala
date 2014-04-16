@@ -10,7 +10,7 @@ class IntegrationSpec extends Specification {
   
   "Application" should {
     
-    "work from within a browser" in new WithBrowser(webDriver = HTMLUNIT, app = FakeApplication(additionalConfiguration = inMemoryDatabase(name = "default", options = Map("DB_CLOSE_DELAY" -> "-1")))) {
+    "work from within a browser" in new WithBrowser(webDriver = WebDriverFactory(HTMLUNIT), app = FakeApplication(additionalConfiguration = inMemoryDatabase(name = "default", options = Map("DB_CLOSE_DELAY" -> "-1")))) {
 
       val baseURL = s"http://localhost:${port}"
       // login failed
@@ -37,7 +37,7 @@ class IntegrationSpec extends Specification {
 
     }
 
-    "authorize" in new WithBrowser(webDriver = HTMLUNIT, app = FakeApplication(additionalConfiguration = inMemoryDatabase(name = "default", options = Map("DB_CLOSE_DELAY" -> "-1")))) {
+    "authorize" in new WithBrowser(webDriver = WebDriverFactory(HTMLUNIT), app = FakeApplication(additionalConfiguration = inMemoryDatabase(name = "default", options = Map("DB_CLOSE_DELAY" -> "-1")))) {
 
       val baseURL = s"http://localhost:${port}"
 

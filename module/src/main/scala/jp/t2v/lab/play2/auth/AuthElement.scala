@@ -1,6 +1,6 @@
 package jp.t2v.lab.play2.auth
 
-import play.api.mvc.{SimpleResult, Controller}
+import play.api.mvc.{Result, Controller}
 import jp.t2v.lab.play2.stackc.{RequestWithAttributes, RequestAttributeKey, StackableController}
 import scala.concurrent.Future
 
@@ -10,7 +10,7 @@ trait AuthElement extends StackableController with AsyncAuth {
   private[auth] case object AuthKey extends RequestAttributeKey[User]
   case object AuthorityKey extends RequestAttributeKey[Authority]
 
-  override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[SimpleResult]): Future[SimpleResult] = {
+  override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
     req.get(AuthorityKey) map { authority =>
       authorized(authority) flatMap {
@@ -31,7 +31,7 @@ trait OptionalAuthElement extends StackableController with AsyncAuth {
 
   private[auth] case object AuthKey extends RequestAttributeKey[User]
 
-  override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[SimpleResult]): Future[SimpleResult] = {
+  override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
     val maybeUserFuture = restoreUser.recover { case _ => Option.empty }
     maybeUserFuture.flatMap(maybeUser => super.proceed(maybeUser.map(u => req.set(AuthKey, u)).getOrElse(req))(f))
@@ -45,7 +45,7 @@ trait AuthenticationElement extends StackableController with AsyncAuth {
 
   private[auth] case object AuthKey extends RequestAttributeKey[User]
 
-  override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[SimpleResult]): Future[SimpleResult] = {
+  override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
     restoreUser recover {
       case _ => Option.empty
