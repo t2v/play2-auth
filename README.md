@@ -37,6 +37,8 @@ making writing complicated action methods easier.   [`Either`](http://www.scala-
 Previous Version
 ---------------------------------------
 
+for Play2.2.x, Please see [previous version 0.11.0 README](https://github.com/t2v/play2-auth/blob/release0.11.0/README.md)
+
 for Play2.1.x, Please see [previous version 0.10.1 README](https://github.com/t2v/play2-auth/tree/release0.10.1)
 
 for Play2.0.x, Please see [previous version 0.7 README](https://github.com/t2v/play2-auth/tree/release0.7)
@@ -44,6 +46,9 @@ for Play2.0.x, Please see [previous version 0.7 README](https://github.com/t2v/p
 
 Attention
 ---------------------------------------
+
+<strong style="font-size: 200%; color: red;">Since Play2.3's `SimpleResult` is renamed to `Result`, The play2.auth trait signatures are changed at version 0.12.0</strong>
+
 
 <strong style="font-size: 200%; color: red;">Since Play2.2's `Result` is deprecated, The play2.auth trait signatures are changed at version 0.11.0</strong>
 
@@ -53,19 +58,23 @@ Installation
 
 Add dependency declarations into your `Build.scala` or `build.sbt` file:
 
-* __for Play2.2.x__
+* __for Play2.3.x__
 
-        "jp.t2v" %% "play2-auth"      % "0.11.0",
-        "jp.t2v" %% "play2-auth-test" % "0.11.0" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.12.0-SNAPSHOT",
+        "jp.t2v" %% "play2-auth-test" % "0.12.0-SNAPSHOT" % "test"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"      % "0.11.0",
-    "jp.t2v" %% "play2-auth-test" % "0.11.0" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.12.0-SNAPSHOT",
+    "jp.t2v" %% "play2-auth-test" % "0.12.0-SNAPSHOT" % "test"
   )
 ```
+
+And add sonatype snapshot resolver
+
+        resolvers += "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots"
 
 You don't need to create a `play.plugins` file.
 
