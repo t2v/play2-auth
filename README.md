@@ -524,7 +524,7 @@ Running The Sample Application
 
 1. `git clone https://github.com/t2v/play2-auth.git`
 1. `cd play2-auth`
-1. `play "project sample" run`
+1. `sbt "project sample" run`
 1. access to `http://localhost:9000/` on your browser.
     1. click `Apply this script now!`
     1. login
