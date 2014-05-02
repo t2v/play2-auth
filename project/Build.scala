@@ -6,7 +6,7 @@ object ApplicationBuild extends Build {
 
   val appName    = "play2-auth"
 
-  val playVersion = "2.3-M1"
+  val playVersion = play.core.PlayVersion.current
 
   lazy val baseSettings = Seq(
     version            := "0.12.0-SNAPSHOT",
@@ -23,8 +23,8 @@ object ApplicationBuild extends Build {
   lazy val appPomIncludeRepository = { _: MavenRepository => false }
   lazy val appPublishTo = { (v: String) =>
     val nexus = "https://oss.sonatype.org/"
-    if (v.trim.endsWith("SNAPSHOT")) 
-      Some("snapshots" at nexus + "content/repositories/snapshots") 
+    if (v.trim.endsWith("SNAPSHOT"))
+      Some("snapshots" at nexus + "content/repositories/snapshots")
     else
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
   }
@@ -83,10 +83,8 @@ object ApplicationBuild extends Build {
     .settings(
       libraryDependencies += jdbc,
       libraryDependencies += "org.mindrot"           % "jbcrypt"                    % "0.3m",
-      libraryDependencies += "com.github.seratch"   %% "scalikejdbc"                % "[1.6,)",
-      libraryDependencies += "com.github.seratch"   %% "scalikejdbc-test"           % "[1.6,)",
-      libraryDependencies += "com.github.seratch"   %% "scalikejdbc-play-plugin"    % "[1.6,)",
-      libraryDependencies += "com.github.seratch"   %% "scalikejdbc-interpolation"  % "[1.6,)",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"           % "2.0.0-beta3"   % "test",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-plugin"    % "2.2.0-beta1",
       libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "1.0.0",
       templatesImport     += "jp.t2v.lab.play2.auth.sample._",
       publishLocal := {},
