@@ -1,6 +1,6 @@
 import sbt._
 import Keys._
-import play.Project._
+import play.twirl.sbt.Import.TwirlKeys
 
 object ApplicationBuild extends Build {
 
@@ -11,10 +11,15 @@ object ApplicationBuild extends Build {
   lazy val baseSettings = Seq(
     version            := "0.12.0-SNAPSHOT",
     scalaVersion       := "2.10.4",
-    scalaBinaryVersion := "2.10",
     organization       := "jp.t2v",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-    resolvers += "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots",
+    resolvers ++= {
+      if(isSnapshot.value){
+        Seq("Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots")
+      }else{
+        Nil
+      }
+    },
     resolvers += "Sonatype Releases"  at "https://oss.sonatype.org/content/repositories/releases"
   )
 
@@ -55,7 +60,7 @@ object ApplicationBuild extends Build {
     .settings(baseSettings: _*)
     .settings(
       libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion        % "provided",
-      libraryDependencies += "com.typesafe.play"  %%   "play-cache"             % playVersion,
+      libraryDependencies += play.PlayImport.cache,
       libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.4.0-SNAPSHOT",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
@@ -77,16 +82,19 @@ object ApplicationBuild extends Build {
       pomExtra                := appPomExtra
     ).dependsOn(core)
 
-  lazy val sample = play.Project("sample", path = file("sample"))
+  lazy val sample = Project("sample", file("sample"))
+    .enablePlugins(play.PlayScala)
     .settings(baseSettings: _*)
-    .settings(playScalaSettings: _*)
     .settings(
-      libraryDependencies += jdbc,
+      libraryDependencies += play.Play.autoImport.jdbc,
       libraryDependencies += "org.mindrot"           % "jbcrypt"                    % "0.3m",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"           % "2.0.0-beta3"   % "test",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-plugin"    % "2.2.0-beta1",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"           % "2.0.0"   % "test",
+      // TODO scalikejdbc-play-plugin for Scala2.11, play2.3
+      // https://github.com/scalikejdbc/scalikejdbc-play-support/issues/4
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-plugin"    % "2.2.0",
+      // TODO https://github.com/tototoshi/play-flyway/pull/12
       libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "1.0.0",
-      templatesImport     += "jp.t2v.lab.play2.auth.sample._",
+      TwirlKeys.templateImports in Compile += "jp.t2v.lab.play2.auth.sample._",
       publishLocal := {},
       publish := {}
     )
