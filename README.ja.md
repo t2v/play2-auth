@@ -532,7 +532,7 @@ trait AuthConfigImpl extends AuthConfig {
 
 1. `git clone https://github.com/t2v/play2-auth.git`
 1. `cd play2-auth`
-1. `play "project sample" play run`
+1. `sbt "project sample" run`
 1. ブラウザで `http://localhost:9000/` にアクセス
     1. 「Database 'default' needs evolution!」と聞かれるので `Apply this script now!` を押して実行します
     1. 適当にログインします
