@@ -20,5 +20,11 @@ GET     /message2/list               controllers.OldMessages.list
 GET     /message2/detail/:id         controllers.OldMessages.detail(id: Int)
 GET     /message2/write              controllers.OldMessages.write
 
+
+GET     /csrf/with_token            controllers.PreventingCsrfSample.formWithToken
+GET     /csrf/without_token         controllers.PreventingCsrfSample.formWithoutToken
+POST    /csrf/                      controllers.PreventingCsrfSample.submitTarget
+
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

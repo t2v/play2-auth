@@ -14,9 +14,9 @@ object ApplicationBuild extends Build {
     organization       := "jp.t2v",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
     resolvers ++= {
-      if(isSnapshot.value){
+      if (isSnapshot.value) {
         Seq("Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots")
-      }else{
+      } else {
         Nil
       }
     },
@@ -93,7 +93,7 @@ object ApplicationBuild extends Build {
       // https://github.com/scalikejdbc/scalikejdbc-play-support/issues/4
       libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-plugin"    % "2.2.0",
       // TODO https://github.com/tototoshi/play-flyway/pull/12
-      libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "1.0.0",
+      libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "1.0.5-SNAPSHOT",
       TwirlKeys.templateImports in Compile += "jp.t2v.lab.play2.auth.sample._",
       publishLocal := {},
       publish := {}
