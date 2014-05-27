@@ -1,0 +1,14 @@
+@()(implicit account: Account, token: stack.PreventingCsrfToken)
+
+@fullTemplate(account)("with Token") {
+
+  @helper.form(action = routes.PreventingCsrfSample.submitTarget()) {
+
+     <h1>With Token</h1>
+     <input type="hidden" name="@stack.PreventingCsrfToken.FormKey" value="@token.value" />
+     <input type="text" name="message" /><button type="submit">submit</button>
+
+  }
+
+}
+
