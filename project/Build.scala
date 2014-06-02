@@ -10,7 +10,7 @@ object ApplicationBuild extends Build {
 
   lazy val baseSettings = Seq(
     version            := "0.12.0-SNAPSHOT",
-    scalaVersion       := "2.10.4",
+    scalaVersion       := "2.11.1",
     organization       := "jp.t2v",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
     resolvers ++= {
@@ -91,9 +91,9 @@ object ApplicationBuild extends Build {
       libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"           % "2.0.0"   % "test",
       // TODO scalikejdbc-play-plugin for Scala2.11, play2.3
       // https://github.com/scalikejdbc/scalikejdbc-play-support/issues/4
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-plugin"    % "2.2.0",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-plugin"    % "2.3.0",
       // TODO https://github.com/tototoshi/play-flyway/pull/12
-      libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "1.0.0",
+      libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "1.1.0",
       TwirlKeys.templateImports in Compile += "jp.t2v.lab.play2.auth.sample._",
       publishLocal := {},
       publish := {}
