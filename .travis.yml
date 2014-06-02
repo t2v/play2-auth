@@ -3,10 +3,7 @@ language: scala
 jdk:
   - oraclejdk7
 
-script:
-  - sbt "$TEST_SCRIPT"
-
-env:
-  - TEST_SCRIPT=";++2.10.4; root/test"
-  - TEST_SCRIPT=";++2.11.0; core/test; test/test"
+scala:
+  - 2.10.4
+  - 2.11.1
 
