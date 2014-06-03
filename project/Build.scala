@@ -11,6 +11,7 @@ object ApplicationBuild extends Build {
   lazy val baseSettings = Seq(
     version            := "0.12.0-SNAPSHOT",
     scalaVersion       := "2.11.1",
+    crossScalaVersions := Seq("2.10.4", "2.11.1"),
     organization       := "jp.t2v",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
     resolvers ++= {
