@@ -93,16 +93,14 @@ object ApplicationBuild extends Build {
       libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-plugin"    % "2.3.0",
       libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "1.1.0",
       TwirlKeys.templateImports in Compile += "jp.t2v.lab.play2.auth.sample._",
-      publishLocal := {},
-      publish := {}
+      publishArtifact := false
     )
     .dependsOn(core, test % "test")
 
   lazy val root = Project("root", base = file("."))
     .settings(baseSettings: _*)
     .settings(
-      publishLocal := {},
-      publish := {}
+      publishArtifact := false
     ).aggregate(core, test, sample)
 
 }
