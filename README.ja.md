@@ -10,7 +10,7 @@ Play2.x module for Authentication and Authorization [![Build Status](https://sec
 Java版には [Deadbolt 2](https://github.com/schaloner/deadbolt-2) というモジュールがありますので
 こちらも参考にして下さい。
 
-Play2.2.1 で動作確認をしています。
+Play2.3.0 で動作確認をしています。
 
 動機
 ---------------------------------------
@@ -38,6 +38,7 @@ Play2.2.1 で動作確認をしています。
 以前のバージョン
 ---------------------------------------
 
+Play2.2.x 向けの使用方法は [0.11.0 README](https://github.com/t2v/play2-auth/blob/release0.11.0/README.ja.md)をご参照ください。
 Play2.1.x 向けの使用方法は [0.10.1 README](https://github.com/t2v/play2-auth/blob/release0.10.1/README.ja.md)をご参照ください。
 Play2.0.x 向けの使用方法は [0.7 README](https://github.com/t2v/play2-auth/blob/release0.7/README.ja.md)をご参照ください。
 
@@ -53,15 +54,15 @@ Play2.1以前をお使いの方へ
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2-auth"      % "0.11.0",
-        "jp.t2v" %% "play2-auth-test" % "0.11.0" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.12.0",
+        "jp.t2v" %% "play2-auth-test" % "0.12.0" % "test"
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"      % "0.11.0-SNAPSHT",
-    "jp.t2v" %% "play2-auth-test" % "0.11.0-SNAPSHT" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.12.0",
+    "jp.t2v" %% "play2-auth-test" % "0.12.0" % "test"
   )
 ```
 
