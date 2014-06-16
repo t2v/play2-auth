@@ -244,7 +244,7 @@ For example: `Build.scala`
       }
 
       // このActionだけ、Administrator でなければ実行できなくなります。
-      def write = aStackAction(AuthorityKey -> Administrator) { implicit request =>
+      def write = StackAction(AuthorityKey -> Administrator) { implicit request =>
         val user = loggedIn
         val title = "write message"
         Ok(html.message.write(title))
