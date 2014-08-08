@@ -1,9 +1,8 @@
 package jp.t2v.lab.play2.auth
 
 import play.api.mvc._
-import play.api.libs.iteratee.{Iteratee, Input, Done}
+import play.api.libs.iteratee.{Iteratee, Done}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Success
 
 trait AsyncAuth {
     self: AuthConfig with Controller =>
@@ -59,16 +58,16 @@ trait AsyncAuth {
   }
 
   private[auth] def restoreUser(implicit request: RequestHeader, context: ExecutionContext): Future[Option[User]] = {
-    val userIdOpt = for {
+    (for {
       cookie <- request.cookies.get(cookieName)
       token  <- CookieUtil.verifyHmac(cookie)
-      userId <- idContainer.get(token)
-    } yield (token, userId)
-    userIdOpt map { case (token, userId) =>
-      resolveUser(userId) andThen {
-        case Success(Some(_)) => idContainer.prolongTimeout(token, sessionTimeoutInSeconds)
-      }
-    } getOrElse {
+    } yield for {
+      Some(userId) <- idContainer.get(token)
+      Some(user)   <- resolveUser(userId)
+      _            <- idContainer.prolongTimeout(token, sessionTimeoutInSeconds)
+    } yield {
+      Option(user)
+    }) getOrElse {
       Future.successful(Option.empty)
     }
   }

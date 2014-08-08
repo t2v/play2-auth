@@ -12,10 +12,12 @@ trait LoginLogout {
     gotoLoginSucceeded(userId, loginSucceeded(request))
   }
 
-  def gotoLoginSucceeded(userId: Id, result: => Future[Result])(implicit ctx: ExecutionContext): Future[Result] = {
-    val token = idContainer.startNewSession(userId, sessionTimeoutInSeconds)
-    val value = Crypto.sign(token) + token
-    result.map(_.withCookies(Cookie(cookieName, value, None, cookiePathOption, cookieDomainOption, cookieSecureOption, cookieHttpOnlyOption)))
+  def gotoLoginSucceeded(userId: Id, result: => Future[Result])(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = for {
+    token <- idContainer.startNewSession(userId, sessionTimeoutInSeconds)
+    value = Crypto.sign(token) + token
+    r     <- result
+  } yield {
+    r.withCookies(Cookie(cookieName, value, None, cookiePathOption, cookieDomainOption, cookieSecureOption, cookieHttpOnlyOption))
   }
 
   def gotoLogoutSucceeded(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
