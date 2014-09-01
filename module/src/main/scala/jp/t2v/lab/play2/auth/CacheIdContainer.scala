@@ -44,7 +44,7 @@ class CacheIdContainer[Id: ClassTag] extends IdContainer[Id] {
     Cache.remove(userId.toString + userIdSuffix)
   }
 
-  def get(token: AuthenticityToken) = Cache.get(token + tokenSuffix).map(_.asInstanceOf[Id])
+  def get(token: AuthenticityToken) = Cache.getAs[Id](token + tokenSuffix)
 
   private[auth] def store(token: AuthenticityToken, userId: Id, timeoutInSeconds: Int) {
     Cache.set(token + tokenSuffix, userId, timeoutInSeconds)
