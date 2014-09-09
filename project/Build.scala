@@ -62,7 +62,7 @@ object ApplicationBuild extends Build {
     .settings(
       libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion        % "provided",
       libraryDependencies += play.PlayImport.cache,
-      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.4.0",
+      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.4.1-SNAPSHOT",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,

@@ -9,11 +9,11 @@ import play.api.data.Forms._
 
 trait PreventingCsrfSample extends Controller with TokenValidateElement with AuthElement with AuthConfigImpl {
 
-  def formWithToken = StackAction(AuthorityKey -> NormalUser, IgnoreTokenValidation -> ()) { implicit req =>
+  def formWithToken = StackAction(AuthorityKey -> NormalUser, IgnoreTokenValidation -> true) { implicit req =>
     Ok(views.html.PreventingCsrfSample.formWithToken())
   }
 
-  def formWithoutToken = StackAction(AuthorityKey -> NormalUser, IgnoreTokenValidation -> ()) { implicit req =>
+  def formWithoutToken = StackAction(AuthorityKey -> NormalUser, IgnoreTokenValidation -> true) { implicit req =>
     Ok(views.html.PreventingCsrfSample.formWithoutToken())
   }
 

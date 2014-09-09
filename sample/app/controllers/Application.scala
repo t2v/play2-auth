@@ -2,7 +2,7 @@ package controllers
 
 import play.api.data._
 import play.api.data.Forms._
-import play.api.templates._
+import play.twirl.api.Html
 import jp.t2v.lab.play2.auth.sample._
 import views._
 import play.api.mvc._

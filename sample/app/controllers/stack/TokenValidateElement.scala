@@ -23,7 +23,7 @@ trait TokenValidateElement extends StackableController {
   }
 
   case object PreventingCsrfTokenKey extends RequestAttributeKey[PreventingCsrfToken]
-  case object IgnoreTokenValidation extends RequestAttributeKey[Unit]
+  case object IgnoreTokenValidation extends RequestAttributeKey[Boolean]
 
   private def validateToken(request: Request[_]): Boolean = (for {
     tokenInForm    <- tokenForm.bindFromRequest()(request).value
@@ -43,7 +43,7 @@ trait TokenValidateElement extends StackableController {
   }
 
   implicit def isIgnoreTokenValidation(implicit request: RequestWithAttributes[_]): Boolean =
-    request.get(IgnoreTokenValidation).isDefined
+    request.get(IgnoreTokenValidation).exists(identity)
 
   implicit def preventingCsrfToken(implicit request: RequestWithAttributes[_]): PreventingCsrfToken =
     request.get(PreventingCsrfTokenKey).get
