@@ -1,6 +1,5 @@
 package jp.t2v.lab.play2.auth
 
-
 trait IdContainer[Id] {
 
   def startNewSession(userId: Id, timeoutInSeconds: Int): AuthenticityToken

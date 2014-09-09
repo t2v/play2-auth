@@ -45,7 +45,7 @@ trait Auth {
   private[auth] def restoreUser(implicit request: RequestHeader): Option[User] = for {
     cookie <- request.cookies.get(cookieName)
     token  <- CookieUtil.verifyHmac(cookie)
-    userId <- idContainer.get(token)
+    userId <- Await.result(idContainer.get(token), 10.seconds)
     user   <- Await.result(resolveUser(userId), 10.seconds)
   } yield {
     idContainer.prolongTimeout(token, sessionTimeoutInSeconds)
