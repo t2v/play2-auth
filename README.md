@@ -1,5 +1,6 @@
 Play2.x module for Authentication and Authorization [![Build Status](https://secure.travis-ci.org/t2v/play2-auth.png)](http://travis-ci.org/t2v/play2-auth)
 ===========================================================
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/t2v/play2-auth?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This module offers Authentication and Authorization features to Play2.x applications
 
