@@ -66,24 +66,24 @@ object Messages extends Messages
 
 trait OldMessages extends Controller with AsyncAuth with AuthConfigImpl {
 
-  def main = authorizedAction(NormalUser) { user => implicit request =>
+  def main = AuthorizationAction(NormalUser) { implicit request =>
     val title = "message main"
-    Ok(html.message.main(title)(html.fullTemplate.apply(user)))
+    Ok(html.message.main(title)(html.fullTemplate.apply(request.user)))
   }
 
-  def list = authorizedAction(NormalUser) { user => implicit request =>
+  def list = AuthorizationAction(NormalUser) { implicit request =>
     val title = "all messages"
-    Ok(html.message.list(title)(html.fullTemplate.apply(user)))
+    Ok(html.message.list(title)(html.fullTemplate.apply(request.user)))
   }
 
-  def detail(id: Int) = authorizedAction(NormalUser) { user => implicit request =>
+  def detail(id: Int) = AuthorizationAction(NormalUser) {implicit request =>
     val title = "messages detail "
-    Ok(html.message.detail(title + id)(html.fullTemplate.apply(user)))
+    Ok(html.message.detail(title + id)(html.fullTemplate.apply(request.user)))
   }
 
-  def write = authorizedAction(Administrator) { user => implicit request =>
+  def write = AuthorizationAction(Administrator) { implicit request =>
     val title = "write message"
-    Ok(html.message.write(title)(html.fullTemplate.apply(user)))
+    Ok(html.message.write(title)(html.fullTemplate.apply(request.user)))
   }
 
 }
