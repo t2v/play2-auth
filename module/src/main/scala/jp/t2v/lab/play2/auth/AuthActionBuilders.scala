@@ -11,7 +11,7 @@ trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
   final case class GenericOptionalAuthRefiner[R[_] <: Request[_]]() extends ActionRefiner[R, ({type L[A] = GenericOptionalAuthRequest[A, R]})#L] {
     protected def refine[A](request: R[A]): Future[Either[Result, GenericOptionalAuthRequest[A, R]]] = {
       implicit val ctx = executionContext
-      restoreUser(request.asInstanceOf[RequestHeader], executionContext) recover {
+      restoreUser(request, executionContext) recover {
         case _ => None
       } map { user =>
         Right(GenericOptionalAuthRequest[A, R](user, request))
@@ -22,7 +22,7 @@ trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
   final case class GenericAuthenticationRefiner[R[_] <: Request[_]]() extends ActionRefiner[({type L[A] = GenericOptionalAuthRequest[A, R]})#L, ({type L[A] = GenericAuthRequest[A, R]})#L] {
     override protected def refine[A](request: GenericOptionalAuthRequest[A, R]): Future[Either[Result, GenericAuthRequest[A, R]]] = {
       request.user map { user =>
-        Future.successful(Right[Result, GenericAuthRequest[A, R]](new GenericAuthRequest[A, R](user, request.underlying)))
+        Future.successful(Right[Result, GenericAuthRequest[A, R]](GenericAuthRequest[A, R](user, request.underlying)))
       } getOrElse {
         implicit val ctx = executionContext
         authenticationFailed(request).map(Left.apply[Result, GenericAuthRequest[A, R]])
