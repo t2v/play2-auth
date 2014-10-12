@@ -92,7 +92,7 @@ trait Messages2 extends Controller with AuthActionBuilders with AuthConfigImpl {
 
   def main = AuthorizationTxAction(NormalUser) { implicit request =>
     val title = "message main"
-    println(Account.findAll()(request.request.dbSession))
+    println(Account.findAll()(request.underlying.dbSession))
     Ok(html.message.main(title)(html.fullTemplate.apply(request.user)))
   }
 

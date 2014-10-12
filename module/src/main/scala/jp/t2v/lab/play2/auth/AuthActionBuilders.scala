@@ -6,7 +6,7 @@ import scala.concurrent.Future
 trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
 
   final case class GenericOptionalAuthRequest[A, R[_] <: Request[_]](user: Option[User], underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
-  final case class GenericAuthRequest[A, R[_] <: Request[_]](user: User, request: R[A]) extends WrappedRequest[A](request.asInstanceOf[Request[A]])
+  final case class GenericAuthRequest[A, R[_] <: Request[_]](user: User, underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
 
   final case class GenericOptionalAuthRefiner[R[_] <: Request[_]]() extends ActionRefiner[R, ({type L[A] = GenericOptionalAuthRequest[A, R]})#L] {
     protected def refine[A](request: R[A]): Future[Either[Result, GenericOptionalAuthRequest[A, R]]] = {
