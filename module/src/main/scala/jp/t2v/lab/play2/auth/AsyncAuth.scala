@@ -11,15 +11,9 @@ trait AsyncAuth {
   final case class GenericAuthRequest[A, R[_] <: Request[_]](user: User, request: R[A]) extends WrappedRequest[A](request.asInstanceOf[Request[A]])
 
   final type OptionalAuthRequest[A] = GenericOptionalAuthRequest[A, Request]
-  object OptionalAuthRequest {
-    def apply[A](user: Option[User], request: Request[A]): OptionalAuthRequest[A] = GenericOptionalAuthRequest[A, Request](user, request)
-  }
   final type AuthRequest[A] = GenericAuthRequest[A, Request]
-  object AuthRequest {
-    def apply[A](user: User, request: Request[A]): AuthRequest[A] = GenericAuthRequest[A, Request](user, request)
-  }
 
-  final case class GenericOptionalAuthRefiner[R[_] <: Request[_]]() extends ActionRefiner[R, ({type L[B] = GenericOptionalAuthRequest[B, R]})#L] {
+  final case class GenericOptionalAuthRefiner[R[_] <: Request[_]]() extends ActionRefiner[R, ({type L[A] = GenericOptionalAuthRequest[A, R]})#L] {
     protected def refine[A](request: R[A]): Future[Either[Result, GenericOptionalAuthRequest[A, R]]] = {
       implicit val ctx = executionContext
       restoreUser(request.asInstanceOf[RequestHeader], executionContext) recover {
@@ -30,10 +24,7 @@ trait AsyncAuth {
     }
   }
 
-  final val OptionalAuthRefiner: ActionRefiner[Request, OptionalAuthRequest] = GenericOptionalAuthRefiner[Request]()
-  final val OptionalAuthAction: ActionBuilder[OptionalAuthRequest] = Action andThen OptionalAuthRefiner
-
-  final case class GenericAuthenticationRefiner[R[_] <: Request[_]]() extends ActionRefiner[({type L[B] = GenericOptionalAuthRequest[B, R]})#L, ({type L[C] = GenericAuthRequest[C, R]})#L] {
+  final case class GenericAuthenticationRefiner[R[_] <: Request[_]]() extends ActionRefiner[({type L[A] = GenericOptionalAuthRequest[A, R]})#L, ({type L[A] = GenericAuthRequest[A, R]})#L] {
     override protected def refine[A](request: GenericOptionalAuthRequest[A, R]): Future[Either[Result, GenericAuthRequest[A, R]]] = {
       request.user map { user =>
         Future.successful(Right[Result, GenericAuthRequest[A, R]](new GenericAuthRequest[A, R](user, request.request)))
@@ -43,8 +34,6 @@ trait AsyncAuth {
       }
     }
   }
-
-  final val AuthenticationRefiner: ActionRefiner[OptionalAuthRequest, AuthRequest] = GenericAuthenticationRefiner[Request]()
 
   final case class GenericAuthorizationFilter[R[_] <: Request[_]](authority: Authority) extends ActionFilter[({type L[B] = GenericAuthRequest[B, R]})#L] {
     override protected def filter[A](request: GenericAuthRequest[A, R]): Future[Option[Result]] = {
@@ -57,10 +46,21 @@ trait AsyncAuth {
     }
   }
 
-  final def AuthorizationFilter(authority: Authority): ActionFilter[AuthRequest] = GenericAuthorizationFilter[Request](authority)
+  final def composeOptionalAuthAction[R[_] <: Request[_]](builder: ActionBuilder[R]): ActionBuilder[({type L[A] = GenericOptionalAuthRequest[A, R]})#L] = {
+    builder.andThen[({type L[A] = GenericOptionalAuthRequest[A, R]})#L](GenericOptionalAuthRefiner[R]())
+  }
 
-  final val AuthenticationAction: ActionBuilder[AuthRequest] = OptionalAuthAction andThen AuthenticationRefiner
-  final def AuthorizationAction(authority: Authority): ActionBuilder[AuthRequest] = AuthenticationAction andThen AuthorizationFilter(authority)
+  final def composeAuthenticationAction[R[_] <: Request[_]](builder: ActionBuilder[R]): ActionBuilder[({type L[A] = GenericAuthRequest[A, R]})#L] = {
+    composeOptionalAuthAction[R](builder).andThen[({type L[A] = GenericAuthRequest[A, R]})#L](GenericAuthenticationRefiner[R]())
+  }
+
+  final def composeAuthorizationAction[R[_] <: Request[_]](builder: ActionBuilder[R])(authority: Authority): ActionBuilder[({type L[A] = GenericAuthRequest[A, R]})#L] = {
+    composeAuthenticationAction(builder).andThen[({type L[A] = GenericAuthRequest[A, R]})#L](GenericAuthorizationFilter[R](authority))
+  }
+
+  final val OptionalAuthAction: ActionBuilder[OptionalAuthRequest] = composeOptionalAuthAction(Action)
+  final val AuthenticationAction: ActionBuilder[AuthRequest] = composeAuthenticationAction(Action)
+  final def AuthorizationAction(authority: Authority): ActionBuilder[AuthRequest] = composeAuthorizationAction(Action)(authority)
 
   def authorized(authority: Authority)(implicit request: RequestHeader, context: ExecutionContext): Future[Either[Result, User]] = {
     restoreUser collect {

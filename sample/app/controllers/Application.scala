@@ -77,14 +77,8 @@ object TransactionalAction extends ActionBuilder[TransactionalRequest] {
 
 trait Messages2 extends Controller with AsyncAuth with AuthConfigImpl {
 
-  type OptionalAuthTxRequest[A] = GenericOptionalAuthRequest[A, TransactionalRequest]
   type AuthTxRequest[A] = GenericAuthRequest[A, TransactionalRequest]
-  final val OptionalAuthTxRefiner: ActionRefiner[TransactionalRequest, OptionalAuthTxRequest] = GenericOptionalAuthRefiner[TransactionalRequest]()
-  final val OptionalAuthTxAction: ActionBuilder[OptionalAuthTxRequest] = TransactionalAction andThen OptionalAuthTxRefiner
-  final val AuthTxRefiner: ActionRefiner[OptionalAuthTxRequest, AuthTxRequest] = GenericAuthenticationRefiner[TransactionalRequest]()
-  final val AuthTxAction: ActionBuilder[AuthTxRequest] = OptionalAuthTxAction andThen AuthTxRefiner
-  final def AuthorizationTxFilter(authority: Authority): ActionFilter[AuthTxRequest] = GenericAuthorizationFilter[TransactionalRequest](authority)
-  final def AuthorizationTxAction(authority: Authority): ActionBuilder[AuthTxRequest] = AuthTxAction andThen AuthorizationTxFilter(authority)
+  final def AuthorizationTxAction(authority: Authority): ActionBuilder[AuthTxRequest] = composeAuthorizationAction(TransactionalAction)(authority)
 
   def main = AuthorizationTxAction(NormalUser) { implicit request =>
     val title = "message main"
