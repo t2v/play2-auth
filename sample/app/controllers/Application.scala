@@ -67,9 +67,19 @@ object Messages extends Messages
 
 case class TransactionalRequest[A](dbSession: DBSession, request: Request[A]) extends WrappedRequest[A](request)
 object TransactionalAction extends ActionBuilder[TransactionalRequest] {
+  import scala.util.{Success, Failure}
   override def invokeBlock[A](request: Request[A], block: (TransactionalRequest[A]) => Future[Result]): Future[Result] = {
-    DB.localTx { s =>
-      block(TransactionalRequest(s, request))
+    val db = DB.connect()
+    val tx = db.newTx
+    tx.begin()
+    val session = db.withinTxSession(tx)
+    block(TransactionalRequest(session, request)).andThen {
+      case Success(_) =>
+        db.currentTx.commit()
+        session.close()
+      case Failure(_) =>
+        db.currentTx.rollback()
+        session.close()
     }
   }
 }
