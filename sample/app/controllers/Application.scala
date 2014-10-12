@@ -75,7 +75,7 @@ object TransactionalAction extends ActionBuilder[TransactionalRequest] {
 }
 
 
-trait Messages2 extends Controller with AsyncAuth with AuthConfigImpl {
+trait Messages2 extends Controller with AuthActionBuilders with AuthConfigImpl {
 
   type AuthTxRequest[A] = GenericAuthRequest[A, TransactionalRequest]
   final def AuthorizationTxAction(authority: Authority): ActionBuilder[AuthTxRequest] = composeAuthorizationAction(TransactionalAction)(authority)
