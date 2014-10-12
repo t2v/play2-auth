@@ -15,10 +15,10 @@ GET     /message/list               controllers.Messages.list
 GET     /message/detail/:id         controllers.Messages.detail(id: Int)
 GET     /message/write              controllers.Messages.write
 
-GET     /message2/main               controllers.OldMessages.main
-GET     /message2/list               controllers.OldMessages.list
-GET     /message2/detail/:id         controllers.OldMessages.detail(id: Int)
-GET     /message2/write              controllers.OldMessages.write
+GET     /message2/main               controllers.Messages2.main
+GET     /message2/list               controllers.Messages2.list
+GET     /message2/detail/:id         controllers.Messages2.detail(id: Int)
+GET     /message2/write              controllers.Messages2.write
 
 
 GET     /csrf/with_token            controllers.PreventingCsrfSample.formWithToken

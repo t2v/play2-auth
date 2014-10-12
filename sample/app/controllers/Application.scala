@@ -13,6 +13,7 @@ import jp.t2v.lab.play2.stackc.{RequestWithAttributes, RequestAttributeKey, Stac
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 import reflect.{ClassTag, classTag}
+import scalikejdbc._
 
 object Application extends Controller with LoginLogout with AuthConfigImpl {
 
@@ -64,30 +65,50 @@ trait Messages extends Controller with Pjax with AuthElement with AuthConfigImpl
 }
 object Messages extends Messages
 
-trait OldMessages extends Controller with AsyncAuth with AuthConfigImpl {
+case class TransactionalRequest[A](dbSession: DBSession, request: Request[A]) extends WrappedRequest[A](request)
+object TransactionalAction extends ActionBuilder[TransactionalRequest] {
+  override def invokeBlock[A](request: Request[A], block: (TransactionalRequest[A]) => Future[Result]): Future[Result] = {
+    DB.localTx { s =>
+      block(TransactionalRequest(s, request))
+    }
+  }
+}
 
-  def main = AuthorizationAction(NormalUser) { implicit request =>
+
+trait Messages2 extends Controller with AsyncAuth with AuthConfigImpl {
+
+  type OptionalAuthTxRequest[A] = GenericOptionalAuthRequest[A, TransactionalRequest]
+  type AuthTxRequest[A] = GenericAuthRequest[A, TransactionalRequest]
+  final val OptionalAuthTxRefiner: ActionRefiner[TransactionalRequest, OptionalAuthTxRequest] = GenericOptionalAuthRefiner[TransactionalRequest]()
+  final val OptionalAuthTxAction: ActionBuilder[OptionalAuthTxRequest] = TransactionalAction andThen OptionalAuthTxRefiner
+  final val AuthTxRefiner: ActionRefiner[OptionalAuthTxRequest, AuthTxRequest] = GenericAuthenticationRefiner[TransactionalRequest]()
+  final val AuthTxAction: ActionBuilder[AuthTxRequest] = OptionalAuthTxAction andThen AuthTxRefiner
+  final def AuthorizationTxFilter(authority: Authority): ActionFilter[AuthTxRequest] = GenericAuthorizationFilter[TransactionalRequest](authority)
+  final def AuthorizationTxAction(authority: Authority): ActionBuilder[AuthTxRequest] = AuthTxAction andThen AuthorizationTxFilter(authority)
+
+  def main = AuthorizationTxAction(NormalUser) { implicit request =>
     val title = "message main"
+    println(Account.findAll()(request.request.dbSession))
     Ok(html.message.main(title)(html.fullTemplate.apply(request.user)))
   }
 
-  def list = AuthorizationAction(NormalUser) { implicit request =>
+  def list = AuthorizationTxAction(NormalUser) { implicit request =>
     val title = "all messages"
     Ok(html.message.list(title)(html.fullTemplate.apply(request.user)))
   }
 
-  def detail(id: Int) = AuthorizationAction(NormalUser) {implicit request =>
+  def detail(id: Int) = AuthorizationTxAction(NormalUser) {implicit request =>
     val title = "messages detail "
     Ok(html.message.detail(title + id)(html.fullTemplate.apply(request.user)))
   }
 
-  def write = AuthorizationAction(Administrator) { implicit request =>
+  def write = AuthorizationTxAction(Administrator) { implicit request =>
     val title = "write message"
     Ok(html.message.write(title)(html.fullTemplate.apply(request.user)))
   }
 
 }
-object OldMessages extends OldMessages
+object Messages2 extends Messages2
 
 
 trait AuthConfigImpl extends AuthConfig {
