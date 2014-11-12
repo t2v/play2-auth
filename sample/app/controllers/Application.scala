@@ -13,6 +13,7 @@ import jp.t2v.lab.play2.stackc.{RequestWithAttributes, RequestAttributeKey, Stac
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 import reflect.{ClassTag, classTag}
+import scalikejdbc._
 
 object Application extends Controller with LoginLogout with AuthConfigImpl {
 
@@ -64,30 +65,66 @@ trait Messages extends Controller with Pjax with AuthElement with AuthConfigImpl
 }
 object Messages extends Messages
 
-trait OldMessages extends Controller with AsyncAuth with AuthConfigImpl {
+class TransactionalRequest[A](val dbSession: DBSession, request: Request[A]) extends WrappedRequest[A](request)
+object TransactionalAction extends ActionBuilder[TransactionalRequest] {
+  import scala.util.{Success, Failure}
+  override def invokeBlock[A](request: Request[A], block: (TransactionalRequest[A]) => Future[Result]): Future[Result] = {
+    val db = DB.connect()
+    val tx = db.newTx
+    tx.begin()
+    val session = db.withinTxSession(tx)
+    block(new TransactionalRequest(session, request)).andThen {
+      case Success(_) =>
+        db.currentTx.commit()
+        session.close()
+      case Failure(_) =>
+        db.currentTx.rollback()
+        session.close()
+    }
+  }
+}
 
-  def main = AuthorizationAction(NormalUser) { implicit request =>
+
+
+trait Messages2 extends Controller with AuthActionBuilders with AuthConfigImpl {
+
+  type AuthTxRequest[A] = GenericAuthRequest[A, TransactionalRequest]
+  final def AuthorizationTxAction(authority: Authority): ActionBuilder[AuthTxRequest] = composeAuthorizationAction(TransactionalAction)(authority)
+
+  class TemplateRequest[A, R[_] <: Request[_]](val template: String => Html => Html, val authRequest: GenericAuthRequest[A, R]) extends WrappedRequest[A](authRequest)
+  class PjaxRefiner[R[_] <: Request[_]] extends ActionTransformer[({type L[A] = GenericAuthRequest[A, R]})#L, ({type L[A] = TemplateRequest[A, R]})#L] {
+    override protected def transform[A](request: GenericAuthRequest[A, R]): Future[TemplateRequest[A, R]] = {
+      val template: String => Html => Html = if (request.headers.keys("X-Pjax")) html.pjaxTemplate.apply else html.fullTemplate.apply(request.user)
+      Future.successful(new TemplateRequest(template, request))
+    }
+  }
+
+  type PjaxAuthRequest[A] = TemplateRequest[A, TransactionalRequest]
+  def MyAction(authority: Authority): ActionBuilder[PjaxAuthRequest] = AuthorizationTxAction(authority).andThen[PjaxAuthRequest](new PjaxRefiner[TransactionalRequest])
+
+  def main = MyAction(NormalUser) { implicit request =>
     val title = "message main"
-    Ok(html.message.main(title)(html.fullTemplate.apply(request.user)))
+    println(Account.findAll()(request.authRequest.underlying.dbSession))
+    Ok(html.message.main(title)(request.template))
   }
 
-  def list = AuthorizationAction(NormalUser) { implicit request =>
+  def list = MyAction(NormalUser) { implicit request =>
     val title = "all messages"
-    Ok(html.message.list(title)(html.fullTemplate.apply(request.user)))
+    Ok(html.message.list(title)(request.template))
   }
 
-  def detail(id: Int) = AuthorizationAction(NormalUser) {implicit request =>
+  def detail(id: Int) = MyAction(NormalUser) {implicit request =>
     val title = "messages detail "
-    Ok(html.message.detail(title + id)(html.fullTemplate.apply(request.user)))
+    Ok(html.message.detail(title + id)(request.template))
   }
 
-  def write = AuthorizationAction(Administrator) { implicit request =>
+  def write = MyAction(Administrator) { implicit request =>
     val title = "write message"
-    Ok(html.message.write(title)(html.fullTemplate.apply(request.user)))
+    Ok(html.message.write(title)(request.template))
   }
 
 }
-object OldMessages extends OldMessages
+object Messages2 extends Messages2
 
 
 trait AuthConfigImpl extends AuthConfig {
