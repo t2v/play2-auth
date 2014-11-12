@@ -7,8 +7,6 @@ Play2.x module for Authentication and Authorization [![Build Status](https://sec
 ---------------------------------------
 
 このモジュールは __Play2.x__ の __Scala__版を対象としています。
-Java版には [Deadbolt 2](https://github.com/schaloner/deadbolt-2) というモジュールがありますので
-こちらも参考にして下さい。
 
 Play2.3.0 で動作確認をしています。
 
@@ -31,8 +29,8 @@ Play2.3.0 で動作確認をしています。
 
 これでは認証/認可以外にも様々なAction合成を行いたい場合にネストが深くなって非常に記述性が低くなります。
 
-このモジュールでは `Either[PlainResult, User]` を返すインターフェイスを用意することで、
-柔軟に他の操作を組み合わせて使用することができます。
+このモジュールでは [Stackable-Controller](https://github.com/t2v/stackable-controller)の実装や、
+`ActionRefiner` による実装など、柔軟に他の操作を組み合わせて使用する方法を提供しています。
 
 
 以前のバージョン
@@ -54,15 +52,15 @@ Play2.1以前をお使いの方へ
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2-auth"      % "0.12.0",
-        "jp.t2v" %% "play2-auth-test" % "0.12.0" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.13.0",
+        "jp.t2v" %% "play2-auth-test" % "0.13.0" % "test"
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"      % "0.12.0",
-    "jp.t2v" %% "play2-auth-test" % "0.12.0" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.13.0",
+    "jp.t2v" %% "play2-auth-test" % "0.13.0" % "test"
   )
 ```
 
@@ -158,6 +156,12 @@ For example: `Build.scala`
        * 実際のアプリケーションでは true にすることを強く推奨します。
        */
       override lazy val cookieSecureOption: Boolean = play.api.Play.isProd(play.api.Play.current)
+
+      /**
+       * SessionID Cookieの有効期限を、ブラウザが閉じられるまでにするか否かの設定です。
+       * デフォルトは false です。
+       */
+      override lazy val isTransientCookie: Boolean = false
 
     }
     ```

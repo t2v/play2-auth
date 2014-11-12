@@ -9,12 +9,11 @@ Target
 
 This module targets the __Scala__ version of __Play2.x__.
 
-For the Java version of Play2.x, there is an authorization module called [Deadbolt 2](https://github.com/schaloner/deadbolt-2).
 
 Motivation
 ---------------------------------------
 
-### Play2.x's Existing Security trait
+### More secure than Play2.x's Security trait
 
 The existing `Security` trait in Play2.x API does not define an identifier that identifies a user.
 
@@ -31,8 +30,7 @@ Your application can expire sessions after a set time limit.
 Since the `Security` trait in Play2.x API returns `Action`, 
 complicated action methods wind up deeply nested.
 
-Play2x-Auth provides an interface that returns an [`Either[PlainResult, User]`](http://www.scala-lang.org/api/current/scala/util/Either.html)
-making writing complicated action methods easier.   [`Either`](http://www.scala-lang.org/api/current/scala/util/Either.html) is a wrapper similar to `Option`
+Play2x-Auth provides a way of composition.
 
 
 Previous Version
@@ -61,15 +59,15 @@ Add dependency declarations into your `Build.scala` or `build.sbt` file:
 
 * __for Play2.3.x__
 
-        "jp.t2v" %% "play2-auth"      % "0.12.0",
-        "jp.t2v" %% "play2-auth-test" % "0.12.0" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.13.0",
+        "jp.t2v" %% "play2-auth-test" % "0.13.0" % "test"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"      % "0.12.0",
-    "jp.t2v" %% "play2-auth-test" % "0.12.0" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.13.0",
+    "jp.t2v" %% "play2-auth-test" % "0.13.0" % "test"
   )
 ```
 
@@ -164,6 +162,12 @@ Usage
        * However default is false, I strongly recommend using true in a production.
        */
       override lazy val cookieSecureOption: Boolean = play.api.Play.isProd(play.api.Play.current)
+
+      /**
+       * Whether a login session is closed when the brower is terminated.
+       * default is false.
+       */
+      override lazy val isTransientCookie: Boolean = false
 
     }
     ```
