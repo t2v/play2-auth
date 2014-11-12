@@ -40,4 +40,6 @@ trait AuthConfig {
 
   lazy val cookiePathOption: String = "/"
 
+  lazy val isTransientCookie: Boolean = false
+
 }

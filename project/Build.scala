@@ -89,7 +89,8 @@ object ApplicationBuild extends Build {
     .settings(
       libraryDependencies += play.Play.autoImport.jdbc,
       libraryDependencies += "org.mindrot"           % "jbcrypt"                    % "0.3m",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"           % "2.0.0"   % "test",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc"                % "2.2.0",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"           % "2.2.0"   % "test",
       libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-plugin"    % "2.3.0",
       libraryDependencies += "com.github.tototoshi" %% "play-flyway"                % "1.1.0",
       TwirlKeys.templateImports in Compile += "jp.t2v.lab.play2.auth.sample._",

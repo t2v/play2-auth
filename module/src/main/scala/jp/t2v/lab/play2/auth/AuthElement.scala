@@ -14,8 +14,8 @@ trait AuthElement extends StackableController with AsyncAuth {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
     req.get(AuthorityKey) map { authority =>
       authorized(authority) flatMap {
-        case Right(user) => super.proceed(req.set(AuthKey, user))(f)
-        case Left(result) => Future.successful(result)
+        case Right((user, cookieUpdater)) => super.proceed(req.set(AuthKey, user))(f).map(cookieUpdater)
+        case Left(result)                 => Future.successful(result)
       }
     } getOrElse {
       authorizationFailed(req)
@@ -33,8 +33,10 @@ trait OptionalAuthElement extends StackableController with AsyncAuth {
 
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
-    val maybeUserFuture = restoreUser.recover { case _ => Option.empty }
-    maybeUserFuture.flatMap(maybeUser => super.proceed(maybeUser.map(u => req.set(AuthKey, u)).getOrElse(req))(f))
+    val maybeUserFuture = restoreUser.recover { case _ => None -> identity[Result] _ }
+    maybeUserFuture.flatMap { case (maybeUser, cookieUpdater) =>
+      super.proceed(maybeUser.map(u => req.set(AuthKey, u)).getOrElse(req))(f).map(cookieUpdater)
+    }
   }
 
   implicit def loggedIn[A](implicit req: RequestWithAttributes[A]): Option[User] = req.get(AuthKey)
@@ -48,10 +50,10 @@ trait AuthenticationElement extends StackableController with AsyncAuth {
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
     restoreUser recover {
-      case _ => Option.empty
+      case _ => None -> identity[Result] _
     } flatMap {
-      case Some(u) => super.proceed(req.set(AuthKey, u))(f)
-      case None    => authenticationFailed(req)
+      case (Some(u), cookieUpdater) => super.proceed(req.set(AuthKey, u))(f).map(cookieUpdater)
+      case (None, _)                => authenticationFailed(req)
     }
   }
 

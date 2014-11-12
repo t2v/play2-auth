@@ -4,7 +4,7 @@ import org.specs2.mutable._
 
 import play.api.test._
 import play.api.test.Helpers._
-import controllers.{AuthConfigImpl, Messages}
+import controllers.basic.{AuthConfigImpl, Messages}
 import jp.t2v.lab.play2.auth.test.Helpers._
 import java.io.File
 
