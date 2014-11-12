@@ -60,9 +60,9 @@ trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
 
   final type OptionalAuthRequest[A] = GenericOptionalAuthRequest[A, Request]
   final type AuthRequest[A] = GenericAuthRequest[A, Request]
-  final type OptionalAuthFunction = GenericOptionalAuthFunction[Request]
-  final type AuthenticationRefiner = GenericAuthenticationRefiner[Request]
-  final type AuthorizationFilter = GenericAuthorizationFilter[Request]
+  final val OptionalAuthFunction: ActionFunction[Request, OptionalAuthRequest] = GenericOptionalAuthFunction[Request]()
+  final val AuthenticationRefiner: ActionRefiner[OptionalAuthRequest, AuthRequest] = GenericAuthenticationRefiner[Request]()
+  final def AuthorizationFilter(authority: Authority): ActionFilter[AuthRequest] = GenericAuthorizationFilter[Request](authority)
 
   final val OptionalAuthAction: ActionBuilder[OptionalAuthRequest] = composeOptionalAuthAction(Action)
   final val AuthenticationAction: ActionBuilder[AuthRequest] = composeAuthenticationAction(Action)

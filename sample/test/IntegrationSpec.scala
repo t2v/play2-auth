@@ -32,7 +32,7 @@ class IntegrationSpec extends Specification {
       browser.$("a").click()
       browser.pageSource must contain("Sign in")
 
-      browser.goTo(s"$baseURL/message/write")
+      browser.goTo(s"$baseURL/basic/message/write")
       browser.pageSource must contain("Sign in")
 
     }
@@ -50,15 +50,15 @@ class IntegrationSpec extends Specification {
       browser.pageSource must not contain("Sign in")
       browser.pageSource must contain("logout")
 
-      browser.goTo(s"${baseURL}/message/write")
+      browser.goTo(s"${baseURL}/basic/message/write")
       browser.pageSource must contain("no permission")
 
-      browser.goTo(s"${baseURL}/logout")
+      browser.goTo(s"${baseURL}/basic/logout")
       browser.$("#email").text("alice@example.com")
       browser.$("#password").text("secret")
       browser.$("#loginbutton").click()
       browser.$("dl.error").size must equalTo(0)
-      browser.goTo(s"${baseURL}/message/write")
+      browser.goTo(s"${baseURL}/basic/message/write")
       browser.pageSource must not contain("no permission")
 
     }

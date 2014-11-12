@@ -2,7 +2,7 @@
 
 @fullTemplate(account)("with Token") {
 
-  @helper.form(action = routes.PreventingCsrfSample.submitTarget()) {
+  @helper.form(action = controllers.csrf.routes.PreventingCsrfSample.submitTarget()) {
 
     <h1>Without Token</h1>
     <input type="text" name="message" /><button type="submit">submit</button>

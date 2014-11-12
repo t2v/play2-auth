@@ -2,28 +2,45 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Home page
-GET     /                           controllers.Application.login
+# Basic
+GET     /                                  controllers.basic.Sessions.login
+POST    /basic/login                       controllers.basic.Sessions.authenticate
+GET     /basic/logout                      controllers.basic.Sessions.logout
 
-# Authentication
-POST    /login                      controllers.Application.authenticate
-GET     /logout                     controllers.Application.logout
+GET     /basic/messages/main               controllers.basic.Messages.main
+GET     /basic/messages/list               controllers.basic.Messages.list
+GET     /basic/messages/detail/:id         controllers.basic.Messages.detail(id: Int)
+GET     /basic/messages/write              controllers.basic.Messages.write
 
-# Message
-GET     /message/main               controllers.Messages.main
-GET     /message/list               controllers.Messages.list
-GET     /message/detail/:id         controllers.Messages.detail(id: Int)
-GET     /message/write              controllers.Messages.write
+# Builder
+GET     /builder/                          controllers.builder.Sessions.login
+POST    /builder/login                     controllers.builder.Sessions.authenticate
+GET     /builder/logout                    controllers.builder.Sessions.logout
 
-GET     /message2/main               controllers.Messages2.main
-GET     /message2/list               controllers.Messages2.list
-GET     /message2/detail/:id         controllers.Messages2.detail(id: Int)
-GET     /message2/write              controllers.Messages2.write
+GET     /builder/messages/main             controllers.builder.Messages.main
+GET     /builder/messages/list             controllers.builder.Messages.list
+GET     /builder/messages/detail/:id       controllers.builder.Messages.detail(id: Int)
+GET     /builder/messages/write            controllers.builder.Messages.write
+
+# Csrf
+GET     /csrf/                             controllers.csrf.Sessions.login
+POST    /csrf/login                        controllers.csrf.Sessions.authenticate
+GET     /csrf/logout                       controllers.csrf.Sessions.logout
+
+GET     /csrf/with_token                   controllers.csrf.PreventingCsrfSample.formWithToken
+GET     /csrf/without_token                controllers.csrf.PreventingCsrfSample.formWithoutToken
+POST    /csrf/                             controllers.csrf.PreventingCsrfSample.submitTarget
 
 
-GET     /csrf/with_token            controllers.PreventingCsrfSample.formWithToken
-GET     /csrf/without_token         controllers.PreventingCsrfSample.formWithoutToken
-POST    /csrf/                      controllers.PreventingCsrfSample.submitTarget
+# Ephemeral
+GET     /ephemeral/                          controllers.ephemeral.Sessions.login
+POST    /ephemeral/login                     controllers.ephemeral.Sessions.authenticate
+GET     /ephemeral/logout                    controllers.ephemeral.Sessions.logout
+
+GET     /ephemeral/messages/main             controllers.ephemeral.Messages.main
+GET     /ephemeral/messages/list             controllers.ephemeral.Messages.list
+GET     /ephemeral/messages/detail/:id       controllers.ephemeral.Messages.detail(id: Int)
+GET     /ephemeral/messages/write            controllers.ephemeral.Messages.write
 
 
 # Map static resources from the /public folder to the /assets URL path

@@ -12,7 +12,7 @@ trait CookieSupport { self: AuthConfig =>
 
   def bakeCookie(token: String)(result: Result): Result = {
     val value = Crypto.sign(token) + token
-    val maxAge = if (isTransientCookie) None else Some((sessionTimeoutInSeconds / 1000) + 1)
+    val maxAge = if (isTransientCookie) None else Some(sessionTimeoutInSeconds)
     result.withCookies(Cookie(cookieName, value, maxAge, cookiePathOption, cookieDomainOption, cookieSecureOption, cookieHttpOnlyOption))
   }
 

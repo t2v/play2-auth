@@ -1,7 +1,7 @@
 package jp.t2v.lab.play2.auth.sample
 
 import org.mindrot.jbcrypt.BCrypt
-import scalikejdbc._, SQLInterpolation._
+import scalikejdbc._
 
 case class Account(id: Int, email: String, password: String, name: String, permission: Permission)
 
