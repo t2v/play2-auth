@@ -13,13 +13,13 @@ trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
   final case class GenericOptionalAuthRequest[A, R[_] <: Request[_]](user: Option[User], underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
   final case class GenericAuthRequest[A, R[_] <: Request[_]](user: User, underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
 
-  final case class GenericOptionalAuthRefiner[R[_] <: Request[_]]() extends ActionRefiner[R, ({type L[A] = GenericOptionalAuthRequest[A, R]})#L] {
-    protected def refine[A](request: R[A]): Future[Either[Result, GenericOptionalAuthRequest[A, R]]] = {
+  final case class GenericOptionalAuthFunction[R[_] <: Request[_]]() extends ActionFunction[R, ({type L[A] = GenericOptionalAuthRequest[A, R]})#L] {
+    def invokeBlock[A](request: R[A], block: GenericOptionalAuthRequest[A, R] => Future[Result]) = {
       implicit val ctx = executionContext
       restoreUser(request, executionContext) recover {
-        case _ => None
-      } map { user =>
-        Right(GenericOptionalAuthRequest[A, R](user, request))
+        case _ => None -> identity[Result] _
+      } flatMap { case (user, cookieUpdater) =>
+        block(GenericOptionalAuthRequest[A, R](user, request)).map(cookieUpdater)
       }
     }
   }
@@ -47,7 +47,7 @@ trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
   }
 
   final def composeOptionalAuthAction[R[_] <: Request[_]](builder: ActionBuilder[R]): ActionBuilder[({type L[A] = GenericOptionalAuthRequest[A, R]})#L] = {
-    builder.andThen[({type L[A] = GenericOptionalAuthRequest[A, R]})#L](GenericOptionalAuthRefiner[R]())
+    builder.andThen[({type L[A] = GenericOptionalAuthRequest[A, R]})#L](GenericOptionalAuthFunction[R]())
   }
 
   final def composeAuthenticationAction[R[_] <: Request[_]](builder: ActionBuilder[R]): ActionBuilder[({type L[A] = GenericAuthRequest[A, R]})#L] = {
@@ -60,7 +60,7 @@ trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
 
   final type OptionalAuthRequest[A] = GenericOptionalAuthRequest[A, Request]
   final type AuthRequest[A] = GenericAuthRequest[A, Request]
-  final type OptionalAuthRefiner = GenericOptionalAuthRefiner[Request]
+  final type OptionalAuthFunction = GenericOptionalAuthFunction[Request]
   final type AuthenticationRefiner = GenericAuthenticationRefiner[Request]
   final type AuthorizationFilter = GenericAuthorizationFilter[Request]
 

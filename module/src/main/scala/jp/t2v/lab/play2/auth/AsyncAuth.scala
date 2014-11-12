@@ -4,17 +4,17 @@ import play.api.mvc._
 import play.api.libs.iteratee.{Iteratee, Done}
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AsyncAuth {
+trait AsyncAuth extends CookieSupport {
     self: AuthConfig with Controller =>
 
-  def authorized(authority: Authority)(implicit request: RequestHeader, context: ExecutionContext): Future[Either[Result, User]] = {
+  def authorized(authority: Authority)(implicit request: RequestHeader, context: ExecutionContext): Future[Either[Result, (User, CookieUpdater)]] = {
     restoreUser collect {
-      case Some(user) => Right(user)
+      case (Some(user), cookieUpdater) => Right(user -> cookieUpdater)
     } recoverWith {
       case _ => authenticationFailed(request).map(Left.apply)
     } flatMap {
-      case Right(user)  => authorize(user, authority) collect {
-        case true => Right(user)
+      case Right((user, cookieUpdater)) => authorize(user, authority) collect {
+        case true => Right(user -> cookieUpdater)
       } recoverWith {
         case _ => authorizationFailed(request).map(Left.apply)
       }
@@ -22,18 +22,18 @@ trait AsyncAuth {
     }
   }
 
-  private[auth] def restoreUser(implicit request: RequestHeader, context: ExecutionContext): Future[Option[User]] = {
+  private[auth] def restoreUser(implicit request: RequestHeader, context: ExecutionContext): Future[(Option[User], CookieUpdater)] = {
     (for {
       cookie <- request.cookies.get(cookieName)
-      token  <- CookieUtil.verifyHmac(cookie)
+      token  <- verifyHmac(cookie)
     } yield for {
       Some(userId) <- idContainer.get(token)
       Some(user)   <- resolveUser(userId)
       _            <- idContainer.prolongTimeout(token, sessionTimeoutInSeconds)
     } yield {
-      Option(user)
+      Option(user) -> bakeCookie(token) _
     }) getOrElse {
-      Future.successful(Option.empty)
+      Future.successful(Option.empty -> identity)
     }
   }
 
@@ -45,7 +45,7 @@ trait AsyncAuth {
     def async[A](p: BodyParser[A], authority: Authority)(f: User => Request[A] => Future[Result])(implicit context: ExecutionContext): Action[(A, User)] = {
       val parser = BodyParser {
         req => Iteratee.flatten(authorized(authority)(req, context).map {
-          case Right(user)  => p.map((_, user)).apply(req)
+          case Right((user, _))  => p.map((_, user)).apply(req)
           case Left(result) => Done[Array[Byte], Either[Result, (A, User)]](Left(result))
         })
       }
@@ -65,7 +65,7 @@ trait AsyncAuth {
       async(BodyParsers.parse.anyContent)(f)
 
     def async[A](p: BodyParser[A])(f: Option[User] => Request[A] => Future[Result])(implicit context: ExecutionContext): Action[A] =
-      Action.async(p)(req => restoreUser(req, context).flatMap(user => f(user)(req)) )
+      Action.async(p)(req => restoreUser(req, context).flatMap { case (user, _) => f(user)(req)})
 
     def apply(f: Option[User] => (Request[AnyContent] => Result))(implicit context: ExecutionContext): Action[AnyContent] =
       async(f.andThen(_.andThen(t=>Future.successful(t))))
