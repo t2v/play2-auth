@@ -5,6 +5,11 @@ import scala.concurrent.Future
 
 trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
 
+  // TODO:
+  // we should make `R`'s type parameter covariant. however, WrappedRequest type parameter is invariant.
+  // So, if R is covariant, we cannot compose it with ActionBuilders that use WrappedRequest.
+  // WrappedRequest will be covariant on 2.4 or later.
+  // When we should change it to covariant.
   final case class GenericOptionalAuthRequest[A, R[_] <: Request[_]](user: Option[User], underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
   final case class GenericAuthRequest[A, R[_] <: Request[_]](user: User, underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
 
@@ -55,6 +60,10 @@ trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
 
   final type OptionalAuthRequest[A] = GenericOptionalAuthRequest[A, Request]
   final type AuthRequest[A] = GenericAuthRequest[A, Request]
+  final type OptionalAuthRefiner = GenericOptionalAuthRefiner[Request]
+  final type AuthenticationRefiner = GenericAuthenticationRefiner[Request]
+  final type AuthorizationFilter = GenericAuthorizationFilter[Request]
+
   final val OptionalAuthAction: ActionBuilder[OptionalAuthRequest] = composeOptionalAuthAction(Action)
   final val AuthenticationAction: ActionBuilder[AuthRequest] = composeAuthenticationAction(Action)
   final def AuthorizationAction(authority: Authority): ActionBuilder[AuthRequest] = composeAuthorizationAction(Action)(authority)

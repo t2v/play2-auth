@@ -37,7 +37,7 @@ trait AsyncAuth {
     }
   }
 
-  @deprecated
+  @deprecated(message = "AuthActionBuilder#AuthorizationAction should be preferred", since = "0.13.0")
   object authorizedAction {
     def async(authority: Authority)(f: User => Request[AnyContent] => Future[Result])(implicit context: ExecutionContext): Action[(AnyContent, User)] =
       async(BodyParsers.parse.anyContent, authority)(f)
@@ -59,7 +59,7 @@ trait AsyncAuth {
       async(p,authority)(f.andThen(_.andThen(t=>Future.successful(t))))
   }
 
-  @deprecated
+  @deprecated(message = "AuthActionBuilder#OptionalAuthAction should be preferred", since = "0.13.0")
   object optionalUserAction {
     def async(f: Option[User] => Request[AnyContent] => Future[Result])(implicit context: ExecutionContext): Action[AnyContent] =
       async(BodyParsers.parse.anyContent)(f)
