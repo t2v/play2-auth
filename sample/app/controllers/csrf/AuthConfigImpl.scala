@@ -8,7 +8,7 @@ import scala.concurrent.{Future, ExecutionContext}
 
 trait AuthConfigImpl extends BaseAuthConfig {
 
-  def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful(Redirect(routes.PreventingCsrfSample.formWithoutToken))
+  def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful(Redirect(routes.PreventingCsrfSample.formWithToken))
   def logoutSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful(Redirect(routes.Sessions.login))
   def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful(Redirect(routes.Sessions.login))
 
