@@ -7,8 +7,6 @@ Play2.x module for Authentication and Authorization [![Build Status](https://sec
 ---------------------------------------
 
 このモジュールは __Play2.x__ の __Scala__版を対象としています。
-Java版には [Deadbolt 2](https://github.com/schaloner/deadbolt-2) というモジュールがありますので
-こちらも参考にして下さい。
 
 Play2.3.0 で動作確認をしています。
 
@@ -31,8 +29,8 @@ Play2.3.0 で動作確認をしています。
 
 これでは認証/認可以外にも様々なAction合成を行いたい場合にネストが深くなって非常に記述性が低くなります。
 
-このモジュールでは `Either[PlainResult, User]` を返すインターフェイスを用意することで、
-柔軟に他の操作を組み合わせて使用することができます。
+このモジュールでは [Stackable-Controller](https://github.com/t2v/stackable-controller)の実装や、
+`ActionRefiner` による実装など、柔軟に他の操作を組み合わせて使用する方法を提供しています。
 
 
 以前のバージョン
@@ -54,15 +52,15 @@ Play2.1以前をお使いの方へ
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2-auth"      % "0.12.0",
-        "jp.t2v" %% "play2-auth-test" % "0.12.0" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.13.0",
+        "jp.t2v" %% "play2-auth-test" % "0.13.0" % "test"
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"      % "0.12.0",
-    "jp.t2v" %% "play2-auth-test" % "0.12.0" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.13.0",
+    "jp.t2v" %% "play2-auth-test" % "0.13.0" % "test"
   )
 ```
 
@@ -158,6 +156,12 @@ For example: `Build.scala`
        * 実際のアプリケーションでは true にすることを強く推奨します。
        */
       override lazy val cookieSecureOption: Boolean = play.api.Play.isProd(play.api.Play.current)
+
+      /**
+       * SessionID Cookieの有効期限を、ブラウザが閉じられるまでにするか否かの設定です。
+       * デフォルトは false です。
+       */
+      override lazy val isTransientCookie: Boolean = false
 
     }
     ```
@@ -296,7 +300,6 @@ class ApplicationSpec extends Specification {
 
 
 以上で play2.auth を使用したコントローラのテストを行うことができます。
-
 
 
 高度な使い方
@@ -526,6 +529,196 @@ trait AuthConfigImpl extends AuthConfig {
 この実装を切り替えることで、例えば RDBMS に認証情報を登録するといった事も可能です。
 
 なお、`CookieIdContainer` ではSessionタイムアウトは未サポートとなっています。
+
+
+ActionFunction としての利用
+---------------------------------------
+
+Play2.2 から `ActionBuilder` が導入され、
+Play2.3 から `ActionBuilder` をさらに抽象化した `ActionFunction` が導入されました。
+
+`ActionFunction` の具象インターフェイスとして `ActionBuilder` と `ActionRefiner` があり、
+更に `ActionRefiner` の具象インターフェイスとして `ActionTransformer` と `ActionFilter` が存在しています。
+
+これらを組み合わせて様々な処理を合成した `ActionBuilder` を作成できるようになっています。
+
+
+そのため、play2-auth でも様々な `ActionFunction` の実装を提供しています。
+もし、他のライブラリや既存コードが `ActionFunction` を利用しているのであれば、
+これらの使用も検討できます。
+
+
+### ActionBuilders
+
+play2-auth が提供する `ActionFunction` 群を利用したい場合は、
+`AuthElement` の代わりに `AuthActionBuilders` を Controller に mixin します。
+
+`StackAction` や `AsyncStack` の代わりに、`OptionalAuthAction`, `AuthenticationAction` および `AuthorizationAction`
+を利用することができます。
+
+
+```scala
+object Message extends Controller with AuthActionBuilders with AuthConfigImpl {
+
+  import scala.concurrent.Future.{successful => future}
+
+  /**
+   * `OptionalAuthAction` の型は `ActionBuilder[OptionalAuthRequest]` です。
+   * つまり、`OptionalAuthRequest => Result` という関数を受け取り `Action` を作成します。
+   * 
+   * `OptionalAuthRequest` は `user: Option[User]` というフィールドを持っています。
+   * 認証が成功すれば `Some` を、失敗すれば `None` を保持しています。
+   * 認可は行いません。
+   */
+  def index = OptionalAuthAction.async { request =>
+    val maybeUser: Option[User] = request.user
+    future(Ok(view.html.index(maybeUser.getOrElse(GuestUser))))
+  }
+
+  /**
+   * `AuthenticationAction` の型は `ActionBuilder[AuthRequest]` です。
+   * つまり、`AuthRequest => Result` という関数を受け取り `Action` を作成します。
+   *
+   * `AuthRequest` は `user: User` というフィールドを持っています。
+   * 認証が成功していれば、受け取った `AuthRequest => Result` を実行し、
+   * 失敗していれば、`AuthConfig` で定義された `authenticationFailed` を返す
+   * `Action` を生成します。
+   * 認可は行いません。
+   */
+  def notNeedAuthorization = AuthenticationAction.async { request =>
+    val user: User = request.user
+    future(Ok(view.html.messages(user)))
+  }
+
+  /**
+   * `AuthorizationAction` は `Authority` を受け取って `ActionBuilder[AuthRequest]` を返す関数です。
+   *
+   * 認証が成功していれば、認可を行い、
+   * 失敗していれば、`AuthConfig` で定義された `authenticationFailed` を返します。
+   * 認可が成功していれば `AuthRequest => Result` を実行し、
+   * 失敗していれば、`AuthConfig` で定義された `authorizationFailed` を返す `Action` を生成します。
+   */
+  def needAuthorization = AuthorizationAction(Admin).async { request =>
+    val user: User = request.user
+    future(Ok(view.html.messages(user)))
+  }
+
+}
+```
+
+### ActionFunctions
+
+上記の `OptionalAuthAction`, `AuthenticationAction` および `AuthorizationAction` は `ActionBuilder` なので、
+このままでは他の `ActionBuilder` と合成することはできません。
+
+他の `ActionBuilder` と合成が可能なように、 `OptionalAuthFunction`, `AuthenticationRefiner` および `AuthorizationFilter`
+が定義されています。
+
+それぞれの型は以下のようになっています。
+
+```scala
+  val OptionalAuthFunction: ActionFunction[Request, OptionalAuthRequest]
+  val AuthenticationRefiner: ActionRefiner[OptionalAuthRequest, AuthRequest]
+  def AuthorizationFilter(authority: Authority): ActionFilter[AuthRequest]
+```
+
+したがって、他のライブラリで提供された、もしくは自分で定義した 
+`ActionBuilder[Request]` が存在していれば、下記のように合成することが可能です。
+
+```scala
+object MyCoolAction extends ActionBuilder[Request] {
+  ... 
+}
+
+object MyController extends Controller with AuthActionBuilders with AuthConfigImpl {
+
+  val MyCoolOptionalAuthAction: ActionBuilder[OptionalAuthRequest] =
+    MyCoolAction andThen OptionalAuthFunction
+
+  val MyCoolAuthenticationAction: ActionBuilder[AuthRequest] =
+    MyCoolOptionalAuthAction andThen AuthenticationRefiner
+
+  def MyCoolAuthorizationAction(authority: Authority): ActionBuilder[AuthRequest] =
+    MyCoolAuthenticationAction andThen AuthorizationFilter(authority)
+
+
+  def index = MyCoolAuthorizationAction(Admin).async {
+    ...
+  }
+
+}
+```
+
+### 独自リクエスト型を持つ ActionBuilder との合成
+
+上記では `ActionBuilder[Request]` と合成する例を示しました。
+しかし、実際には `ActionBuilder` が、独自のリクエスト型を扱っている場合があります。
+
+例えばAction単位でトランザクションを表すようなものを考えた場合、
+以下のような `ActionBuilder` を定義するかもしれません。
+
+```scala
+case class TxRequest[A](session: DBSession, underlying: Request[A]) extends WrappedRequest[A](underlying)
+
+object TxAction extends ActionBuilder[TxRequest] {
+  override def invokeBlock[A](request: Request[A], block: (TxRequest[A]) => Future[Result]): Future[Result] = {
+    import scalikejdbc.TxBoundary.Future._
+    implicit val ctx = executionContext
+    DB.localTx { session =>
+      block(new TxRequest(session, request))
+    }
+  }
+}
+```
+
+こうした場合、`OptionalAuthFunction` はあくまで `ActionFunction[Request, OptionalAuthRequest]` のため
+`TxAction` と合成することができません。
+
+また、仮に合成ができたとしても `OptionalAuthRequest` は `TxRequest` の持つ `session` の事を知りようが無いので、
+実際のAction処理中で `DBSession` を扱うことができません。
+
+そこで play2-auth ではこれらの仕組みを更に抽象化した仕組みを提供しています。
+
+下記のように `GenericOptionalAuthRequest` や `GenericAuthRequest` また、 
+`GenericOptionalAuthFunction`, `GenericAuthenticationRefiner` および `GenericAuthorizationFilter` を使用すれば、
+`TxAction` のような `ActionBuilder` とも合成が可能になります。
+
+```scala
+object MyController extends Controller with AuthActionBuilders with AuthConfigImpl {
+
+  type OptionalAuthTxRequest[A] = GenericOptionalAuthRequest[A, TxRequest]
+  type AuthTxRequest[A] = GenericAuthRequest[A, TxRequest]
+
+  val OptionalAuthTxAction: ActionBuilder[OptionalAuthTxRequest] = 
+    composeOptionalAuthAction(TransactionalAction)
+
+  val AuthenticationTxAction: ActionBuilder[AuthTxRequest] = 
+    composeOptionalAuthAction(TransactionalAction)
+
+  def AuthorizationTxAction(authority: Authority): ActionBuilder[AuthTxRequest] = 
+    composeAuthorizationAction(TransactionalAction)(authority)
+
+  /**
+   * GenericOptionalAuthRequest および GenericAuthRequest は、
+   * 第2型引数で指定されたリクエスト型を underlying というフィールドで提供します。
+   * したがって、AuthTxRequest では、 TxRequest から DBSession を取得することが可能です。
+   */
+  def index = AuthorizationTxAction(Admin).async { request => 
+    val user: User = request.user
+    val session: DBSession = request.underlying.session
+    ...
+  }
+
+}
+```
+
+この様にして、play2-auth では、任意の `ActionBuilder` と合成できる仕組みを提供しています。
+
+しかし、独自リクエスト型を持つ `ActionBuilder` が複数存在し、その全てを合成しようとすると、
+Play2 の現在の仕組みではできません。
+
+したがって、基本的には [[Stackable-Controller]](https://github.com/t2v/stackable-controller)
+の利用を推奨いたします。
 
 
 サンプルアプリケーション

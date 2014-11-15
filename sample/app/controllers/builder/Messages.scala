@@ -27,14 +27,14 @@ trait Messages extends Controller with AuthActionBuilders with AuthConfigImpl {
   final def AuthorizationTxAction(authority: Authority): ActionBuilder[AuthTxRequest] = composeAuthorizationAction(TransactionalAction)(authority)
 
   class PjaxAuthRequest[A](val template: String => Html => Html, val authRequest: AuthTxRequest[A]) extends WrappedRequest[A](authRequest)
-  class PjaxRefiner extends ActionTransformer[AuthTxRequest, PjaxAuthRequest] {
+  object PjaxRefiner extends ActionTransformer[AuthTxRequest, PjaxAuthRequest] {
     override protected def transform[A](request: AuthTxRequest[A]): Future[PjaxAuthRequest[A]] = {
       val template: String => Html => Html = if (request.headers.keys("X-Pjax")) html.pjaxTemplate.apply else html.builder.fullTemplate.apply(request.user)
       Future.successful(new PjaxAuthRequest(template, request))
     }
   }
 
-  def MyAction(authority: Authority): ActionBuilder[PjaxAuthRequest] = AuthorizationTxAction(authority).andThen(new PjaxRefiner)
+  def MyAction(authority: Authority): ActionBuilder[PjaxAuthRequest] = AuthorizationTxAction(authority) andThen PjaxRefiner
 
   def main = MyAction(NormalUser) { implicit request =>
     val title = "message main"

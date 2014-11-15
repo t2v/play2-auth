@@ -9,7 +9,7 @@ object ApplicationBuild extends Build {
   val playVersion = play.core.PlayVersion.current
 
   lazy val baseSettings = Seq(
-    version            := "0.13.0-SNAPSHOT",
+    version            := "0.13.0",
     scalaVersion       := "2.10.4",
     crossScalaVersions := Seq("2.10.4", "2.11.1"),
     organization       := "jp.t2v",
@@ -62,7 +62,7 @@ object ApplicationBuild extends Build {
     .settings(
       libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion        % "provided",
       libraryDependencies += play.PlayImport.cache,
-      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.4.1-SNAPSHOT",
+      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.4.1",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
