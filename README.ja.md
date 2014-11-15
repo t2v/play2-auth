@@ -690,13 +690,13 @@ object MyController extends Controller with AuthActionBuilders with AuthConfigIm
   type AuthTxRequest[A] = GenericAuthRequest[A, TxRequest]
 
   val OptionalAuthTxAction: ActionBuilder[OptionalAuthTxRequest] = 
-    composeOptionalAuthAction(TransactionalAction)
+    composeOptionalAuthAction(TxAction)
 
   val AuthenticationTxAction: ActionBuilder[AuthTxRequest] = 
-    composeOptionalAuthAction(TransactionalAction)
+    composeOptionalAuthAction(TxAction)
 
   def AuthorizationTxAction(authority: Authority): ActionBuilder[AuthTxRequest] = 
-    composeAuthorizationAction(TransactionalAction)(authority)
+    composeAuthorizationAction(TxAction)(authority)
 
   /**
    * GenericOptionalAuthRequest および GenericAuthRequest は、
