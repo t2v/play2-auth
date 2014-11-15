@@ -520,7 +520,7 @@ trait AuthConfigImpl extends AuthConfig {
 
   // 他の設定省略
 
-  override lazy val idContainer: IdContainer[Id] = new CookieIdContainer[Id]
+  override lazy val idContainer: AsyncIdContainer[Id] = AsyncIdContainer(new CookieIdContainer[Id])
 
 }
 ```
