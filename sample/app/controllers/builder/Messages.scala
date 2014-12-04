@@ -2,7 +2,7 @@ package controllers.builder
 
 import jp.t2v.lab.play2.auth.AuthActionBuilders
 import jp.t2v.lab.play2.auth.sample.Account
-import jp.t2v.lab.play2.auth.sample.Permission._
+import jp.t2v.lab.play2.auth.sample.Role._
 import play.api.mvc._
 import play.twirl.api.Html
 import scalikejdbc.{DB, DBSession}
