@@ -98,11 +98,11 @@ Usage
        * A type that is defined by every action for authorization.
        * This sample uses the following trait:
        *
-       * sealed trait Permission
-       * case object Administrator extends Permission
-       * case object NormalUser extends Permission
+       * sealed trait Role
+       * case object Administrator extends Role
+       * case object NormalUser extends Role
        */
-      type Authority = Permission
+      type Authority = Role
 
       /**
        * A `ClassTag` is used to retrieve an id from the Cache API.
@@ -150,7 +150,7 @@ Usage
        * You should alter this procedure to suit your application.
        */
       def authorize(user: User, authority: Authority)(implicit ctx: ExecutionContext): Future[Boolean] = Future.successful {
-        (user.permission, authority) match {
+        (user.role, authority) match {
           case (Administrator, _)       => true
           case (NormalUser, NormalUser) => true
           case _                        => false
@@ -532,7 +532,7 @@ Running The Sample Application
     
         defined accounts
         
-            Email             | Password | Permission
+            Email             | Password | Role
             alice@example.com | secret   | Administrator
             bob@example.com   | secret   | NormalUser
             chris@example.com | secret   | NormalUser

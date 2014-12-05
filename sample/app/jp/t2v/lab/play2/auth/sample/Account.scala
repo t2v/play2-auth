@@ -3,7 +3,7 @@ package jp.t2v.lab.play2.auth.sample
 import org.mindrot.jbcrypt.BCrypt
 import scalikejdbc._
 
-case class Account(id: Int, email: String, password: String, name: String, permission: Permission)
+case class Account(id: Int, email: String, password: String, name: String, role: Role)
 
 object Account extends SQLSyntaxSupport[Account] {
 
@@ -15,7 +15,7 @@ object Account extends SQLSyntaxSupport[Account] {
     email      = rs.string(a.email),
     password   = rs.string(a.password),
     name       = rs.string(a.name),
-    permission = Permission.valueOf(rs.string(a.permission))
+    role       = Role.valueOf(rs.string(a.role))
   )
 
   private val auto = AutoSession
@@ -40,7 +40,7 @@ object Account extends SQLSyntaxSupport[Account] {
     withSQL { 
       import account._
       val pass = BCrypt.hashpw(account.password, BCrypt.gensalt())
-      insert.into(Account).values(id, email, pass, name, permission.toString) 
+      insert.into(Account).values(id, email, pass, name, role.toString) 
     }.update.apply()
   }
 

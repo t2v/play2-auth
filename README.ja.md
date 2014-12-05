@@ -91,11 +91,11 @@ For example: `Build.scala`
        * 認可(権限チェック)を行う際に、アクション毎に設定するオブジェクトの型です。
        * このサンプルでは例として以下のような trait を使用しています。
        *
-       * sealed trait Permission
-       * case object Administrator extends Permission
-       * case object NormalUser extends Permission
+       * sealed trait Role
+       * case object Administrator extends Role
+       * case object NormalUser extends Role
        */
-      type Authority = Permission
+      type Authority = Role
 
       /**
        * CacheからユーザIDを取り出すための ClassTag です。
@@ -143,7 +143,7 @@ For example: `Build.scala`
        * 任意の処理を記述してください。
        */
       def authorize(user: User, authority: Authority)(implicit ctx: ExecutionContext): Future[Boolean] = Future.successful {
-        (user.permission, authority) match {
+        (user.role, authority) match {
           case (Administrator, _) => true
           case (NormalUser, NormalUser) => true
           case _ => false
@@ -733,7 +733,7 @@ Play2 の現在の仕組みではできません。
     
         アカウントは以下の3アカウントが登録されています。
         
-            Email             | Password | Permission
+            Email             | Password | Role
             alice@example.com | secret   | Administrator
             bob@example.com   | secret   | NormalUser
             chris@example.com | secret   | NormalUser
