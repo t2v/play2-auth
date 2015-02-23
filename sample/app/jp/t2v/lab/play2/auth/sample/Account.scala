@@ -7,16 +7,9 @@ case class Account(id: Int, email: String, password: String, name: String, role:
 
 object Account extends SQLSyntaxSupport[Account] {
 
-  val a = syntax("a")
+  private val a = syntax("a")
 
-  def apply(a: SyntaxProvider[Account])(rs: WrappedResultSet): Account = apply(a.resultName)(rs)
-  def apply(a: ResultName[Account])(rs: WrappedResultSet): Account = new Account(
-    id         = rs.int(a.id),
-    email      = rs.string(a.email),
-    password   = rs.string(a.password),
-    name       = rs.string(a.name),
-    role       = Role.valueOf(rs.string(a.role))
-  )
+  def apply(a: SyntaxProvider[Account])(rs: WrappedResultSet): Account = autoConstruct(rs, a)
 
   private val auto = AutoSession
 
