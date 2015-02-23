@@ -3,6 +3,7 @@ package jp.t2v.lab.play2.auth
 import play.api.libs.Crypto
 import play.api.mvc.{Result, Cookie}
 
+@deprecated(since = "0.14.0", message = "It will be deleted. use TokenAccessor instead of this")
 trait CookieSupport { self: AuthConfig =>
 
   def verifyHmac(cookie: Cookie): Option[String] = {
@@ -17,4 +18,3 @@ trait CookieSupport { self: AuthConfig =>
   }
 
 }
-

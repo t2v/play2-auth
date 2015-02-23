@@ -30,16 +30,31 @@ trait AuthConfig {
 
   lazy val idContainer: AsyncIdContainer[Id] = AsyncIdContainer(new CacheIdContainer[Id])
 
+  @deprecated(since = "0.14.0", message = "it will be deleted since 0.15.x. use CookieTokenAccessor constructor")
   lazy val cookieName: String = "PLAY2AUTH_SESS_ID"
 
+  @deprecated(since = "0.14.0", message = "it will be deleted since 0.15.x. use CookieTokenAccessor constructor")
   lazy val cookieSecureOption: Boolean = false
 
+  @deprecated(since = "0.14.0", message = "it will be deleted since 0.15.x. use CookieTokenAccessor constructor")
   lazy val cookieHttpOnlyOption: Boolean = true
 
+  @deprecated(since = "0.14.0", message = "it will be deleted since 0.15.x. use CookieTokenAccessor constructor")
   lazy val cookieDomainOption: Option[String] = None
 
+  @deprecated(since = "0.14.0", message = "it will be deleted since 0.15.x. use CookieTokenAccessor constructor")
   lazy val cookiePathOption: String = "/"
 
+  @deprecated(since = "0.14.0", message = "it will be deleted since 0.15.x. use CookieTokenAccessor constructor")
   lazy val isTransientCookie: Boolean = false
+
+  lazy val tokenAccessor: TokenAccessor = new CookieTokenAccessor(
+    cookieName = cookieName,
+    cookieSecureOption = cookieSecureOption,
+    cookieHttpOnlyOption = cookieHttpOnlyOption,
+    cookieDomainOption = cookieDomainOption,
+    cookiePathOption = cookiePathOption,
+    cookieMaxAge = if (isTransientCookie) None else Some(sessionTimeoutInSeconds)
+  )
 
 }

@@ -6,6 +6,6 @@ package object auth {
 
   type AuthenticityToken = String
 
-  type CookieUpdater = Result => Result
+  type ResultUpdater = Result => Result
 
 }

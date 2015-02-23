@@ -27,6 +27,7 @@ class IntegrationSpec extends Specification {
       browser.$("dl.error").size must equalTo(0)
       browser.pageSource must not contain("Sign in")
       browser.pageSource must contain("logout")
+      browser.getCookie("PLAY2AUTH_SESS_ID").getExpiry must not beNull
 
       // logout
       browser.$("a").click()
