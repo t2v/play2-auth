@@ -19,7 +19,7 @@ trait TokenValidateElement extends StackableController {
   private val table = ('a' to 'z') ++ ('A' to 'Z') ++ ('0' to '9') ++ "^`~:/?,.{[}}|+_()*^%$#@!"
 
   private def generateToken: PreventingCsrfToken = PreventingCsrfToken {
-    Stream.continually(random.nextInt(table.size)).map(table).take(32).mkString
+    Iterator.continually(random.nextInt(table.size)).map(table).take(32).mkString
   }
 
   case object PreventingCsrfTokenKey extends RequestAttributeKey[PreventingCsrfToken]
