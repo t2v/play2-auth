@@ -23,7 +23,7 @@ class CacheIdContainer[Id: ClassTag] extends IdContainer[Id] {
   @tailrec
   private[auth] final def generate: AuthenticityToken = {
     val table = "abcdefghijklmnopqrstuvwxyz1234567890_.!~*'()"
-    val token = Stream.continually(random.nextInt(table.size)).map(table).take(64).mkString
+    val token = Iterator.continually(random.nextInt(table.size)).map(table).take(64).mkString
     if (get(token).isDefined) generate else token
   }
 
