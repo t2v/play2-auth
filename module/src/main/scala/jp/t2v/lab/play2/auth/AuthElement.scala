@@ -1,6 +1,7 @@
 package jp.t2v.lab.play2.auth
 
 import play.api.mvc.{Result, Controller}
+import play.api.data.Form
 import jp.t2v.lab.play2.stackc.{RequestWithAttributes, RequestAttributeKey, StackableController}
 import scala.concurrent.Future
 
@@ -59,4 +60,37 @@ trait AuthenticationElement extends StackableController with AsyncAuth {
 
   implicit def loggedIn(implicit req: RequestWithAttributes[_]): User = req.get(AuthKey).get
 
+}
+
+trait FormSubmissionAuthElement extends StackableController {
+  self: Controller with AuthConfig with AuthElement =>
+
+  type Model
+  type ModelId
+
+  val idForm: Form[ModelId]
+
+  override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
+    implicit val (r, ctx) = (req, StackActionExecutionContext(req))
+    idForm.bindFromRequest.fold(
+      formWithErrors => {
+        formErrors(formWithErrors)
+      },
+      id => {
+        resolveModel(id) match {
+          case Some(model) if isAuthorized(model, loggedIn) => super.proceed(req)(f)
+          case Some(model)                                  => authorizationFailed(req)
+          case None                                         => notFound
+        }
+      }
+    )
+  }
+
+  def formErrors(form: Form[ModelId]): Future[Result]
+
+  def resolveModel(id: ModelId): Option[Model]
+
+  def isAuthorized(model: Model, user: User): Boolean
+
+  def notFound: Future[Result]
 }
