@@ -7,9 +7,9 @@ import play.api.test.Helpers._
 import java.io.File
 
 class IntegrationSpec extends Specification {
-  
-  "Basic Sample" should {
-    
+
+  "Standard Sample" should {
+
     "work from within a browser" in new WithBrowser(webDriver = WebDriverFactory(HTMLUNIT), app = FakeApplication(additionalConfiguration = inMemoryDatabase(name = "default", options = Map("DB_CLOSE_DELAY" -> "-1")))) {
 
       val baseURL = s"http://localhost:${port}"
@@ -25,7 +25,7 @@ class IntegrationSpec extends Specification {
       browser.$("#password").text("secret")
       browser.$("#loginbutton").click()
       browser.$("dl.error").size must equalTo(0)
-      browser.pageSource must not contain("Sign in")
+      browser.pageSource must not contain ("Sign in")
       browser.pageSource must contain("logout")
       browser.getCookie("PLAY2AUTH_SESS_ID").getExpiry must not beNull
 
@@ -33,7 +33,7 @@ class IntegrationSpec extends Specification {
       browser.$("a").click()
       browser.pageSource must contain("Sign in")
 
-      browser.goTo(s"$baseURL/basic/messages/write")
+      browser.goTo(s"$baseURL/standard/messages/write")
       browser.pageSource must contain("Sign in")
 
     }
@@ -51,15 +51,15 @@ class IntegrationSpec extends Specification {
       browser.pageSource must not contain("Sign in")
       browser.pageSource must contain("logout")
 
-      browser.goTo(s"${baseURL}/basic/messages/write")
+      browser.goTo(s"${baseURL}/standard/messages/write")
       browser.pageSource must contain("no permission")
 
-      browser.goTo(s"${baseURL}/basic/logout")
+      browser.goTo(s"${baseURL}/standard/logout")
       browser.$("#email").text("alice@example.com")
       browser.$("#password").text("secret")
       browser.$("#loginbutton").click()
       browser.$("dl.error").size must equalTo(0)
-      browser.goTo(s"${baseURL}/basic/messages/write")
+      browser.goTo(s"${baseURL}/standard/messages/write")
       browser.pageSource must not contain("no permission")
 
     }
@@ -212,6 +212,20 @@ class IntegrationSpec extends Specification {
     }
 
   }
+
+  "HTTP Basic Auth Sample" should {
+
+    "work from within a browser" in new WithBrowser(webDriver = WebDriverFactory(HTMLUNIT), app = FakeApplication(additionalConfiguration = inMemoryDatabase(name = "default", options = Map("DB_CLOSE_DELAY" -> "-1")))) {
+
+      val baseURL = s"http://localhost:${port}"
+      // login failed
+      browser.goTo(s"$baseURL/basic/")
+      browser.url must equalTo("/basic/messages/main")
+
+    }
+
+  }
+
 
 }
 

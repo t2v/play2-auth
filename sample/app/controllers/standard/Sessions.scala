@@ -1,4 +1,4 @@
-package controllers.basic
+package controllers.standard
 
 import jp.t2v.lab.play2.auth.LoginLogout
 import jp.t2v.lab.play2.auth.sample.Account
@@ -10,7 +10,7 @@ import views.html
 import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-object Sessions  extends Controller with LoginLogout with AuthConfigImpl {
+object Sessions extends Controller with LoginLogout with AuthConfigImpl {
 
   val loginForm = Form {
     mapping("email" -> email, "password" -> text)(Account.authenticate)(_.map(u => (u.email, "")))
@@ -18,7 +18,7 @@ object Sessions  extends Controller with LoginLogout with AuthConfigImpl {
   }
 
   def login = Action { implicit request =>
-    Ok(html.basic.login(loginForm))
+    Ok(html.standard.login(loginForm))
   }
 
   def logout = Action.async { implicit request =>
@@ -29,7 +29,7 @@ object Sessions  extends Controller with LoginLogout with AuthConfigImpl {
 
   def authenticate = Action.async { implicit request =>
     loginForm.bindFromRequest.fold(
-      formWithErrors => Future.successful(BadRequest(html.basic.login(formWithErrors))),
+      formWithErrors => Future.successful(BadRequest(html.standard.login(formWithErrors))),
       user           => gotoLoginSucceeded(user.get.id)
     )
   }

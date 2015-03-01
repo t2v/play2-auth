@@ -2,15 +2,15 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Basic
-GET     /                                  controllers.basic.Sessions.login
-POST    /basic/login                       controllers.basic.Sessions.authenticate
-GET     /basic/logout                      controllers.basic.Sessions.logout
+# Standard
+GET     /                                     controllers.standard.Sessions.login
+POST    /standard/login                       controllers.standard.Sessions.authenticate
+GET     /standard/logout                      controllers.standard.Sessions.logout
 
-GET     /basic/messages/main               controllers.basic.Messages.main
-GET     /basic/messages/list               controllers.basic.Messages.list
-GET     /basic/messages/detail/:id         controllers.basic.Messages.detail(id: Int)
-GET     /basic/messages/write              controllers.basic.Messages.write
+GET     /standard/messages/main               controllers.standard.Messages.main
+GET     /standard/messages/list               controllers.standard.Messages.list
+GET     /standard/messages/detail/:id         controllers.standard.Messages.detail(id: Int)
+GET     /standard/messages/write              controllers.standard.Messages.write
 
 # Builder
 GET     /builder/                          controllers.builder.Sessions.login
@@ -41,6 +41,13 @@ GET     /ephemeral/messages/main             controllers.ephemeral.Messages.main
 GET     /ephemeral/messages/list             controllers.ephemeral.Messages.list
 GET     /ephemeral/messages/detail/:id       controllers.ephemeral.Messages.detail(id: Int)
 GET     /ephemeral/messages/write            controllers.ephemeral.Messages.write
+
+# HTTP Basic Auth
+GET     /basic/                            controllers.Default.redirect(to = "/basic/messages/main")
+GET     /basic/messages/main               controllers.basic.Messages.main
+GET     /basic/messages/list               controllers.basic.Messages.list
+GET     /basic/messages/detail/:id         controllers.basic.Messages.detail(id: Int)
+GET     /basic/messages/write              controllers.basic.Messages.write
 
 
 # Map static resources from the /public folder to the /assets URL path
