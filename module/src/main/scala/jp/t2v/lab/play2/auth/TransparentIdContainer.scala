@@ -2,7 +2,7 @@ package jp.t2v.lab.play2.auth
 
 import scala.util.control.Exception._
 
-class CookieIdContainer[Id: ToString: FromString] extends IdContainer[Id] {
+class TransparentIdContainer[Id: ToString: FromString] extends IdContainer[Id] {
 
   def startNewSession(userId: Id, timeoutInSeconds: Int) = implicitly[ToString[Id]].apply(userId)
 
