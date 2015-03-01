@@ -11,12 +11,12 @@ class CookieTokenAccessor(
     cookieMaxAge: Option[Int] = None
 ) extends TokenAccessor {
 
-  def put(token: String)(result: Result): Result = {
+  def put(token: AuthenticityToken)(result: Result): Result = {
     val c = Cookie(cookieName, sign(token), cookieMaxAge, cookiePathOption, cookieDomainOption, cookieSecureOption, cookieHttpOnlyOption)
     result.withCookies(c)
   }
 
-  def extract(request: RequestHeader): Option[String] = {
+  def extract(request: RequestHeader): Option[AuthenticityToken] = {
     request.cookies.get(cookieName).flatMap(c => verifyHmac(c.value))
   }
 

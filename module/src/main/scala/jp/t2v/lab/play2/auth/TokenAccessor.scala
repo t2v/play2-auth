@@ -5,17 +5,17 @@ import play.api.libs.Crypto
 
 trait TokenAccessor {
 
-  def extract(request: RequestHeader): Option[String]
+  def extract(request: RequestHeader): Option[AuthenticityToken]
 
-  def put(token: String)(result: Result): Result
+  def put(token: AuthenticityToken)(result: Result): Result
 
   def delete(result: Result): Result
 
-  protected def verifyHmac(token: String): Option[String] = {
+  protected def verifyHmac(token: SignedToken): Option[AuthenticityToken] = {
     val (hmac, value) = token.splitAt(40)
     if (Crypto.sign(value) == hmac) Some(value) else None
   }
 
-  protected def sign(token: String): String = Crypto.sign(token) + token
+  protected def sign(token: AuthenticityToken): SignedToken = Crypto.sign(token) + token
 
 }
