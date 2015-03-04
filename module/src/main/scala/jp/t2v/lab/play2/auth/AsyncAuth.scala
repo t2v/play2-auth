@@ -16,7 +16,7 @@ trait AsyncAuth {
       case Right((user, resultUpdater)) => authorize(user, authority) collect {
         case true => Right(user -> resultUpdater)
       } recoverWith {
-        case _ => authorizationFailed(request).map(Left.apply)
+        case _ => authorizationFailed(request, user, Some(authority)).map(Left.apply)
       }
       case Left(result) => Future.successful(Left(result))
     }

@@ -41,7 +41,7 @@ trait AuthActionBuilders extends AsyncAuth { self: AuthConfig with Controller =>
       authorize(request.user, authority) collect {
         case true => None
       } recoverWith {
-        case _ => authorizationFailed(request).map(Some.apply)
+        case _ => authorizationFailed(request, request.user, Some(authority)).map(Some.apply)
       }
     }
   }

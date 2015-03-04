@@ -14,11 +14,17 @@ trait AuthElement extends StackableController with AsyncAuth {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
     req.get(AuthorityKey) map { authority =>
       authorized(authority) flatMap {
-        case Right((user, cookieUpdater)) => super.proceed(req.set(AuthKey, user))(f).map(cookieUpdater)
+        case Right((user, resultUpdater)) => super.proceed(req.set(AuthKey, user))(f).map(resultUpdater)
         case Left(result)                 => Future.successful(result)
       }
     } getOrElse {
-      authorizationFailed(req)
+      restoreUser collect {
+        case (Some(user), _) => user
+      } flatMap {
+        authorizationFailed(req, _, None)
+      } recoverWith {
+        case _ => authenticationFailed(req)
+      }
     }
   }
 
