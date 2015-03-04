@@ -8,6 +8,7 @@ import play.api.mvc.Results._
 
 import scala.concurrent.{Future, ExecutionContext}
 import scala.reflect._
+import play.Logger
 
 trait BaseAuthConfig  extends AuthConfig {
 
@@ -19,7 +20,11 @@ trait BaseAuthConfig  extends AuthConfig {
   val sessionTimeoutInSeconds = 3600
 
   def resolveUser(id: Id)(implicit ctx: ExecutionContext) = Future.successful(Account.findById(id))
-  def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful(Forbidden("no permission"))
+  def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = throw new AssertionError("don't use")
+  override def authorizationFailed(request: RequestHeader, user: User, authority: Authority)(implicit ctx: ExecutionContext) = {
+    Logger.info(s"authorizationFailed. userId: ${user.id}, userName: ${user.name}, authority: $authority")
+    Future.successful(Forbidden("no permission"))
+  }
   def authorize(user: User, authority: Authority)(implicit ctx: ExecutionContext) = Future.successful((user.role, authority) match {
     case (Administrator, _) => true
     case (NormalUser, NormalUser) => true

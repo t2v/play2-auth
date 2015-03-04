@@ -24,7 +24,12 @@ trait AuthConfig {
 
   def authenticationFailed(request: RequestHeader)(implicit context: ExecutionContext): Future[Result]
 
+  @deprecated("it will be deleted since 0.14.x. use authorizationFailed(RequestHeader, User, Authority)", since = "0.13.1")
   def authorizationFailed(request: RequestHeader)(implicit context: ExecutionContext): Future[Result]
+
+  def authorizationFailed(request: RequestHeader, user: User, authority: Authority)(implicit context: ExecutionContext): Future[Result] = {
+    authorizationFailed(request)
+  }
 
   def authorize(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean]
 
