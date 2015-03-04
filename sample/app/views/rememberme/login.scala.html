@@ -1,4 +1,4 @@
-@(form: Form[Option[Account]])(implicit flash: Flash)
+@(form: Form[Option[Account]], rememberme: Form[Boolean])(implicit flash: Flash)
 <!DOCTYPE html>
 
 <html>
@@ -10,7 +10,7 @@
 </head>
 <body>
 
-  @helper.form(controllers.basic.routes.Sessions.authenticate) {
+  @helper.form(controllers.rememberme.routes.Sessions.authenticate) {
 
     <h1>Sign in</h1>
 
@@ -31,6 +31,9 @@
     </p>
     <p>
       <input type="password" name="password" id="password" placeholder="Password">
+    </p>
+    <p>
+      <input type="checkbox" name="rememberme" id="rememberme" value="true" @if(rememberme.get) {checked="checked"} /><label for="rememberme">Remember me</label>
     </p>
     <p>
       <button type="submit" id="loginbutton">Login</button>

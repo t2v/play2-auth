@@ -5,7 +5,7 @@ import play.api.mvc.Cookie
 import play.api.libs.Crypto
 import scala.concurrent.{Future, ExecutionContext}
 
-trait LoginLogout extends CookieSupport {
+trait LoginLogout {
   self: Controller with AuthConfig =>
 
   def gotoLoginSucceeded(userId: Id)(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
@@ -15,14 +15,14 @@ trait LoginLogout extends CookieSupport {
   def gotoLoginSucceeded(userId: Id, result: => Future[Result])(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = for {
     token <- idContainer.startNewSession(userId, sessionTimeoutInSeconds)
     r     <- result
-  } yield bakeCookie(token)(r)
+  } yield tokenAccessor.put(token)(r)
 
   def gotoLogoutSucceeded(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
     gotoLogoutSucceeded(logoutSucceeded(request))
   }
 
   def gotoLogoutSucceeded(result: => Future[Result])(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
-    request.cookies.get(cookieName) flatMap verifyHmac foreach idContainer.remove
-    result.map(_.discardingCookies(DiscardingCookie(cookieName)))
+    tokenAccessor.extract(request) foreach idContainer.remove
+    result.map(tokenAccessor.delete)
   }
 }

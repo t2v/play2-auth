@@ -1,13 +1,12 @@
-package controllers.basic
+package controllers.rememberme
 
 import controllers.stack.Pjax
 import jp.t2v.lab.play2.auth.AuthElement
 import play.api.mvc.Controller
 import views.html
 import jp.t2v.lab.play2.auth.sample.Role._
-import play.twirl.api.Html
 
-trait Messages extends Controller with AuthElement with AuthConfigImpl {
+trait Messages extends Controller with Pjax with AuthElement with AuthConfigImpl {
 
   def main = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     val title = "message main"
@@ -29,7 +28,7 @@ trait Messages extends Controller with AuthElement with AuthConfigImpl {
     Ok(html.message.write(title))
   }
 
-  protected implicit def template(implicit user: User): String => Html => Html = html.basic.fullTemplate(user)
+  protected val fullTemplate: User => Template = html.rememberme.fullTemplate.apply
 
 }
 object Messages extends Messages
