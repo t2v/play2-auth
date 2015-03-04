@@ -21,7 +21,7 @@ trait BaseAuthConfig  extends AuthConfig {
 
   def resolveUser(id: Id)(implicit ctx: ExecutionContext) = Future.successful(Account.findById(id))
   def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = throw new AssertionError("don't use")
-  override def authorizationFailed(request: RequestHeader, user: User, authority: Authority)(implicit ctx: ExecutionContext) = {
+  override def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])(implicit ctx: ExecutionContext) = {
     Logger.info(s"authorizationFailed. userId: ${user.id}, userName: ${user.name}, authority: $authority")
     Future.successful(Forbidden("no permission"))
   }
