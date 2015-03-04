@@ -61,5 +61,16 @@ GET     /basic/messages/detail/:id         controllers.basic.Messages.detail(id:
 GET     /basic/messages/write              controllers.basic.Messages.write
 
 
+# Remember Me
+GET     /rememberme/                            controllers.rememberme.Sessions.login
+POST    /rememberme/login                       controllers.rememberme.Sessions.authenticate
+GET     /rememberme/logout                      controllers.rememberme.Sessions.logout
+
+GET     /rememberme/messages/main               controllers.rememberme.Messages.main
+GET     /rememberme/messages/list               controllers.rememberme.Messages.list
+GET     /rememberme/messages/detail/:id         controllers.rememberme.Messages.detail(id: Int)
+GET     /rememberme/messages/write              controllers.rememberme.Messages.write
+
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

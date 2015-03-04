@@ -247,7 +247,7 @@ class IntegrationSpec extends Specification {
       val baseURL = s"http://localhost:${port}"
 
       // login succeded
-      browser.goTo(baseURL)
+      browser.goTo(s"$baseURL/stateless/")
       browser.$("#email").text("bob@example.com")
       browser.$("#password").text("secret")
       browser.$("#loginbutton").click()
@@ -255,15 +255,15 @@ class IntegrationSpec extends Specification {
       browser.pageSource must not contain("Sign in")
       browser.pageSource must contain("logout")
 
-      browser.goTo(s"${baseURL}/standard/messages/write")
+      browser.goTo(s"${baseURL}/stateless/messages/write")
       browser.pageSource must contain("no permission")
 
-      browser.goTo(s"${baseURL}/standard/logout")
+      browser.goTo(s"${baseURL}/stateless/logout")
       browser.$("#email").text("alice@example.com")
       browser.$("#password").text("secret")
       browser.$("#loginbutton").click()
       browser.$("dl.error").size must equalTo(0)
-      browser.goTo(s"${baseURL}/standard/messages/write")
+      browser.goTo(s"${baseURL}/stateless/messages/write")
       browser.pageSource must not contain("no permission")
 
     }
@@ -283,6 +283,75 @@ class IntegrationSpec extends Specification {
 
   }
 
+  "Remember Me Sample" should {
+
+    "work from within a browser" in new WithBrowser(webDriver = WebDriverFactory(HTMLUNIT), app = FakeApplication(additionalConfiguration = inMemoryDatabase(name = "default", options = Map("DB_CLOSE_DELAY" -> "-1")))) {
+
+      val baseURL = s"http://localhost:${port}"
+      // login failed
+      browser.goTo(s"$baseURL/rememberme/")
+      browser.$("#email").text("alice@example.com")
+      browser.$("#password").text("secretxxx")
+      browser.$("#loginbutton").click()
+      browser.pageSource must contain("Invalid email or password")
+
+      // login succeded
+      browser.$("#email").text("alice@example.com")
+      browser.$("#password").text("secret")
+      browser.$("#loginbutton").click()
+      browser.$("dl.error").size must equalTo(0)
+      browser.pageSource must not contain ("Sign in")
+      browser.pageSource must contain("logout")
+      browser.getCookie("PLAY2AUTH_SESS_ID").getExpiry must beNull
+
+      // logout
+      browser.$("a").click()
+      browser.pageSource must contain("Sign in")
+
+      browser.goTo(s"$baseURL/rememberme/messages/write")
+      browser.pageSource must contain("Sign in")
+
+      // login succeded
+      browser.$("#email").text("alice@example.com")
+      browser.$("#password").text("secret")
+      browser.$("#rememberme").click()
+      browser.$("#loginbutton").click()
+      browser.$("dl.error").size must equalTo(0)
+      browser.pageSource must not contain ("Sign in")
+      browser.pageSource must contain("logout")
+      browser.getCookie("PLAY2AUTH_SESS_ID").getExpiry must not beNull
+
+      browser.$("a").click()
+
+    }
+
+    "authorize" in new WithBrowser(webDriver = WebDriverFactory(HTMLUNIT), app = FakeApplication(additionalConfiguration = inMemoryDatabase(name = "default", options = Map("DB_CLOSE_DELAY" -> "-1")))) {
+
+      val baseURL = s"http://localhost:${port}"
+
+      // login succeded
+      browser.goTo(s"$baseURL/rememberme/")
+      browser.$("#email").text("bob@example.com")
+      browser.$("#password").text("secret")
+      browser.$("#loginbutton").click()
+      browser.$("dl.error").size must equalTo(0)
+      browser.pageSource must not contain("Sign in")
+      browser.pageSource must contain("logout")
+
+      browser.goTo(s"${baseURL}/rememberme/messages/write")
+      browser.pageSource must contain("no permission")
+
+      browser.goTo(s"${baseURL}/rememberme/logout")
+      browser.$("#email").text("alice@example.com")
+      browser.$("#password").text("secret")
+      browser.$("#loginbutton").click()
+      browser.$("dl.error").size must equalTo(0)
+      browser.goTo(s"${baseURL}/standard/messages/write")
+      browser.pageSource must not contain("no permission")
+
+    }
+
+  }
 
 }
 

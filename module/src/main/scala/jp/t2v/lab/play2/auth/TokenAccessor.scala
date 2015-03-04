@@ -7,9 +7,9 @@ trait TokenAccessor {
 
   def extract(request: RequestHeader): Option[AuthenticityToken]
 
-  def put(token: AuthenticityToken)(result: Result): Result
+  def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result
 
-  def delete(result: Result): Result
+  def delete(result: Result)(implicit request: RequestHeader): Result
 
   protected def verifyHmac(token: SignedToken): Option[AuthenticityToken] = {
     val (hmac, value) = token.splitAt(40)

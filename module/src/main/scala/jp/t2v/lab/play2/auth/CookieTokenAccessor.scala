@@ -3,15 +3,15 @@ package jp.t2v.lab.play2.auth
 import play.api.mvc.{DiscardingCookie, Cookie, Result, RequestHeader}
 
 class CookieTokenAccessor(
-    cookieName: String = "PLAY2AUTH_SESS_ID",
-    cookieSecureOption: Boolean = false,
-    cookieHttpOnlyOption: Boolean = true,
-    cookieDomainOption: Option[String] = None,
-    cookiePathOption: String = "/",
-    cookieMaxAge: Option[Int] = None
+    protected val cookieName: String = "PLAY2AUTH_SESS_ID",
+    protected val cookieSecureOption: Boolean = false,
+    protected val cookieHttpOnlyOption: Boolean = true,
+    protected val cookieDomainOption: Option[String] = None,
+    protected val cookiePathOption: String = "/",
+    protected val cookieMaxAge: Option[Int] = None
 ) extends TokenAccessor {
 
-  def put(token: AuthenticityToken)(result: Result): Result = {
+  def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result = {
     val c = Cookie(cookieName, sign(token), cookieMaxAge, cookiePathOption, cookieDomainOption, cookieSecureOption, cookieHttpOnlyOption)
     result.withCookies(c)
   }
@@ -20,7 +20,7 @@ class CookieTokenAccessor(
     request.cookies.get(cookieName).flatMap(c => verifyHmac(c.value))
   }
 
-  def delete(result: Result): Result = {
+  def delete(result: Result)(implicit request: RequestHeader): Result = {
     result.discardingCookies(DiscardingCookie(cookieName))
   }
 }
