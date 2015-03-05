@@ -10,12 +10,18 @@ trait AuthElement extends StackableController with AsyncAuth {
   private[auth] case object AuthKey extends RequestAttributeKey[User]
   case object AuthorityKey extends RequestAttributeKey[Authority]
 
+  private[auth] final case class AuthorityFactoryKey[A]() extends RequestAttributeKey[RequestWithAttributes[A] => Either[Result, Authority]]
+  def authorityFactoryKey[A]: RequestAttributeKey[RequestWithAttributes[A] => Either[Result, Authority]] = AuthorityFactoryKey()
+
   override def proceed[A](req: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
     implicit val (r, ctx) = (req, StackActionExecutionContext(req))
-    req.get(AuthorityKey) map { authority =>
-      authorized(authority) flatMap {
-        case Right((user, resultUpdater)) => super.proceed(req.set(AuthKey, user))(f).map(resultUpdater)
-        case Left(result)                 => Future.successful(result)
+    (req.get(AuthorityKey).map(a => (_: RequestWithAttributes[A]) => Right[Result, Authority](a)) orElse req.get(authorityFactoryKey[A])) map { authorityFactory =>
+      authorityFactory(req) match {
+        case Right(authority) => authorized(authority) flatMap {
+          case Right((user, resultUpdater)) => super.proceed(req.set(AuthKey, user))(f).map(resultUpdater)
+          case Left(result)                 => Future.successful(result)
+        }
+        case Left(result) => Future.successful(result)
       }
     } getOrElse {
       restoreUser collect {
