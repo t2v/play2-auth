@@ -59,15 +59,15 @@ Add dependency declarations into your `Build.scala` or `build.sbt` file:
 
 * __for Play2.3.x__
 
-        "jp.t2v" %% "play2-auth"      % "0.13.0",
-        "jp.t2v" %% "play2-auth-test" % "0.13.0" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.13.1",
+        "jp.t2v" %% "play2-auth-test" % "0.13.1" % "test"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"      % "0.13.0",
-    "jp.t2v" %% "play2-auth-test" % "0.13.0" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.13.1",
+    "jp.t2v" %% "play2-auth-test" % "0.13.1" % "test"
   )
 ```
 
@@ -80,6 +80,8 @@ Usage
 
     ```scala
     // Example
+    import jp.t2v.lab.play2.auth._
+
     trait AuthConfigImpl extends AuthConfig {
 
       /**
@@ -142,8 +144,16 @@ Usage
       /**
        * If authorization failed (usually incorrect password) redirect the user as follows:
        */
-      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = 
+      override def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])(implicit context: ExecutionContext): Future[Result] = {
         Future.successful(Forbidden("no permission"))
+      }
+
+      /**
+       * This method is kept for compatibility.
+       * It will be removed in a future version
+       * Override `authorizationFailed(RequestHeader, User, Option[Authority])` instead of this
+       */
+      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = throw new AsserionError
 
       /**
        * A function that determines what `Authority` a user has.
@@ -158,16 +168,18 @@ Usage
       }
 
       /**
-       * Whether use the secure option or not use it in the cookie.
-       * However default is false, I strongly recommend using true in a production.
+       * (Optional)
+       * You can custom SessionID Token handler.
+       * Default implemntation use Cookie.
        */
-      override lazy val cookieSecureOption: Boolean = play.api.Play.isProd(play.api.Play.current)
-
-      /**
-       * Whether a login session is closed when the brower is terminated.
-       * default is false.
-       */
-      override lazy val isTransientCookie: Boolean = false
+      override lazy val tokenAccessor = new CookieTokenAccessor(
+        /*
+         * Whether use the secure option or not use it in the cookie.
+         * However default is false, I strongly recommend using true in a production.
+         */
+        cookieSecureOption = play.api.Play.isProd(play.api.Play.current),
+        cookieMaxAge       = Some(sessionTimeoutInSeconds)
+      )
 
     }
     ```

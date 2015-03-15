@@ -52,15 +52,15 @@ Play2.1以前をお使いの方へ
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2-auth"      % "0.13.0",
-        "jp.t2v" %% "play2-auth-test" % "0.13.0" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.13.1",
+        "jp.t2v" %% "play2-auth-test" % "0.13.1" % "test"
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"      % "0.13.0",
-    "jp.t2v" %% "play2-auth-test" % "0.13.0" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.13.1",
+    "jp.t2v" %% "play2-auth-test" % "0.13.1" % "test"
   )
 ```
 
@@ -135,8 +135,16 @@ For example: `Build.scala`
       /**
        * 認可(権限チェック)が失敗した場合に遷移する先を指定します。
        */
-      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = 
+      override def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])(implicit context: ExecutionContext): Future[Result] = {
         Future.successful(Forbidden("no permission"))
+      }
+
+      /**
+       * 互換性の為に残されているメソッドです。
+       * 将来のバージョンでは取り除かれる予定です。
+       * authorizationFailed(RequestHeader, User, Option[Authority]) を override してください。
+       */
+      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = throw new AsserionError
 
       /**
        * 権限チェックのアルゴリズムを指定します。
@@ -151,17 +159,19 @@ For example: `Build.scala`
       }
 
       /**
-       * SessionID Cookieにsecureオプションを指定するか否かの設定です。
-       * デフォルトでは利便性のために false になっていますが、
-       * 実際のアプリケーションでは true にすることを強く推奨します。
+       * (Optional)
+       * SessionID Tokenの保存場所の設定です。
+       * デフォルトでは Cookie を使用します。
        */
-      override lazy val cookieSecureOption: Boolean = play.api.Play.isProd(play.api.Play.current)
-
-      /**
-       * SessionID Cookieの有効期限を、ブラウザが閉じられるまでにするか否かの設定です。
-       * デフォルトは false です。
-       */
-      override lazy val isTransientCookie: Boolean = false
+      override lazy val tokenAccessor = new CookieTokenAccessor(
+        /*
+         * cookie の secureオプションを使うかどうかの設定です。
+         * デフォルトでは利便性のために false になっていますが、
+         * 実際のアプリケーションでは true にすることを強く推奨します。
+         */
+        cookieSecureOption = play.api.Play.isProd(play.api.Play.current),
+        cookieMaxAge       = Some(sessionTimeoutInSeconds)
+      )
 
     }
     ```
