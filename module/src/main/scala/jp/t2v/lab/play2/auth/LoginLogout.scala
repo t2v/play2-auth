@@ -5,7 +5,7 @@ import play.api.mvc.Cookie
 import play.api.libs.Crypto
 import scala.concurrent.{Future, ExecutionContext}
 
-trait LoginLogout {
+trait Login {
   self: Controller with AuthConfig =>
 
   def gotoLoginSucceeded(userId: Id)(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
@@ -16,6 +16,10 @@ trait LoginLogout {
     token <- idContainer.startNewSession(userId, sessionTimeoutInSeconds)
     r     <- result
   } yield tokenAccessor.put(token)(r)
+}
+
+trait Logout {
+  self: Controller with AuthConfig =>
 
   def gotoLogoutSucceeded(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
     gotoLogoutSucceeded(logoutSucceeded(request))
@@ -25,4 +29,8 @@ trait LoginLogout {
     tokenAccessor.extract(request) foreach idContainer.remove
     result.map(tokenAccessor.delete)
   }
+}
+
+trait LoginLogout extends Login with Logout {
+  self: Controller with AuthConfig =>
 }
