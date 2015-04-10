@@ -153,7 +153,7 @@ Usage
        * It will be removed in a future version
        * Override `authorizationFailed(RequestHeader, User, Option[Authority])` instead of this
        */
-      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = throw new AsserionError
+      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = throw new AssertionError
 
       /**
        * A function that determines what `Authority` a user has.
