@@ -144,7 +144,7 @@ For example: `Build.scala`
        * 将来のバージョンでは取り除かれる予定です。
        * authorizationFailed(RequestHeader, User, Option[Authority]) を override してください。
        */
-      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = throw new AsserionError
+      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = throw new AssertionError
 
       /**
        * 権限チェックのアルゴリズムを指定します。
