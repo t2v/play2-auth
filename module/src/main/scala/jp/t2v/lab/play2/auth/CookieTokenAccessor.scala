@@ -1,5 +1,7 @@
 package jp.t2v.lab.play2.auth
 
+import java.util.Base64
+
 import play.api.mvc.{DiscardingCookie, Cookie, Result, RequestHeader}
 
 class CookieTokenAccessor(
@@ -12,12 +14,12 @@ class CookieTokenAccessor(
 ) extends TokenAccessor {
 
   def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result = {
-    val c = Cookie(cookieName, sign(token), cookieMaxAge, cookiePathOption, cookieDomainOption, cookieSecureOption, cookieHttpOnlyOption)
+    val c = Cookie(cookieName, new String(Base64.getEncoder.encode(sign(token).getBytes)), cookieMaxAge, cookiePathOption, cookieDomainOption, cookieSecureOption, cookieHttpOnlyOption)
     result.withCookies(c)
   }
 
   def extract(request: RequestHeader): Option[AuthenticityToken] = {
-    request.cookies.get(cookieName).flatMap(c => verifyHmac(c.value))
+    request.cookies.get(cookieName).flatMap(c => verifyHmac(new String(Base64.getDecoder.decode(c.value.getBytes))))
   }
 
   def delete(result: Result)(implicit request: RequestHeader): Result = {
