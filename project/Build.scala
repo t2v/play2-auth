@@ -9,11 +9,12 @@ object ApplicationBuild extends Build {
   val playVersion = play.core.PlayVersion.current
 
   lazy val baseSettings = Seq(
-    version            := "0.13.2",
-    scalaVersion       := "2.10.4",
-    crossScalaVersions := Seq("2.10.4", "2.11.1"),
+    version            := "0.14.0-SNAPSHOT",
+    scalaVersion       := "2.11.6",
+    crossScalaVersions := Seq("2.10.5", "2.11.6"),
     organization       := "jp.t2v",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
+    resolvers += "Typesafe snapshots repository" at "http://repo.typesafe.com/typesafe/snapshots/",
     resolvers ++= {
       if (isSnapshot.value) {
         Seq("Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots")
@@ -58,11 +59,11 @@ object ApplicationBuild extends Build {
 
 
   lazy val core = Project("core", base = file("module"))
-    .settings(baseSettings: _*)
+    .settings(baseSettings)
     .settings(
       libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion        % "provided",
-      libraryDependencies += play.PlayImport.cache,
-      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.4.1",
+      libraryDependencies += "com.typesafe.play"  %%   "play-cache"             % playVersion        % "provided",
+      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.5.0-SNAPSHOT",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
@@ -72,7 +73,7 @@ object ApplicationBuild extends Build {
     )
 
   lazy val test = Project("test", base = file("test"))
-    .settings(baseSettings: _*)
+    .settings(baseSettings)
     .settings(
       libraryDependencies += "com.typesafe.play"  %% "play-test"   % playVersion,
       name                    := appName + "-test",
@@ -84,18 +85,30 @@ object ApplicationBuild extends Build {
     ).dependsOn(core)
 
   lazy val sample = Project("sample", file("sample"))
-    .enablePlugins(play.PlayScala)
-    .settings(baseSettings: _*)
+    .enablePlugins(play.sbt.Play)
+    .settings(baseSettings)
     .settings(
-      libraryDependencies += play.Play.autoImport.jdbc,
+      resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
+      libraryDependencies += play.sbt.Play.autoImport.jdbc,
+      libraryDependencies += play.sbt.Play.autoImport.cache,
+      libraryDependencies += play.sbt.Play.autoImport.specs2 % Test,
       libraryDependencies += "org.mindrot"           % "jbcrypt"                           % "0.3m",
       libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc"                       % "2.2.3",
       libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-config"                % "2.2.3",
       libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-syntax-support-macro"  % "2.2.3",
       libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"                  % "2.2.3"   % "test",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-plugin"           % "2.3.5",
-      libraryDependencies += "com.github.tototoshi" %% "play-flyway"                       % "1.2.1",
-      TwirlKeys.templateImports in Compile += "jp.t2v.lab.play2.auth.sample._",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-initializer"      % "2.4.0-M2-20141215",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-dbapi-adapter"    % "2.4.0-M2-20141215",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-fixture"          % "2.4.0-M2-20141215",
+      libraryDependencies += "org.flywaydb"         %% "flyway-play"                       % "2.0.0",
+      TwirlKeys.templateImports in Compile ++= Seq(
+        "jp.t2v.lab.play2.auth.sample._",
+        "play.api.data.Form",
+        "play.api.mvc.Flash",
+        "views._",
+        "views.html.helper",
+        "controllers._"
+      ),
       publish           := { },
       publishArtifact   := false,
       packagedArtifacts := Map.empty,
@@ -105,7 +118,7 @@ object ApplicationBuild extends Build {
     .dependsOn(core, test % "test")
 
   lazy val root = Project("root", base = file("."))
-    .settings(baseSettings: _*)
+    .settings(baseSettings)
     .settings(
       publish           := { },
       publishArtifact   := false,

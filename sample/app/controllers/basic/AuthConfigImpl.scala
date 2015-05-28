@@ -30,7 +30,7 @@ trait AuthConfigImpl extends AuthConfig {
   def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful {
     Unauthorized.withHeaders("WWW-Authenticate" -> """Basic realm="SECRET AREA"""")
   }
-  def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful(Forbidden("no permission"))
+  def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])(implicit ctx: ExecutionContext) = Future.successful(Forbidden("no permission"))
 
   override lazy val idContainer = new BasicAuthIdContainer
 
