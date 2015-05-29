@@ -75,7 +75,7 @@ object ApplicationBuild extends Build {
   lazy val test = Project("test", base = file("test"))
     .settings(baseSettings)
     .settings(
-      libraryDependencies += "com.typesafe.play"  %% "play-test"   % playVersion,
+      libraryDependencies += "com.typesafe.play"  %%   "play-test"              % playVersion        % "provided",
       name                    := appName + "-test",
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
@@ -85,11 +85,10 @@ object ApplicationBuild extends Build {
     ).dependsOn(core)
 
   lazy val sample = Project("sample", file("sample"))
-    .enablePlugins(play.sbt.Play)
+    .enablePlugins(play.sbt.PlayScala)
     .settings(baseSettings)
     .settings(
       resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
-      libraryDependencies += play.sbt.Play.autoImport.jdbc,
       libraryDependencies += play.sbt.Play.autoImport.cache,
       libraryDependencies += play.sbt.Play.autoImport.specs2 % Test,
       libraryDependencies += "org.mindrot"           % "jbcrypt"                           % "0.3m",
