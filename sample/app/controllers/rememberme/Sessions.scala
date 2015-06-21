@@ -25,9 +25,10 @@ object Sessions extends Controller with LoginLogout with AuthConfigImpl {
   }
 
   def logout = Action.async { implicit request =>
-    gotoLogoutSucceeded.map(_.flashing(
-      "success" -> "You've been logged out"
-    ))
+    // NB: Removed flashing "you've been logged in" here
+    // because flash cookies are breaking the browser
+    // tests due to invalid negative max age.
+    gotoLogoutSucceeded
   }
 
   def authenticate = Action.async { implicit request =>
