@@ -3,12 +3,12 @@ package jp.t2v.lab.play2.auth
 import play.api.mvc.{DiscardingCookie, Cookie, Result, RequestHeader}
 
 class CookieTokenAccessor(
-    protected val cookieName: String = "PLAY2AUTH_SESS_ID",
-    protected val cookieSecureOption: Boolean = false,
-    protected val cookieHttpOnlyOption: Boolean = true,
-    protected val cookieDomainOption: Option[String] = None,
-    protected val cookiePathOption: String = "/",
-    protected val cookieMaxAge: Option[Int] = None
+    val cookieName: String = "PLAY2AUTH_SESS_ID",
+    val cookieSecureOption: Boolean = false,
+    val cookieHttpOnlyOption: Boolean = true,
+    val cookieDomainOption: Option[String] = None,
+    val cookiePathOption: String = "/",
+    val cookieMaxAge: Option[Int] = None
 ) extends TokenAccessor {
 
   def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result = {
