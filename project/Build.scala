@@ -118,8 +118,12 @@ object ApplicationBuild extends Build {
       name                := appName + "-social",
       libraryDependencies += "com.typesafe.play" %% "play"       % playVersion % "provided",
       libraryDependencies += "com.typesafe.play" %% "play-ws"    % playVersion % "provided",
-      libraryDependencies += "com.typesafe.play" %% "play-cache" % playVersion % "provided"
-  ).dependsOn(core)
+      publishMavenStyle       := appPublishMavenStyle,
+      publishArtifact in Test := appPublishArtifactInTest,
+      pomIncludeRepository    := appPomIncludeRepository,
+      publishTo               <<=(version)(appPublishTo),
+      pomExtra                := appPomExtra
+    ).dependsOn(core)
 
   lazy val socialSample = Project("social-sample", file("social-sample"))
     .enablePlugins(play.sbt.PlayScala)
