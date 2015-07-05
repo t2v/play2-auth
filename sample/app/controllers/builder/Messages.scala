@@ -10,7 +10,7 @@ import views.html
 
 import scala.concurrent.Future
 
-class TransactionalRequest[A](val dbSession: DBSession, request: Request[A]) extends WrappedRequest[A](request)
+class TransactionalRequest[+A](val dbSession: DBSession, request: Request[A]) extends WrappedRequest[A](request)
 object TransactionalAction extends ActionBuilder[TransactionalRequest] {
   override def invokeBlock[A](request: Request[A], block: (TransactionalRequest[A]) => Future[Result]): Future[Result] = {
     import scalikejdbc.TxBoundary.Future._
@@ -23,10 +23,10 @@ object TransactionalAction extends ActionBuilder[TransactionalRequest] {
 
 trait Messages extends Controller with AuthActionBuilders with AuthConfigImpl {
 
-  type AuthTxRequest[A] = GenericAuthRequest[A, TransactionalRequest]
+  type AuthTxRequest[+A] = GenericAuthRequest[A, TransactionalRequest]
   final def AuthorizationTxAction(authority: Authority): ActionBuilder[AuthTxRequest] = composeAuthorizationAction(TransactionalAction)(authority)
 
-  class PjaxAuthRequest[A](val template: String => Html => Html, val authRequest: AuthTxRequest[A]) extends WrappedRequest[A](authRequest)
+  class PjaxAuthRequest[+A](val template: String => Html => Html, val authRequest: AuthTxRequest[A]) extends WrappedRequest[A](authRequest)
   object PjaxRefiner extends ActionTransformer[AuthTxRequest, PjaxAuthRequest] {
     override protected def transform[A](request: AuthTxRequest[A]): Future[PjaxAuthRequest[A]] = {
       val template: String => Html => Html = if (request.headers.keys("X-Pjax")) html.pjaxTemplate.apply else html.builder.fullTemplate.apply(request.user)
