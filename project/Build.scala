@@ -13,16 +13,15 @@ object ApplicationBuild extends Build {
     scalaVersion       := "2.11.6",
     crossScalaVersions := Seq("2.10.5", "2.11.6"),
     organization       := "jp.t2v",
-    resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-    resolvers += "Typesafe snapshots repository" at "http://repo.typesafe.com/typesafe/snapshots/",
+    resolvers += Resolver.typesafeRepo("releases"),
+    resolvers += Resolver.sonatypeRepo("releases"),
     resolvers ++= {
       if (isSnapshot.value) {
-        Seq("Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots")
+        Seq(Resolver.sonatypeRepo("snapshots"))
       } else {
         Nil
       }
-    },
-    resolvers += "Sonatype Releases"  at "https://oss.sonatype.org/content/repositories/releases"
+    }
   )
 
   lazy val appPublishMavenStyle = true
@@ -63,7 +62,7 @@ object ApplicationBuild extends Build {
     .settings(
       libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion        % "provided",
       libraryDependencies += "com.typesafe.play"  %%   "play-cache"             % playVersion        % "provided",
-      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.5.0-SNAPSHOT",
+      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.5.0",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
@@ -91,14 +90,15 @@ object ApplicationBuild extends Build {
       resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
       libraryDependencies += play.sbt.Play.autoImport.cache,
       libraryDependencies += play.sbt.Play.autoImport.specs2 % Test,
+      libraryDependencies += play.sbt.Play.autoImport.jdbc,
       libraryDependencies += "org.mindrot"           % "jbcrypt"                           % "0.3m",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc"                       % "2.2.3",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-config"                % "2.2.3",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-syntax-support-macro"  % "2.2.3",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"                  % "2.2.3"   % "test",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-initializer"      % "2.4.0-M2-20141215",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-dbapi-adapter"    % "2.4.0-M2-20141215",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-fixture"          % "2.4.0-M2-20141215",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc"                       % "2.2.7",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-config"                % "2.2.7",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-syntax-support-macro"  % "2.2.7",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"                  % "2.2.7"   % "test",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-initializer"      % "2.4.0",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-dbapi-adapter"    % "2.4.0",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-fixture"          % "2.4.0",
       libraryDependencies += "org.flywaydb"         %% "flyway-play"                       % "2.0.0",
       TwirlKeys.templateImports in Compile ++= Seq(
         "jp.t2v.lab.play2.auth.sample._",
