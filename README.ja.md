@@ -8,7 +8,7 @@ Play2.x module for Authentication and Authorization [![Build Status](https://sec
 
 このモジュールは __Play2.x__ の __Scala__版を対象としています。
 
-Play2.3.0 で動作確認をしています。
+Play2.4.2 で動作確認をしています。
 
 動機
 ---------------------------------------
@@ -36,6 +36,7 @@ Play2.3.0 で動作確認をしています。
 以前のバージョン
 ---------------------------------------
 
+Play2.3.x 向けの使用方法は [0.13.2 README](https://github.com/t2v/play2-auth/blob/release0.13.2/README.ja.md)をご参照ください。
 Play2.2.x 向けの使用方法は [0.11.0 README](https://github.com/t2v/play2-auth/blob/release0.11.0/README.ja.md)をご参照ください。
 Play2.1.x 向けの使用方法は [0.10.1 README](https://github.com/t2v/play2-auth/blob/release0.10.1/README.ja.md)をご参照ください。
 Play2.0.x 向けの使用方法は [0.7 README](https://github.com/t2v/play2-auth/blob/release0.7/README.ja.md)をご参照ください。
@@ -52,15 +53,17 @@ Play2.1以前をお使いの方へ
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2-auth"      % "0.13.2",
-        "jp.t2v" %% "play2-auth-test" % "0.13.2" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.14.0",
+        "jp.t2v" %% "play2-auth-test" % "0.14.0" % "test",
+        play.sbt.Play.autoImport.cache // デフォルトのIdContainerを使う場合のみ必要です
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"      % "0.13.2",
-    "jp.t2v" %% "play2-auth-test" % "0.13.2" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.14.0",
+    "jp.t2v" %% "play2-auth-test" % "0.14.0" % "test",
+    play.sbt.Play.autoImport.cache // デフォルトのIdContainerを使う場合のみ必要です
   )
 ```
 
@@ -138,13 +141,6 @@ For example: `Build.scala`
       override def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])(implicit context: ExecutionContext): Future[Result] = {
         Future.successful(Forbidden("no permission"))
       }
-
-      /**
-       * 互換性の為に残されているメソッドです。
-       * 将来のバージョンでは取り除かれる予定です。
-       * authorizationFailed(RequestHeader, User, Option[Authority]) を override してください。
-       */
-      def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = throw new AssertionError
 
       /**
        * 権限チェックのアルゴリズムを指定します。
