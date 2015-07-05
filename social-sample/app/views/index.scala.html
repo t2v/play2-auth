@@ -1,0 +1,117 @@
+@(login: Option[User],
+  gitHubUser: Option[GitHubUser],
+  facebookUser: Option[FacebookUser],
+  twitterUser: Option[TwitterUser],
+  slackAccessToken: Option[SlackAccessToken])
+
+<html>
+    <head>
+        <title>play-oauth-social</title>
+        <style>
+            html,body {
+                background-color: #FFF;
+                color: #774F38;
+            }
+            a {
+                color: #774F38;
+            }
+            .container {
+                width: 800px;
+                margin: 0 auto;
+
+            }
+            img {
+                height: 100px;
+                border: 10px solid #C5E0DC;
+            }
+            .providers {
+                width: 720px;
+            }
+            .provider {
+                float: left;
+                width: 200px;
+                padding-right: 20px;
+                padding-left: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            @login.map { u =>
+                <p>
+                    <a href="@routes.Application.logout">logout</a>
+                </p>
+
+                <div class="providers">
+                    <div class="provider">
+                        <h2>GitHub</h2>
+
+                        @gitHubUser.map { u =>
+                        <p>
+                            @u.login
+                        </p>
+                        <p>
+                            <img src="@{u.avatarUrl}">
+                        </p>
+                        }.getOrElse {
+                            <a href="@routes.GitHubAuthController.link("user")">link GitHub</a>
+                        }
+                    </div>
+
+                    <div class="provider">
+                        <h2>Facebook</h2>
+
+                        @facebookUser.map { u =>
+                        <p>
+                            @u.name
+                        </p>
+                        <p>
+                            <img src="@{u.coverUrl}">
+                        </p>
+                        }.getOrElse {
+                            <a href="@routes.FacebookAuthController.link("email")">link Facebook</a>
+                        }
+                    </div>
+
+                    <div class="provider">
+                        <h2>Twitter</h2>
+                        @twitterUser.map { u =>
+                        <p>
+                            @u.screenName
+                        </p>
+                        <p>
+                            <img src="@{u.profileImageUrl}">
+                        </p>
+                        }.getOrElse {
+                            <a href="@routes.TwitterAuthController.link()">link Twitter</a>
+                        }
+                    </div>
+
+                    <div class="provider">
+                        <h2>Slack</h2>
+                        @slackAccessToken.map { u =>
+                        <p>
+                            @u.accessToken
+                        </p>
+                        }.getOrElse {
+                            <a href="@routes.SlackAuthController.link("read")">link Slack</a>
+                        }
+                    </div>
+
+                </div>
+
+            }.getOrElse {
+                <p>
+                    <a href="@routes.TwitterAuthController.login">twitter login</a>
+                </p>
+                <p>
+                    <a href="@routes.GitHubAuthController.login("user")">github login</a>
+                </p>
+                <p>
+                    <a href="@routes.FacebookAuthController.login("email")">facebook login</a>
+                </p>
+            }
+        </div>
+    </body>
+</html>
+
