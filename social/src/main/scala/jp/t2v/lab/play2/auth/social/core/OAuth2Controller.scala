@@ -55,7 +55,7 @@ trait OAuth2Controller extends Controller with OAuthController { self: OptionalA
     val form = Form(
       tuple(
         "code"  -> nonEmptyText,
-        "state" -> nonEmptyText.verifying(request.session.get(OAuth2StateKey).contains _)
+        "state" -> nonEmptyText.verifying(s => request.session.get(OAuth2StateKey).exists(_ == s))
       )
     )
 
