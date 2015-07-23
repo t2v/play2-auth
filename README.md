@@ -435,7 +435,7 @@ def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext)
 
 play2.auth use [stackable-controller](https://github.com/t2v/stackable-controller)
 
-Suppose you want to validate a token at every action in order to defeat a [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF) attack.
+Suppose you want to validate a token at every action in order to defeat a [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF) ) attack.
 
 Since it is impractical to perform the validation in all actions, you would define a trait like this:
 
