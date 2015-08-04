@@ -24,7 +24,7 @@ trait AsyncAuth {
 
   private[auth] def restoreUser(implicit request: RequestHeader, context: ExecutionContext): Future[(Option[User], ResultUpdater)] = {
     (for {
-      token  <- tokenAccessor.extract(request)
+      token  <- extractToken(request)
     } yield for {
       Some(userId) <- idContainer.get(token)
       Some(user)   <- resolveUser(userId)
@@ -35,6 +35,15 @@ trait AsyncAuth {
       Future.successful(Option.empty -> identity)
     }
   }
+
+  private[auth] def extractToken(request: RequestHeader): Option[AuthenticityToken] = {
+    if (play.api.Play.isTest(play.api.Play.current)) {
+      request.headers.get("PLAY2_AUTH_TEST_TOKEN") orElse tokenAccessor.extract(request)
+    } else {
+      tokenAccessor.extract(request)
+    }
+  }
+
 
   @deprecated(message = "AuthActionBuilder#AuthorizationAction should be preferred", since = "0.13.0")
   object authorizedAction {
