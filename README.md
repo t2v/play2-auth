@@ -172,7 +172,7 @@ Usage
       override lazy val tokenAccessor = new CookieTokenAccessor(
         /*
          * Whether use the secure option or not use it in the cookie.
-         * However default is false, I strongly recommend using true in a production.
+         * Following code is default.
          */
         cookieSecureOption = play.api.Play.isProd(play.api.Play.current),
         cookieMaxAge       = Some(sessionTimeoutInSeconds)
