@@ -1,5 +1,6 @@
 package jp.t2v.lab.play2.auth
 
+import play.api.cache.CacheApi
 import play.api.mvc._
 import scala.reflect.{ClassTag, classTag}
 import scala.concurrent.{ExecutionContext, Future}
@@ -13,6 +14,8 @@ trait AuthConfig {
   type Authority
 
   implicit def idTag: ClassTag[Id]
+
+  val cacheApi: CacheApi
 
   def sessionTimeoutInSeconds: Int
 
@@ -28,7 +31,7 @@ trait AuthConfig {
 
   def authorize(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean]
 
-  lazy val idContainer: AsyncIdContainer[Id] = AsyncIdContainer(new CacheIdContainer[Id])
+  lazy val idContainer: AsyncIdContainer[Id] = AsyncIdContainer(new CacheIdContainer[Id](cacheApi))
 
   @deprecated("it will be deleted since 0.14.x. use CookieTokenAccessor constructor", since = "0.13.1")
   final lazy val cookieName: String = throw new AssertionError("use tokenAccessor setting instead.")
