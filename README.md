@@ -38,10 +38,6 @@ Previous Version
 
 for Play2.2.x, Please see [previous version 0.11.1 README](https://github.com/t2v/play2-auth/blob/release0.11.1/README.md)
 
-for Play2.1.x, Please see [previous version 0.10.2 README](https://github.com/t2v/play2-auth/tree/release0.10.2)
-
-for Play2.0.x, Please see [previous version 0.8 README](https://github.com/t2v/play2-auth/tree/release0.8)
-
 
 Attention
 ---------------------------------------
@@ -59,15 +55,15 @@ Add dependency declarations into your `Build.scala` or `build.sbt` file:
 
 * __for Play2.3.x__
 
-        "jp.t2v" %% "play2-auth"      % "0.13.4",
-        "jp.t2v" %% "play2-auth-test" % "0.13.4" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.13.5",
+        "jp.t2v" %% "play2-auth-test" % "0.13.5" % "test"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"      % "0.13.4",
-    "jp.t2v" %% "play2-auth-test" % "0.13.4" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.13.5",
+    "jp.t2v" %% "play2-auth-test" % "0.13.5" % "test"
   )
 ```
 
