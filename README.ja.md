@@ -36,9 +36,9 @@ Play2.3.0 で動作確認をしています。
 以前のバージョン
 ---------------------------------------
 
-Play2.2.x 向けの使用方法は [0.11.0 README](https://github.com/t2v/play2-auth/blob/release0.11.0/README.ja.md)をご参照ください。
-Play2.1.x 向けの使用方法は [0.10.1 README](https://github.com/t2v/play2-auth/blob/release0.10.1/README.ja.md)をご参照ください。
-Play2.0.x 向けの使用方法は [0.7 README](https://github.com/t2v/play2-auth/blob/release0.7/README.ja.md)をご参照ください。
+Play2.2.x 向けの使用方法は [0.11.1 README](https://github.com/t2v/play2-auth/blob/release0.11.1/README.ja.md)をご参照ください。
+Play2.1.x 向けの使用方法は [0.10.2 README](https://github.com/t2v/play2-auth/blob/release0.10.2/README.ja.md)をご参照ください。
+Play2.0.x 向けの使用方法は [0.8 README](https://github.com/t2v/play2-auth/blob/release0.8/README.ja.md)をご参照ください。
 
 Play2.1以前をお使いの方へ
 ---------------------------------------
@@ -52,15 +52,15 @@ Play2.1以前をお使いの方へ
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2-auth"      % "0.13.2",
-        "jp.t2v" %% "play2-auth-test" % "0.13.2" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.13.4",
+        "jp.t2v" %% "play2-auth-test" % "0.13.4" % "test"
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"      % "0.13.2",
-    "jp.t2v" %% "play2-auth-test" % "0.13.2" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.13.4",
+    "jp.t2v" %% "play2-auth-test" % "0.13.4" % "test"
   )
 ```
 
