@@ -36,14 +36,9 @@ Play2x-Auth provides a way of composition.
 Previous Version
 ---------------------------------------
 
-for Play2.3.x, Please see [previous version 0.11.0 README](https://github.com/t2v/play2-auth/blob/release0.13.2/README.md)
+for Play2.3.x, Please see [previous version 0.13.5 README](https://github.com/t2v/play2-auth/blob/release0.13.5/README.md)
 
-for Play2.2.x, Please see [previous version 0.11.0 README](https://github.com/t2v/play2-auth/blob/release0.11.0/README.md)
-
-for Play2.1.x, Please see [previous version 0.10.1 README](https://github.com/t2v/play2-auth/tree/release0.10.1)
-
-for Play2.0.x, Please see [previous version 0.7 README](https://github.com/t2v/play2-auth/tree/release0.7)
-
+for Play2.2.x, Please see [previous version 0.11.1 README](https://github.com/t2v/play2-auth/blob/release0.11.1/README.md)
 
 Attention
 ---------------------------------------
@@ -61,18 +56,18 @@ Add dependency declarations into your `Build.scala` or `build.sbt` file:
 
 * __for Play2.4.x__
 
-        "jp.t2v" %% "play2-auth"        % "0.14.0",
-        "jp.t2v" %% "play2-auth-social" % "0.14.0", // for social login
-        "jp.t2v" %% "play2-auth-test"   % "0.14.0" % "test",
+        "jp.t2v" %% "play2-auth"        % "0.14.1",
+        "jp.t2v" %% "play2-auth-social" % "0.14.1", // for social login
+        "jp.t2v" %% "play2-auth-test"   % "0.14.1" % "test",
         play.sbt.Play.autoImport.cache // only when you use default IdContainer
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"        % "0.14.0",
-    "jp.t2v" %% "play2-auth-social" % "0.14.0",
-    "jp.t2v" %% "play2-auth-test"   % "0.14.0" % "test",
+    "jp.t2v" %% "play2-auth"        % "0.14.1",
+    "jp.t2v" %% "play2-auth-social" % "0.14.1",
+    "jp.t2v" %% "play2-auth-test"   % "0.14.1" % "test",
     play.sbt.Play.autoImport.cache
   )
 ```

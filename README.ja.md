@@ -36,10 +36,8 @@ Play2.4.2 で動作確認をしています。
 以前のバージョン
 ---------------------------------------
 
-Play2.3.x 向けの使用方法は [0.13.2 README](https://github.com/t2v/play2-auth/blob/release0.13.2/README.ja.md)をご参照ください。
-Play2.2.x 向けの使用方法は [0.11.0 README](https://github.com/t2v/play2-auth/blob/release0.11.0/README.ja.md)をご参照ください。
-Play2.1.x 向けの使用方法は [0.10.1 README](https://github.com/t2v/play2-auth/blob/release0.10.1/README.ja.md)をご参照ください。
-Play2.0.x 向けの使用方法は [0.7 README](https://github.com/t2v/play2-auth/blob/release0.7/README.ja.md)をご参照ください。
+Play2.3.x 向けの使用方法は [0.13.5 README](https://github.com/t2v/play2-auth/blob/release0.13.5/README.ja.md)をご参照ください。
+Play2.2.x 向けの使用方法は [0.11.1 README](https://github.com/t2v/play2-auth/blob/release0.11.1/README.ja.md)をご参照ください。
 
 Play2.1以前をお使いの方へ
 ---------------------------------------
@@ -53,18 +51,18 @@ Play2.1以前をお使いの方へ
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2-auth"        % "0.14.0",
-        "jp.t2v" %% "play2-auth-social" % "0.14.0", // ソーシャルログイン
-        "jp.t2v" %% "play2-auth-test"   % "0.14.0" % "test",
+        "jp.t2v" %% "play2-auth"        % "0.14.1",
+        "jp.t2v" %% "play2-auth-social" % "0.14.1", // ソーシャルログイン
+        "jp.t2v" %% "play2-auth-test"   % "0.14.1" % "test",
         play.sbt.Play.autoImport.cache // デフォルトのIdContainerを使う場合のみ必要です
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"        % "0.14.0",
-    "jp.t2v" %% "play2-auth-social" % "0.14.0",
-    "jp.t2v" %% "play2-auth-test"   % "0.14.0" % "test",
+    "jp.t2v" %% "play2-auth"        % "0.14.1",
+    "jp.t2v" %% "play2-auth-social" % "0.14.1",
+    "jp.t2v" %% "play2-auth-test"   % "0.14.1" % "test",
     play.sbt.Play.autoImport.cache // デフォルトのIdContainerを使う場合のみ必要です
   )
 ```
