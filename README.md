@@ -34,14 +34,6 @@ Play2x-Auth provides an interface that returns an [`Either[PlainResult, User]`](
 making writing complicated action methods easier.   [`Either`](http://www.scala-lang.org/api/current/scala/util/Either.html) is a wrapper similar to `Option`
 
 
-Previous Version
----------------------------------------
-
-for Play2.1.x, Please see [previous version 0.10.1 README](https://github.com/t2v/play2-auth/tree/release0.10.1)
-
-for Play2.0.x, Please see [previous version 0.7 README](https://github.com/t2v/play2-auth/tree/release0.7)
-
-
 Attention
 ---------------------------------------
 
@@ -55,15 +47,15 @@ Add dependency declarations into your `Build.scala` or `build.sbt` file:
 
 * __for Play2.2.x__
 
-        "jp.t2v" %% "play2-auth"      % "0.11.0",
-        "jp.t2v" %% "play2-auth-test" % "0.11.0" % "test"
+        "jp.t2v" %% "play2-auth"      % "0.11.1",
+        "jp.t2v" %% "play2-auth-test" % "0.11.1" % "test"
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"      % "0.11.0",
-    "jp.t2v" %% "play2-auth.test" % "0.11.0" % "test"
+    "jp.t2v" %% "play2-auth"      % "0.11.1",
+    "jp.t2v" %% "play2-auth.test" % "0.11.1" % "test"
   )
 ```
 
