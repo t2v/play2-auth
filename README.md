@@ -17,7 +17,7 @@ Motivation
 
 The existing `Security` trait in Play2.x API does not define an identifier that identifies a user.
 
-If you use an Email or a userID as an identier, 
+If you use an Email or a userID as an identifier,
 users can not invalidate their session if the session cookie is intercepted.
 
 This module creates a unique SessionID using a secure random number generator.
@@ -135,7 +135,7 @@ Usage
         Future.successful(Redirect(routes.Application.login))
 
       /**
-       * If the user is not logged in and tries to access a protected resource then redirct them as follows:
+       * If the user is not logged in and tries to access a protected resource then redirect them as follows:
        */
       def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] =
         Future.successful(Redirect(routes.Application.login))
@@ -162,7 +162,7 @@ Usage
       /**
        * (Optional)
        * You can custom SessionID Token handler.
-       * Default implemntation use Cookie.
+       * Default implementation use Cookie.
        */
       override lazy val tokenAccessor = new CookieTokenAccessor(
         /*
@@ -236,7 +236,7 @@ Usage
       //    a function signature `RequestWithAttributes[AnyContent] => Result` as the second argument and
       //    returns an `Action`
 
-      // thw `loggedIn` method
+      // The `loggedIn` method
       //     returns current logged in user
 
       def main = StackAction(AuthorityKey -> NormalUser) { implicit request =>
@@ -378,7 +378,7 @@ trait AuthConfigImpl extends AuthConfig {
 ### Changing the display depending on whether the user is logged in 
 
 If you want to display the application's index differently to non-logged-in users
-and logged-in users, you can use `OptionalAuthElement` insted of `AuthElement`:
+and logged-in users, you can use `OptionalAuthElement` instead of `AuthElement`:
 
 ```scala
 object Application extends Controller with OptionalAuthElement with AuthConfigImpl {
@@ -397,7 +397,7 @@ object Application extends Controller with OptionalAuthElement with AuthConfigIm
 
 ### For action that doesn't require authorization
 
-you can `AuthenticationElement` insted of `AuthElement` for authentication without authorization.
+you can `AuthenticationElement` instead of `AuthElement` for authentication without authorization.
 
 ```scala
 object Application extends Controller with AuthenticationElement with AuthConfigImpl {
