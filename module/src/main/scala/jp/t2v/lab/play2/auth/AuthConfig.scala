@@ -15,8 +15,6 @@ trait AuthConfig {
 
   implicit def idTag: ClassTag[Id]
 
-  val cacheApi: CacheApi
-
   def sessionTimeoutInSeconds: Int
 
   def resolveUser(id: Id)(implicit context: ExecutionContext): Future[Option[User]]
@@ -31,7 +29,7 @@ trait AuthConfig {
 
   def authorize(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean]
 
-  lazy val idContainer: AsyncIdContainer[Id] = AsyncIdContainer(new CacheIdContainer[Id](cacheApi))
+  val idContainer: AsyncIdContainer[Id]
 
   @deprecated("it will be deleted since 0.14.x. use CookieTokenAccessor constructor", since = "0.13.1")
   final lazy val cookieName: String = throw new AssertionError("use tokenAccessor setting instead.")
