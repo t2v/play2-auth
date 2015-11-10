@@ -50,7 +50,7 @@ trait AuthConfig {
 
   lazy val tokenAccessor: TokenAccessor = new CookieTokenAccessor(
     cookieName = "PLAY2AUTH_SESS_ID",
-    cookieSecureOption = play.api.Play.isProd(play.api.Play.current),
+    cookieSecureOption = play.api.Play.maybeApplication.exists(app => play.api.Play.isProd(app)),
     cookieHttpOnlyOption = true,
     cookieDomainOption = None,
     cookiePathOption = "/",
