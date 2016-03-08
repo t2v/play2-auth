@@ -14,7 +14,7 @@ trait OAuth10aController extends Controller with OAuthController {
 
   protected val authenticator: OAuth10aAuthenticator
 
-  private val RequestTokenSecretKey = "play.social.requestTokenSecret"
+  protected val RequestTokenSecretKey = "play.social.requestTokenSecret"
 
   def login = AsyncStack(ExecutionContextKey -> OAuthExecutionContext) { implicit request =>
     implicit val ec = StackActionExecutionContext

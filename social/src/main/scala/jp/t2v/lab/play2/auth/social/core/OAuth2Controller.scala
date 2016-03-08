@@ -15,7 +15,7 @@ trait OAuth2Controller extends Controller with OAuthController { self: OptionalA
 
   protected val authenticator: OAuth2Authenticator
 
-  private val OAuth2StateKey = "play.auth.social.oauth2.state"
+  protected val OAuth2StateKey = "play.auth.social.oauth2.state"
 
   // TODO scope is optional in some services
   // TODO some services have more optional parameter
