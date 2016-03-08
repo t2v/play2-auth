@@ -291,8 +291,8 @@ class ApplicationSpec extends Specification {
 
   "Messages" should {
     "return list when user is authorized" in new WithApplication {
-      val res = Messages.list(FakeRequest().withLoggedIn(config)(1))
-      contentType(res) must equalTo("text/html")
+      val result = Messages.list(FakeRequest().withLoggedIn(config)(1))
+      contentType(result) must equalTo("text/html")
     }
   }
 
