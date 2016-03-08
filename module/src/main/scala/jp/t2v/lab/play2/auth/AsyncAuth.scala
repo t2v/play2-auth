@@ -36,7 +36,7 @@ trait AsyncAuth {
   }
 
   private[auth] def extractToken(request: RequestHeader): Option[AuthenticityToken] = {
-    if (play.api.Play.isTest(play.api.Play.current)) {
+    if (play.api.Play.maybeApplication.forall(app => play.api.Play.isTest(app))) {
       request.headers.get("PLAY2_AUTH_TEST_TOKEN") orElse tokenAccessor.extract(request)
     } else {
       tokenAccessor.extract(request)
