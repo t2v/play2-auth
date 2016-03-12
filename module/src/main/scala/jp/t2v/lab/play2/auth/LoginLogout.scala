@@ -8,27 +8,20 @@ import scala.concurrent.{Future, ExecutionContext}
 trait Login {
   self: Controller with AuthConfig =>
 
-  def gotoLoginSucceeded(userId: Id)(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
-    gotoLoginSucceeded(userId, loginSucceeded(request))
+  def markLoggedIn(userId: Id)(implicit request: RequestHeader, ctx: ExecutionContext): Result => Future[Result] = { result =>
+    idContainer.startNewSession(userId, sessionTimeoutInSeconds).map(token => tokenAccessor.put(token)(result))
   }
 
-  def gotoLoginSucceeded(userId: Id, result: => Future[Result])(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = for {
-    token <- idContainer.startNewSession(userId, sessionTimeoutInSeconds)
-    r     <- result
-  } yield tokenAccessor.put(token)(r)
 }
 
 trait Logout {
   self: Controller with AuthConfig =>
 
-  def gotoLogoutSucceeded(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
-    gotoLogoutSucceeded(logoutSucceeded(request))
+  def markLoggedOut()(implicit request: RequestHeader, ctx: ExecutionContext): Result => Future[Result] = { result =>
+    tokenAccessor.extract(request) foreach idContainer.remove
+    Future.successful(tokenAccessor.delete(result))
   }
 
-  def gotoLogoutSucceeded(result: => Future[Result])(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
-    tokenAccessor.extract(request) foreach idContainer.remove
-    result.map(tokenAccessor.delete)
-  }
 }
 
 trait LoginLogout extends Login with Logout {
