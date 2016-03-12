@@ -51,18 +51,18 @@ Play2.1以前をお使いの方へ
 
 `Build.scala` もしくは `build.sbt` にライブラリ依存性定義を追加します。
 
-        "jp.t2v" %% "play2-auth"        % "0.14.1",
-        "jp.t2v" %% "play2-auth-social" % "0.14.1", // ソーシャルログイン
-        "jp.t2v" %% "play2-auth-test"   % "0.14.1" % "test",
+        "jp.t2v" %% "play2-auth"        % "0.14.2",
+        "jp.t2v" %% "play2-auth-social" % "0.14.2", // ソーシャルログイン
+        "jp.t2v" %% "play2-auth-test"   % "0.14.2" % "test",
         play.sbt.Play.autoImport.cache // デフォルトのIdContainerを使う場合のみ必要です
 
 For example: `Build.scala`
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"        % "0.14.1",
-    "jp.t2v" %% "play2-auth-social" % "0.14.1",
-    "jp.t2v" %% "play2-auth-test"   % "0.14.1" % "test",
+    "jp.t2v" %% "play2-auth"        % "0.14.2",
+    "jp.t2v" %% "play2-auth-social" % "0.14.2",
+    "jp.t2v" %% "play2-auth-test"   % "0.14.2" % "test",
     play.sbt.Play.autoImport.cache // デフォルトのIdContainerを使う場合のみ必要です
   )
 ```

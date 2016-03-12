@@ -56,18 +56,18 @@ Add dependency declarations into your `Build.scala` or `build.sbt` file:
 
 * __for Play2.4.x__
 
-        "jp.t2v" %% "play2-auth"        % "0.14.1",
-        "jp.t2v" %% "play2-auth-social" % "0.14.1", // for social login
-        "jp.t2v" %% "play2-auth-test"   % "0.14.1" % "test",
+        "jp.t2v" %% "play2-auth"        % "0.14.2",
+        "jp.t2v" %% "play2-auth-social" % "0.14.2", // for social login
+        "jp.t2v" %% "play2-auth-test"   % "0.14.2" % "test",
         play.sbt.Play.autoImport.cache // only when you use default IdContainer
 
 For example your `Build.scala` might look like this:
 
 ```scala
   val appDependencies = Seq(
-    "jp.t2v" %% "play2-auth"        % "0.14.1",
-    "jp.t2v" %% "play2-auth-social" % "0.14.1",
-    "jp.t2v" %% "play2-auth-test"   % "0.14.1" % "test",
+    "jp.t2v" %% "play2-auth"        % "0.14.2",
+    "jp.t2v" %% "play2-auth-social" % "0.14.2",
+    "jp.t2v" %% "play2-auth-test"   % "0.14.2" % "test",
     play.sbt.Play.autoImport.cache
   )
 ```
