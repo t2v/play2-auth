@@ -1,17 +1,20 @@
 package jp.t2v.lab.play2.auth
 
-import play.api.cache.Cache
 import play.api.Play._
+import play.api.cache.CacheApi
 import scala.annotation.tailrec
 import scala.util.Random
 import java.security.SecureRandom
 import scala.reflect.ClassTag
+import scala.concurrent.duration._
 
-class CacheIdContainer[Id: ClassTag] extends IdContainer[Id] {
+class CacheIdContainer[Id: ClassTag](cacheApi: CacheApi) extends IdContainer[Id] {
 
   private[auth] val tokenSuffix = ":token"
   private[auth] val userIdSuffix = ":userId"
   private[auth] val random = new Random(new SecureRandom())
+
+  private def intToDuration(seconds: Int): Duration = if (seconds == 0) Duration.Inf else seconds.seconds
 
   def startNewSession(userId: Id, timeoutInSeconds: Int): AuthenticityToken = {
     removeByUserId(userId)
@@ -28,7 +31,7 @@ class CacheIdContainer[Id: ClassTag] extends IdContainer[Id] {
   }
 
   private[auth] def removeByUserId(userId: Id) {
-    Cache.getAs[String](userId.toString + userIdSuffix) foreach unsetToken
+    cacheApi.get[String](userId.toString + userIdSuffix) foreach unsetToken
     unsetUserId(userId)
   }
 
@@ -38,17 +41,17 @@ class CacheIdContainer[Id: ClassTag] extends IdContainer[Id] {
   }
 
   private[auth] def unsetToken(token: AuthenticityToken) {
-    Cache.remove(token + tokenSuffix)
+    cacheApi.remove(token + tokenSuffix)
   }
   private[auth] def unsetUserId(userId: Id) {
-    Cache.remove(userId.toString + userIdSuffix)
+    cacheApi.remove(userId.toString + userIdSuffix)
   }
 
-  def get(token: AuthenticityToken) = Cache.get(token + tokenSuffix).map(_.asInstanceOf[Id])
+  def get(token: AuthenticityToken) = cacheApi.get[Any](token + tokenSuffix).map(_.asInstanceOf[Id])
 
   private[auth] def store(token: AuthenticityToken, userId: Id, timeoutInSeconds: Int) {
-    Cache.set(token + tokenSuffix, userId, timeoutInSeconds)
-    Cache.set(userId.toString + userIdSuffix, token, timeoutInSeconds)
+    cacheApi.set(token + tokenSuffix, userId, intToDuration(timeoutInSeconds))
+    cacheApi.set(userId.toString + userIdSuffix, token, intToDuration(timeoutInSeconds))
   }
 
   def prolongTimeout(token: AuthenticityToken, timeoutInSeconds: Int) {
