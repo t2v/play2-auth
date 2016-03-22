@@ -1,7 +1,7 @@
 package models
 
+import controllers.providers.vkontakte
 import jp.t2v.lab.play2.auth.social.providers
-import scalikejdbc._
 import jp.t2v.lab.play2.auth.social.providers.{facebook, twitter}
 
 sealed trait Authority
@@ -35,6 +35,15 @@ case class TwitterUser(
 case class SlackAccessToken(
   userId: Long,
   accessToken: String)
+
+
+case class VkontakteUser(
+  userId: Long,
+  id: String,
+  name: String,
+  coverUrl: String,
+  accessToken: String)
+
 object User {
 
   def *(rs: WrappedResultSet) = User(
@@ -163,6 +172,35 @@ object SlackAccessToken {
     sql"""INSERT INTO slack_access_token(user_id, access_token)
           VALUES ($userId, $accessToken)""".update.apply()
     SlackAccessToken(userId, accessToken)
+  }
+
+}
+
+object VkontakteUser {
+
+  def *(rs: WrappedResultSet) = VkontakteUser(
+    rs.long("user_id"),
+    rs.string("id"),
+    rs.string("name"),
+    rs.string("cover_url"),
+    rs.string("access_token")
+  )
+
+  def findById(id: String)(implicit session: DBSession): Option[VkontakteUser] = {
+    sql"SELECT * FROM vkontakte_users WHERE id = $id".map(*).single().apply()
+  }
+
+  def findByUserId(userId: Long)(implicit session: DBSession): Option[VkontakteUser] = {
+    sql"SELECT * FROM vkontakte_users WHERE user_id = $userId".map(*).single().apply()
+  }
+
+  def save(userId: Long, vkontakteUser: vkontakte.VkontakteUser)(implicit session: DBSession): VkontakteUser = {
+    val id = vkontakteUser.id
+    val first_name = vkontakteUser.first_name
+    val coverUrl = vkontakteUser.coverUrl
+    val accessToken = vkontakteUser.accessToken
+    sql"INSERT INTO vkontakte_users(user_id, id, name, cover_url, access_token) VALUES ($userId, $id, $first_name, $coverUrl, $accessToken)".update.apply()
+    VkontakteUser(userId, id, first_name, coverUrl, accessToken)
   }
 
 }

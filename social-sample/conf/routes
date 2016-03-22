@@ -15,3 +15,7 @@ GET        /authorize/facebook        controllers.FacebookAuthController.authori
 
 GET        /link/slack                controllers.SlackAuthController.link(scope: String)
 GET        /authorize/slack           controllers.SlackAuthController.authorize
+
+GET        /login/vkontakte            controllers.VkontakteAuthController.login(scope: String)
+GET        /link/vkontakte             controllers.VkontakteAuthController.link(scope: String)
+GET        /authorize/vkontakte        controllers.VkontakteAuthController.authorize

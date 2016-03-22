@@ -1,17 +1,15 @@
 package controllers
 
-import models._
-import play.api.mvc.Results._
-import play.api.mvc._
-import scalikejdbc.DB
+import controllers.providers.vkontakte.{VkontakteController, VkontakteProviderUserSupport}
+import models.{User, VkontakteUser, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.reflect.{ ClassTag, classTag }
+import scala.concurrent.{ExecutionContext, Future}
+import scala.reflect.{ClassTag, classTag}
 import jp.t2v.lab.play2.auth._
-import jp.t2v.lab.play2.auth.social.providers.twitter.{TwitterProviderUserSupport, TwitterController}
-import jp.t2v.lab.play2.auth.social.providers.facebook.{FacebookProviderUserSupport, FacebookController}
-import jp.t2v.lab.play2.auth.social.providers.github.{GitHubProviderUserSupport, GitHubController}
+import jp.t2v.lab.play2.auth.social.providers.twitter.{TwitterController, TwitterProviderUserSupport}
+import jp.t2v.lab.play2.auth.social.providers.facebook.{FacebookController, FacebookProviderUserSupport}
+import jp.t2v.lab.play2.auth.social.providers.github.{GitHubController, GitHubProviderUserSupport}
 import jp.t2v.lab.play2.auth.social.providers.slack.SlackController
 
 object Application extends Controller with OptionalAuthElement with AuthConfigImpl with Logout {
@@ -170,3 +168,42 @@ object SlackAuthController extends SlackController
   }
 
 }
+
+
+object VkontakteAuthController extends VkontakteController
+  with AuthConfigImpl
+  with VkontakteProviderUserSupport {
+
+  override def onOAuthLinkSucceeded(token: AccessToken, consumerUser: User)(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
+    retrieveProviderUser(token).map { providerUser =>
+      DB.localTx { implicit session =>
+        VkontakteUser.save(consumerUser.id, providerUser)
+        Redirect(routes.Application.index)
+      }
+    }
+  }
+
+  override def onOAuthLoginSucceeded(token: AccessToken)(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
+    retrieveProviderUser(token).flatMap { providerUser =>
+      DB.localTx { implicit session =>
+        VkontakteUser.findById(providerUser.id) match {
+          case None =>
+            val id = User.create(providerUser.first_name, providerUser.coverUrl).id
+            VkontakteUser.save(id, providerUser)
+            gotoLoginSucceeded(id)
+          case Some(fu) =>
+            gotoLoginSucceeded(fu.userId)
+        }
+      }
+    }
+  }
+
+
+  def onAuthSucces(): Unit = {
+
+  }
+
+
+}
+
+
