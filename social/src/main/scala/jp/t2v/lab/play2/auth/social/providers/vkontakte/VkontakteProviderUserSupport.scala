@@ -1,4 +1,4 @@
-package controllers.providers.vkontakte
+package jp.t2v.lab.play2.auth.social.providers.vkontakte
 
 /**
   * Created by Yuri Rastegaev on 19.03.2016.

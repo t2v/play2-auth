@@ -1,8 +1,8 @@
 package models
 
-import controllers.providers.vkontakte
 import jp.t2v.lab.play2.auth.social.providers
-import jp.t2v.lab.play2.auth.social.providers.{facebook, twitter}
+import jp.t2v.lab.play2.auth.social.providers.{facebook, twitter,vkontakte}
+import scalikejdbc._
 
 sealed trait Authority
 case object Admin extends Authority
