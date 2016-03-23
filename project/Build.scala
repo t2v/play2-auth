@@ -118,6 +118,8 @@ object ApplicationBuild extends Build {
       name                := appName + "-social",
       libraryDependencies += "com.typesafe.play" %% "play"       % playVersion % "provided",
       libraryDependencies += "com.typesafe.play" %% "play-ws"    % playVersion % "provided",
+      libraryDependencies += "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.7.2",
+      libraryDependencies += "net.minidev" % "json-smart" % "1.0.9",
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
       pomIncludeRepository    := appPomIncludeRepository,
@@ -142,9 +144,7 @@ object ApplicationBuild extends Build {
         "org.scalikejdbc"   %% "scalikejdbc-test"                  % "2.2.7"            % "test",
         "org.scalikejdbc"   %% "scalikejdbc-play-initializer"      % "2.4.0",
         "org.scalikejdbc"   %% "scalikejdbc-play-dbapi-adapter"    % "2.4.0",
-        "org.scalikejdbc"   %% "scalikejdbc-play-fixture"          % "2.4.0",
-        "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.7.2",
-        "net.minidev" % "json-smart" % "1.0.9"
+        "org.scalikejdbc"   %% "scalikejdbc-play-fixture"          % "2.4.0"
       ),
       publish           := { },
       publishArtifact   := false,
