@@ -4,7 +4,7 @@ import jp.t2v.lab.play2.auth.social.providers.twitter.{TwitterController, Twitte
 import jp.t2v.lab.play2.auth.social.providers.facebook.{FacebookController, FacebookProviderUserSupport}
 import jp.t2v.lab.play2.auth.social.providers.github.{GitHubController, GitHubProviderUserSupport}
 import jp.t2v.lab.play2.auth.social.providers.slack.SlackController
-import jp.t2v.lab.play2.auth.social.providers.vkontakte.{VkontakteController, VkontakteProviderUserSupport}
+import jp.t2v.lab.play2.auth.social.providers.vkontakte.{VkontakteToken, VkontakteController, VkontakteProviderUserSupport}
 import jp.t2v.lab.play2.auth._
 import models._
 import play.api.mvc.Results._
@@ -178,6 +178,8 @@ object SlackAuthController extends SlackController
 object VkontakteAuthController extends VkontakteController
   with AuthConfigImpl
   with VkontakteProviderUserSupport {
+
+  override type AccessToken = VkontakteToken
 
   override def onOAuthLinkSucceeded(token: AccessToken, consumerUser: User)(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
     retrieveProviderUser(token).map { providerUser =>
