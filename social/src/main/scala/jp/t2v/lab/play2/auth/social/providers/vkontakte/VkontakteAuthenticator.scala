@@ -1,18 +1,12 @@
 package jp.t2v.lab.play2.auth.social.providers.vkontakte
 
-/**
-  * Created by Yuri Rastegaev on 19.03.2016.
-  */
-
 import java.net.URLEncoder
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import jp.t2v.lab.play2.auth.social.core.{AccessTokenRetrievalFailedException, OAuth2Authenticator}
 import play.api.Logger
 import play.api.Play.current
 import play.api.http.{HeaderNames, MimeTypes}
+import play.api.libs.json.Json
 import play.api.libs.ws.{WS, WSResponse}
 import play.api.mvc.Results
 
@@ -22,7 +16,7 @@ import scala.util.control.NonFatal
 
 class VkontakteAuthenticator extends OAuth2Authenticator {
 
-  type AccessToken = String
+  type AccessToken = VkontakteToken
 
   val providerName: String = "vkontakte"
 
@@ -40,7 +34,7 @@ class VkontakteAuthenticator extends OAuth2Authenticator {
 
   lazy val callbackUrl = current.configuration.getString("vkontakte.callbackURL").getOrElse(sys.error("vkontakte.callbackURL is missing"))
 
-  def retrieveAccessToken(code: String)(implicit ctx: ExecutionContext): Future[AccessToken] = {
+  override def retrieveAccessToken(code: String)(implicit ctx: ExecutionContext): Future[AccessToken] = {
     WS.url(accessTokenUrl)
       .withQueryString(
         "client_id" -> clientId,
@@ -55,7 +49,7 @@ class VkontakteAuthenticator extends OAuth2Authenticator {
       }
   }
 
-  def getAuthorizationUrl(scope: String, state: String): String = {
+  override def getAuthorizationUrl(scope: String, state: String): String = {
     val encodedClientId = URLEncoder.encode(clientId, "utf-8")
     val encodedRedirectUri = URLEncoder.encode(callbackUrl, "utf-8")
     val encodedScope = URLEncoder.encode(scope, "utf-8")
@@ -68,23 +62,15 @@ class VkontakteAuthenticator extends OAuth2Authenticator {
       s"&state=${encodedState}"
   }
 
-  def parseAccessTokenResponse(response: WSResponse): String = {
+  override def parseAccessTokenResponse(response: WSResponse): VkontakteToken = {
     Logger(getClass).debug("Parsing access token response: " + response.body)
     try {
-      val mapper = new ObjectMapper() with ScalaObjectMapper
-      mapper.registerModule(DefaultScalaModule)
-      val responseMap = mapper.readValue[Map[String, Object]](response.body)
-
-      var access_token = responseMap.get("access_token")
-      var email = responseMap.get("email")
-      var expires_in = responseMap.get("expires_in")
-      var user_id = responseMap.get("user_id")
-
-      VkontakteAuthenticator.email = email.get.toString
-      VkontakteAuthenticator.expires_in = expires_in.get.toString
-      VkontakteAuthenticator.user_id = user_id.get.toString
-
-      access_token.get.toString
+      val jsonValue = Json.parse(response.body.toString)
+      var access_token = jsonValue \ "access_token"
+      var email = jsonValue \ "email"
+      var expires_in = jsonValue \ "expires_in"
+      var user_id = jsonValue \ "user_id"
+      new VkontakteToken(access_token.get.toString(), email.get.toString(), expires_in.get.as[Long], user_id.get.as[Long])
     } catch {
       case NonFatal(e) =>
         throw new AccessTokenRetrievalFailedException(s"Failed to retrieve access token. ${response.body}", e)
@@ -93,9 +79,3 @@ class VkontakteAuthenticator extends OAuth2Authenticator {
 
 }
 
-object VkontakteAuthenticator {
-  var email = ""
-  var expires_in = ""
-  var user_id = ""
-
-}

@@ -1,9 +1,5 @@
 package jp.t2v.lab.play2.auth.social.providers.vkontakte
 
-/**
-  * Created by Yuri Rastegaev on 19.03.2016.
-  */
-
 import jp.t2v.lab.play2.auth.social.core.OAuthProviderUserSupport
 import play.api.Logger
 import play.api.Play.current
@@ -19,7 +15,9 @@ trait VkontakteProviderUserSupport extends OAuthProviderUserSupport {
 
   type ProviderUser = VkontakteUser
 
-  private def readProviderUser(accessToken: String, response: WSResponse): ProviderUser = {
+  type AccessToken = VkontakteToken
+
+  private def readProviderUser(vkontakteToken: VkontakteToken, response: WSResponse): ProviderUser = {
     val j = response.json
     val resp = j \ "response"
     val uid = (resp.get \\ "uid").head.toString()
@@ -30,26 +28,26 @@ trait VkontakteProviderUserSupport extends OAuthProviderUserSupport {
     VkontakteUser(
       uid,
       first_name,
-      VkontakteAuthenticator.email,
+      vkontakteToken.email,
       photo_50,
-      accessToken
+      vkontakteToken.access_token
     )
   }
 
 
-  def retrieveProviderUser(accessToken: AccessToken, userId: String)(implicit ctx: ExecutionContext): Future[ProviderUser] = {
+  def retrieveProviderUser(vkontakteToken: VkontakteToken, userId: String)(implicit ctx: ExecutionContext): Future[ProviderUser] = {
     for {
       response <- WS.url(USERS_GET_URL)
-        .withQueryString("user_id" -> userId.toString, "access_token" -> accessToken, "fields" -> "photo_50")
+        .withQueryString("user_id" -> userId.toString, "access_token" -> vkontakteToken.access_token, "fields" -> "photo_50")
         .get()
     } yield {
       Logger(getClass).debug("Retrieving user info from provider API: " + response.body)
-      readProviderUser(accessToken, response)
+      readProviderUser(vkontakteToken, response)
     }
   }
 
-  def retrieveProviderUser(accessToken: AccessToken)(implicit ctx: ExecutionContext): Future[ProviderUser] = {
-    retrieveProviderUser(accessToken, VkontakteAuthenticator.user_id)
+  def retrieveProviderUser(vkontakteToken: VkontakteToken)(implicit ctx: ExecutionContext): Future[ProviderUser] = {
+    retrieveProviderUser(vkontakteToken, vkontakteToken.user_id.toString)
   }
 
 }

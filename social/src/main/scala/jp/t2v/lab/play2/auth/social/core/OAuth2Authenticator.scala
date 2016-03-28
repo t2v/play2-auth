@@ -22,6 +22,6 @@ trait OAuth2Authenticator extends OAuthAuthenticator {
 
   def getAuthorizationUrl(scope: String, state: String): String
 
-  def parseAccessTokenResponse(response: WSResponse): String
+  def parseAccessTokenResponse(response: WSResponse): AccessToken
 
 }
