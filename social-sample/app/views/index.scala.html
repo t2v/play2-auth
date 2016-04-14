@@ -2,7 +2,8 @@
   gitHubUser: Option[GitHubUser],
   facebookUser: Option[FacebookUser],
   twitterUser: Option[TwitterUser],
-  slackAccessToken: Option[SlackAccessToken])
+  slackAccessToken: Option[SlackAccessToken],
+  vkontakteUser: Option[VkontakteUser])
 
 <html>
     <head>
@@ -98,6 +99,21 @@
                         }
                     </div>
 
+                    <div class="provider">
+                        <h2>Vkontakte</h2>
+
+                        @vkontakteUser.map { u =>
+                        <p>
+                            @u.name
+                        </p>
+                        <p>
+                            <img src="@{u.coverUrl}">
+                        </p>
+                        }.getOrElse {
+                            <a href="@routes.VkontakteAuthController.link("email")">link Vkontakte</a>
+                        }
+                    </div>
+
                 </div>
 
             }.getOrElse {
@@ -109,6 +125,9 @@
                 </p>
                 <p>
                     <a href="@routes.FacebookAuthController.login("email")">facebook login</a>
+                </p>
+                <p>
+                    <a href="@routes.VkontakteAuthController.login("email")">vkontakte login</a>
                 </p>
             }
         </div>

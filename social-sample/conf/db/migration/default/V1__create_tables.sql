@@ -33,3 +33,11 @@ CREATE TABLE slack_access_token (
   user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
   access_token VARCHAR(1000) NOT NULL
 );
+
+CREATE TABLE vkontakte_users (
+  user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+  id VARCHAR(100) PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  cover_url VARCHAR(1000) NOT NULL,
+  access_token VARCHAR(1000) NOT NULL
+);

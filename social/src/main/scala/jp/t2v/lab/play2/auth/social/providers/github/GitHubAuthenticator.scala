@@ -50,7 +50,7 @@ class GitHubAuthenticator extends OAuth2Authenticator {
     s"${authorizationUrl}?client_id=${encodedClientId}&redirect_uri=${encodedRedirectUri}&scope=${encodedScope}&state=${encodedState}"
   }
 
-  def parseAccessTokenResponse(response: WSResponse): String = {
+  def parseAccessTokenResponse(response: WSResponse): AccessToken = {
     Logger(getClass).debug("Parsing access token response: " + response.body)
     try {
       (response.json \ "access_token").as[String]

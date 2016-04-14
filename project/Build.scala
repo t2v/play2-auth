@@ -115,10 +115,10 @@ object ApplicationBuild extends Build {
   lazy val social = Project (id = "social", base = file ("social"))
     .settings(
       baseSettings,
-      name                := appName + "-social",
-      libraryDependencies += "com.typesafe.play" %% "play"       % playVersion % "provided",
-      libraryDependencies += "com.typesafe.play" %% "play-ws"    % playVersion % "provided",
-      publishMavenStyle       := appPublishMavenStyle,
+      name := appName + "-social",
+      libraryDependencies += "com.typesafe.play" %% "play" % playVersion % "provided",
+      libraryDependencies += "com.typesafe.play" %% "play-ws" % playVersion % "provided",
+      publishMavenStyle := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
       pomIncludeRepository    := appPomIncludeRepository,
       publishTo               <<=(version)(appPublishTo),
