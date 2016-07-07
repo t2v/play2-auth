@@ -3,74 +3,74 @@
 # ~~~~
 
 # Standard
-GET     /                                     controllers.standard.Sessions.login
-POST    /standard/login                       controllers.standard.Sessions.authenticate
-GET     /standard/logout                      controllers.standard.Sessions.logout
+GET     /                                     @controllers.standard.Sessions.login
+POST    /standard/login                       @controllers.standard.Sessions.authenticate
+GET     /standard/logout                      @controllers.standard.Sessions.logout
 
-GET     /standard/messages/main               controllers.standard.Messages.main
-GET     /standard/messages/list               controllers.standard.Messages.list
-GET     /standard/messages/detail/:id         controllers.standard.Messages.detail(id: Int)
-GET     /standard/messages/write              controllers.standard.Messages.write
+GET     /standard/messages/main               @controllers.standard.Messages.main
+GET     /standard/messages/list               @controllers.standard.Messages.list
+GET     /standard/messages/detail/:id         @controllers.standard.Messages.detail(id: Int)
+GET     /standard/messages/write              @controllers.standard.Messages.write
 
 # Builder
-GET     /builder/                          controllers.builder.Sessions.login
-POST    /builder/login                     controllers.builder.Sessions.authenticate
-GET     /builder/logout                    controllers.builder.Sessions.logout
+GET     /builder/                          @controllers.builder.Sessions.login
+POST    /builder/login                     @controllers.builder.Sessions.authenticate
+GET     /builder/logout                    @controllers.builder.Sessions.logout
 
-GET     /builder/messages/main             controllers.builder.Messages.main
-GET     /builder/messages/list             controllers.builder.Messages.list
-GET     /builder/messages/detail/:id       controllers.builder.Messages.detail(id: Int)
-GET     /builder/messages/write            controllers.builder.Messages.write
+GET     /builder/messages/main             @controllers.builder.Messages.main
+GET     /builder/messages/list             @controllers.builder.Messages.list
+GET     /builder/messages/detail/:id       @controllers.builder.Messages.detail(id: Int)
+GET     /builder/messages/write            @controllers.builder.Messages.write
 
 # Csrf
-GET     /csrf/                             controllers.csrf.Sessions.login
-POST    /csrf/login                        controllers.csrf.Sessions.authenticate
-GET     /csrf/logout                       controllers.csrf.Sessions.logout
+GET     /csrf/                             @controllers.csrf.Sessions.login
+POST    /csrf/login                        @controllers.csrf.Sessions.authenticate
+GET     /csrf/logout                       @controllers.csrf.Sessions.logout
 
-GET     /csrf/with_token                   controllers.csrf.PreventingCsrfSample.formWithToken
-GET     /csrf/without_token                controllers.csrf.PreventingCsrfSample.formWithoutToken
-POST    /csrf/                             controllers.csrf.PreventingCsrfSample.submitTarget
+GET     /csrf/with_token                   @controllers.csrf.PreventingCsrfSample.formWithToken
+GET     /csrf/without_token                @controllers.csrf.PreventingCsrfSample.formWithoutToken
+POST    /csrf/                             @controllers.csrf.PreventingCsrfSample.submitTarget
 
 
 # Ephemeral
-GET     /ephemeral/                          controllers.ephemeral.Sessions.login
-POST    /ephemeral/login                     controllers.ephemeral.Sessions.authenticate
-GET     /ephemeral/logout                    controllers.ephemeral.Sessions.logout
+GET     /ephemeral/                          @controllers.ephemeral.Sessions.login
+POST    /ephemeral/login                     @controllers.ephemeral.Sessions.authenticate
+GET     /ephemeral/logout                    @controllers.ephemeral.Sessions.logout
 
-GET     /ephemeral/messages/main             controllers.ephemeral.Messages.main
-GET     /ephemeral/messages/list             controllers.ephemeral.Messages.list
-GET     /ephemeral/messages/detail/:id       controllers.ephemeral.Messages.detail(id: Int)
-GET     /ephemeral/messages/write            controllers.ephemeral.Messages.write
+GET     /ephemeral/messages/main             @controllers.ephemeral.Messages.main
+GET     /ephemeral/messages/list             @controllers.ephemeral.Messages.list
+GET     /ephemeral/messages/detail/:id       @controllers.ephemeral.Messages.detail(id: Int)
+GET     /ephemeral/messages/write            @controllers.ephemeral.Messages.write
 
 # Stateless
-GET     /stateless/                          controllers.stateless.Sessions.login
-POST    /stateless/login                     controllers.stateless.Sessions.authenticate
-GET     /stateless/logout                    controllers.stateless.Sessions.logout
+GET     /stateless/                          @controllers.stateless.Sessions.login
+POST    /stateless/login                     @controllers.stateless.Sessions.authenticate
+GET     /stateless/logout                    @controllers.stateless.Sessions.logout
 
-GET     /stateless/messages/main             controllers.stateless.Messages.main
-GET     /stateless/messages/list             controllers.stateless.Messages.list
-GET     /stateless/messages/detail/:id       controllers.stateless.Messages.detail(id: Int)
-GET     /stateless/messages/write            controllers.stateless.Messages.write
+GET     /stateless/messages/main             @controllers.stateless.Messages.main
+GET     /stateless/messages/list             @controllers.stateless.Messages.list
+GET     /stateless/messages/detail/:id       @controllers.stateless.Messages.detail(id: Int)
+GET     /stateless/messages/write            @controllers.stateless.Messages.write
 
 
 # HTTP Basic Auth
-GET     /basic/                            controllers.Default.redirect(to = "/basic/messages/main")
-GET     /basic/messages/main               controllers.basic.Messages.main
-GET     /basic/messages/list               controllers.basic.Messages.list
-GET     /basic/messages/detail/:id         controllers.basic.Messages.detail(id: Int)
-GET     /basic/messages/write              controllers.basic.Messages.write
+GET     /basic/                            @controllers.Default.redirect(to = "/basic/messages/main")
+GET     /basic/messages/main               @controllers.basic.Messages.main
+GET     /basic/messages/list               @controllers.basic.Messages.list
+GET     /basic/messages/detail/:id         @controllers.basic.Messages.detail(id: Int)
+GET     /basic/messages/write              @controllers.basic.Messages.write
 
 
 # Remember Me
-GET     /rememberme/                            controllers.rememberme.Sessions.login
-POST    /rememberme/login                       controllers.rememberme.Sessions.authenticate
-GET     /rememberme/logout                      controllers.rememberme.Sessions.logout
+GET     /rememberme/                            @controllers.rememberme.Sessions.login
+POST    /rememberme/login                       @controllers.rememberme.Sessions.authenticate
+GET     /rememberme/logout                      @controllers.rememberme.Sessions.logout
 
-GET     /rememberme/messages/main               controllers.rememberme.Messages.main
-GET     /rememberme/messages/list               controllers.rememberme.Messages.list
-GET     /rememberme/messages/detail/:id         controllers.rememberme.Messages.detail(id: Int)
-GET     /rememberme/messages/write              controllers.rememberme.Messages.write
+GET     /rememberme/messages/main               @controllers.rememberme.Messages.main
+GET     /rememberme/messages/list               @controllers.rememberme.Messages.list
+GET     /rememberme/messages/detail/:id         @controllers.rememberme.Messages.detail(id: Int)
+GET     /rememberme/messages/write              @controllers.rememberme.Messages.write
 
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /assets/*file               @controllers.Assets.at(path="/public", file)

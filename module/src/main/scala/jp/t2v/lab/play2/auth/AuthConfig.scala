@@ -1,8 +1,11 @@
 package jp.t2v.lab.play2.auth
 
+import play.api.{ Environment, Mode }
+import play.api.cache.CacheApi
 import play.api.mvc._
-import scala.reflect.{ClassTag, classTag}
-import scala.concurrent.{ExecutionContext, Future}
+
+import scala.reflect.{ ClassTag, classTag }
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait AuthConfig {
 
@@ -11,6 +14,10 @@ trait AuthConfig {
   type User
 
   type Authority
+
+  val environment: Environment
+
+  val idContainer: AsyncIdContainer[Id]
 
   implicit def idTag: ClassTag[Id]
 
@@ -27,8 +34,6 @@ trait AuthConfig {
   def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])(implicit context: ExecutionContext): Future[Result]
 
   def authorize(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean]
-
-  lazy val idContainer: AsyncIdContainer[Id] = AsyncIdContainer(new CacheIdContainer[Id])
 
   @deprecated("it will be deleted since 0.14.x. use CookieTokenAccessor constructor", since = "0.13.1")
   final lazy val cookieName: String = throw new AssertionError("use tokenAccessor setting instead.")
@@ -50,7 +55,7 @@ trait AuthConfig {
 
   lazy val tokenAccessor: TokenAccessor = new CookieTokenAccessor(
     cookieName = "PLAY2AUTH_SESS_ID",
-    cookieSecureOption = play.api.Play.maybeApplication.exists(app => play.api.Play.isProd(app)),
+    cookieSecureOption = environment.mode == Mode.Prod,
     cookieHttpOnlyOption = true,
     cookieDomainOption = None,
     cookiePathOption = "/",
