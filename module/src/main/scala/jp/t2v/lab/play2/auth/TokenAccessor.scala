@@ -1,7 +1,6 @@
 package jp.t2v.lab.play2.auth
 
 import play.api.mvc.{Result, RequestHeader}
-import play.api.libs.Crypto
 
 trait TokenAccessor {
 
@@ -21,7 +20,7 @@ trait TokenAccessor {
   // Do not change this unless you understand the security issues behind timing attacks.
   // This method intentionally runs in constant time if the two strings have the same length.
   // If it didn't, it would be vulnerable to a timing attack.
-  protected def safeEquals(a: String, b: String) = {
+  protected def safeEquals(a: String, b: String): Boolean = {
     if (a.length != b.length) {
       false
     } else {
