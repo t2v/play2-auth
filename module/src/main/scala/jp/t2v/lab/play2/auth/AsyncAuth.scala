@@ -1,7 +1,9 @@
 package jp.t2v.lab.play2.auth
 
+import play.api.Mode
 import play.api.mvc._
-import scala.concurrent.{ExecutionContext, Future}
+
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait AsyncAuth {
     self: AuthConfig with Controller =>
@@ -36,7 +38,7 @@ trait AsyncAuth {
   }
 
   private[auth] def extractToken(request: RequestHeader): Option[AuthenticityToken] = {
-    if (play.api.Play.maybeApplication.forall(app => play.api.Play.isTest(app))) {
+    if (environment.mode == Mode.Test) {
       request.headers.get("PLAY2_AUTH_TEST_TOKEN") orElse tokenAccessor.extract(request)
     } else {
       tokenAccessor.extract(request)

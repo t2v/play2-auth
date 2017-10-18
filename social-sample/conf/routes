@@ -1,17 +1,17 @@
-GET        /                          controllers.Application.index
-GET        /logout                    controllers.Application.logout
+GET        /                          @controllers.Application.index
+GET        /logout                    @controllers.Application.logout
 
-GET        /login/twitter             controllers.TwitterAuthController.login
-GET        /link/twitter              controllers.TwitterAuthController.link
-GET        /authorize/twitter         controllers.TwitterAuthController.authorize
+GET        /login/twitter             @controllers.TwitterAuthController.login
+GET        /link/twitter              @controllers.TwitterAuthController.link
+GET        /authorize/twitter         @controllers.TwitterAuthController.authorize
 
-GET        /login/github              controllers.GitHubAuthController.login(scope: String)
-GET        /link/github               controllers.GitHubAuthController.link(scope: String)
-GET        /authorize/github          controllers.GitHubAuthController.authorize
+GET        /login/github              @controllers.GitHubAuthController.login(scope: String)
+GET        /link/github               @controllers.GitHubAuthController.link(scope: String)
+GET        /authorize/github          @controllers.GitHubAuthController.authorize
 
-GET        /login/facebook            controllers.FacebookAuthController.login(scope: String)
-GET        /link/facebook             controllers.FacebookAuthController.link(scope: String)
-GET        /authorize/facebook        controllers.FacebookAuthController.authorize
+GET        /login/facebook            @controllers.FacebookAuthController.login(scope: String)
+GET        /link/facebook             @controllers.FacebookAuthController.link(scope: String)
+GET        /authorize/facebook        @controllers.FacebookAuthController.authorize
 
-GET        /link/slack                controllers.SlackAuthController.link(scope: String)
-GET        /authorize/slack           controllers.SlackAuthController.authorize
+GET        /link/slack                @controllers.SlackAuthController.link(scope: String)
+GET        /authorize/slack           @controllers.SlackAuthController.authorize
