@@ -41,7 +41,7 @@ class CacheIdContainer[Id: ClassTag] (cacheApi: AsyncCacheApi) extends AsyncIdCo
     val userIdF = unsetUserId(userId)
     for {
       tokenOpt <- cacheApi.get[AuthenticityToken](userId.toString + userIdSuffix)
-      _        <- tokenOpt.fold(Future.successful(()), unsetToken _)
+      _        <- tokenOpt.fold(Future.successful(()))(unsetToken)
       _        <- userIdF
     } yield ()
   }
@@ -50,7 +50,7 @@ class CacheIdContainer[Id: ClassTag] (cacheApi: AsyncCacheApi) extends AsyncIdCo
     val tokenF = unsetToken(token)
     for {
       userIdOpt <- get(token)
-      _         <- userIdOpt.fold(Future.successful(()), unsetUserId _)
+      _         <- userIdOpt.fold(Future.successful(()))(unsetUserId)
       _         <- tokenF
     } yield ()
   }
@@ -74,7 +74,7 @@ class CacheIdContainer[Id: ClassTag] (cacheApi: AsyncCacheApi) extends AsyncIdCo
   def prolongTimeout(token: AuthenticityToken, timeoutInSeconds: Int)(implicit request: RequestHeader, context: ExecutionContext): Future[Unit] = {
     for {
       tokenOpt <- get(token)
-      _        <- tokenOpt.fold(Future.successful(()), store(token, _, timeoutInSeconds))
+      _        <- tokenOpt.fold(Future.successful(()))(store(token, _, timeoutInSeconds))
     } yield ()
   }
 

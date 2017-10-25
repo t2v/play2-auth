@@ -1,23 +1,27 @@
 package jp.t2v.lab.play2.auth
 
-import play.api.Mode
+import play.api.{Environment, Mode}
 import play.api.mvc._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
-trait AsyncAuth {
-    self: AuthConfig with Controller =>
+case class AsyncAuth[Id, User, Authority](
+  authConfig: AuthConfig[Id, User, Authority],
+  idContainer: AsyncIdContainer[Id],
+  tokenAccessor: TokenAccessor,
+  env: Environment
+) {
 
   def authorized(authority: Authority)(implicit request: RequestHeader, context: ExecutionContext): Future[Either[Result, (User, ResultUpdater)]] = {
     restoreUser collect {
       case (Some(user), resultUpdater) => Right(user -> resultUpdater)
     } recoverWith {
-      case _ => authenticationFailed(request).map(Left.apply)
+      case _ => authConfig.authenticationFailed(request).map(Left.apply)
     } flatMap {
-      case Right((user, resultUpdater)) => authorize(user, authority) collect {
+      case Right((user, resultUpdater)) => authConfig.authorize(user, authority) collect {
         case true => Right(user -> resultUpdater)
       } recoverWith {
-        case _ => authorizationFailed(request, user, Some(authority)).map(Left.apply)
+        case _ => authConfig.authorizationFailed(request, user, Some(authority)).map(Left.apply)
       }
       case Left(result) => Future.successful(Left(result))
     }
@@ -28,8 +32,8 @@ trait AsyncAuth {
       token  <- extractToken(request)
     } yield for {
       Some(userId) <- idContainer.get(token)
-      Some(user)   <- resolveUser(userId)
-      _            <- idContainer.prolongTimeout(token, sessionTimeoutInSeconds)
+      Some(user)   <- authConfig.resolveUser(userId)
+      _            <- idContainer.prolongTimeout(token, authConfig.sessionTimeoutInSeconds)
     } yield {
       Option(user) -> tokenAccessor.put(token) _
     }) getOrElse {
@@ -38,7 +42,7 @@ trait AsyncAuth {
   }
 
   private[auth] def extractToken(request: RequestHeader): Option[AuthenticityToken] = {
-    if (environment.mode == Mode.Test) {
+    if (env.mode == Mode.Test) {
       request.headers.get("PLAY2_AUTH_TEST_TOKEN") orElse tokenAccessor.extract(request)
     } else {
       tokenAccessor.extract(request)
