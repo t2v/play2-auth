@@ -7,7 +7,7 @@ val appName    = "play2-auth"
 val playVersion = play.core.PlayVersion.current
 
 lazy val baseSettings = Seq(
-  version            := "0.14.2",
+  version            := "0.15.0",
   scalaVersion       := "2.11.8",
   crossScalaVersions := Seq("2.10.5", "2.11.8"),
   organization       := "jp.t2v",
@@ -21,7 +21,7 @@ lazy val baseSettings = Seq(
 lazy val appPublishMavenStyle = true
 lazy val appPublishArtifactInTest = false
 lazy val appPomIncludeRepository = { _: MavenRepository => false }
-lazy val appPublishTo = { (v: String) =>
+def appPublishTo(v: String) = {
   val nexus = "https://oss.sonatype.org/"
   if (v.trim.endsWith("SNAPSHOT"))
     Some("snapshots" at nexus + "content/repositories/snapshots")
@@ -56,12 +56,12 @@ lazy val core = Project("core", base = file("module"))
     baseSettings,
     libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion        % "provided",
     libraryDependencies += "com.typesafe.play"  %%   "play-cache"             % playVersion        % "provided",
-    libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.5.1",
+    libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.6.0",
     name                    := appName,
     publishMavenStyle       := appPublishMavenStyle,
     publishArtifact in Test := appPublishArtifactInTest,
     pomIncludeRepository    := appPomIncludeRepository,
-    publishTo               <<=(version)(appPublishTo),
+    publishTo               := appPublishTo(version.value),
     pomExtra                := appPomExtra
   )
 
@@ -73,7 +73,7 @@ lazy val test = Project("test", base = file("test"))
     publishMavenStyle       := appPublishMavenStyle,
     publishArtifact in Test := appPublishArtifactInTest,
     pomIncludeRepository    := appPomIncludeRepository,
-    publishTo               <<=(version)(appPublishTo),
+    publishTo               := appPublishTo(version.value),
     pomExtra                := appPomExtra
   ).dependsOn(core)
 
@@ -86,14 +86,14 @@ lazy val sample = Project("sample", file("sample"))
     libraryDependencies += play.sbt.Play.autoImport.specs2 % Test,
     libraryDependencies += play.sbt.Play.autoImport.jdbc,
     libraryDependencies += "org.mindrot"           % "jbcrypt"                           % "0.3m",
-    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc"                       % "2.2.7",
-    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-config"                % "2.2.7",
-    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-syntax-support-macro"  % "2.2.7",
-    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"                  % "2.2.7"   % "test",
-    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-initializer"      % "2.4.0",
-    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-dbapi-adapter"    % "2.4.0",
-    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-fixture"          % "2.4.0",
-    libraryDependencies += "org.flywaydb"         %% "flyway-play"                       % "2.0.1",
+    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc"                       % "3.1.0",
+    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-config"                % "3.1.0",
+    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-syntax-support-macro"  % "3.1.0",
+    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"                  % "3.1.0"   % "test",
+    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-initializer"      % "2.6.0",
+    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-dbapi-adapter"    % "2.6.0",
+    libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-fixture"          % "2.6.0",
+    libraryDependencies += "org.flywaydb"         %% "flyway-play"                       % "4.0.0",
     TwirlKeys.templateImports in Compile ++= Seq(
       "jp.t2v.lab.play2.auth.sample._",
       "play.api.data.Form",
@@ -105,7 +105,7 @@ lazy val sample = Project("sample", file("sample"))
     publish           := { },
     publishArtifact   := false,
     packagedArtifacts := Map.empty,
-    publishTo         <<=(version)(appPublishTo),
+    publishTo         := appPublishTo(version.value),
     pomExtra          := appPomExtra
   )
   .dependsOn(core, test % "test")
@@ -120,7 +120,7 @@ lazy val social = Project (id = "social", base = file ("social"))
     publishMavenStyle       := appPublishMavenStyle,
     publishArtifact in Test := appPublishArtifactInTest,
     pomIncludeRepository    := appPomIncludeRepository,
-    publishTo               <<=(version)(appPublishTo),
+    publishTo               := appPublishTo(version.value),
     pomExtra                := appPomExtra
   ).dependsOn(core)
 
@@ -134,19 +134,19 @@ lazy val socialSample = Project("social-sample", file("social-sample"))
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-ws"                           % playVersion,
       "com.typesafe.play" %% "play-cache"                        % playVersion,
-      "org.flywaydb"      %% "flyway-play"                       % "2.0.1",
-      "org.scalikejdbc"   %% "scalikejdbc"                       % "2.2.7",
-      "org.scalikejdbc"   %% "scalikejdbc-config"                % "2.2.7",
-      "org.scalikejdbc"   %% "scalikejdbc-syntax-support-macro"  % "2.2.7",
-      "org.scalikejdbc"   %% "scalikejdbc-test"                  % "2.2.7"            % "test",
-      "org.scalikejdbc"   %% "scalikejdbc-play-initializer"      % "2.4.0",
-      "org.scalikejdbc"   %% "scalikejdbc-play-dbapi-adapter"    % "2.4.0",
-      "org.scalikejdbc"   %% "scalikejdbc-play-fixture"          % "2.4.0"
+      "org.flywaydb"      %% "flyway-play"                       % "4.0.0",
+      "org.scalikejdbc"   %% "scalikejdbc"                       % "3.1.0",
+      "org.scalikejdbc"   %% "scalikejdbc-config"                % "3.1.0",
+      "org.scalikejdbc"   %% "scalikejdbc-syntax-support-macro"  % "3.1.0",
+      "org.scalikejdbc"   %% "scalikejdbc-test"                  % "3.1.0"            % "test",
+      "org.scalikejdbc"   %% "scalikejdbc-play-initializer"      % "2.6.0",
+      "org.scalikejdbc"   %% "scalikejdbc-play-dbapi-adapter"    % "2.6.0",
+      "org.scalikejdbc"   %% "scalikejdbc-play-fixture"          % "2.6.0"
     ),
     publish           := { },
     publishArtifact   := false,
     packagedArtifacts := Map.empty,
-    publishTo         <<=(version)(appPublishTo),
+    publishTo         := appPublishTo(version.value),
     pomExtra          := appPomExtra
   )
   .dependsOn(core, social)
@@ -157,6 +157,6 @@ lazy val root = Project("root", base = file("."))
     publish           := { },
     publishArtifact   := false,
     packagedArtifacts := Map.empty,
-    publishTo         <<=(version)(appPublishTo),
+    publishTo         := appPublishTo(version.value),
     pomExtra          := appPomExtra
   ).aggregate(core, test, sample, social, socialSample)
