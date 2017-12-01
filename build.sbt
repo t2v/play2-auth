@@ -4,8 +4,8 @@ val playVersion = play.core.PlayVersion.current
 
 lazy val baseSettings = Seq(
   version            := "0.14.2",
-  scalaVersion       := "2.11.8",
-  crossScalaVersions := Seq("2.10.5", "2.11.8"),
+  scalaVersion       := "2.11.11",
+  crossScalaVersions := Seq("2.10.6", "2.11.11"),
   organization       := "jp.t2v",
   resolvers          ++=
     Resolver.typesafeRepo("releases") ::
