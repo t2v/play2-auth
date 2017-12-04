@@ -17,7 +17,7 @@ class CookieTokenAccessor(
   }
 
   def extract(request: RequestHeader): Option[AuthenticityToken] = {
-    request.cookies.get(cookieName).flatMap(c => verifyHmac(c.value))
+    request.cookies.get(cookieName).flatMap(c => verifySignedToken(c.value))
   }
 
   def delete(result: Result)(implicit request: RequestHeader): Result = {

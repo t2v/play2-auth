@@ -1,9 +1,8 @@
 package jp.t2v.lab.play2.auth
 
 import play.api.mvc._
-import play.api.mvc.Cookie
-import play.api.libs.Crypto
-import scala.concurrent.{Future, ExecutionContext}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 trait Login {
   self: Controller with AuthConfig =>

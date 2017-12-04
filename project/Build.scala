@@ -59,6 +59,7 @@ object ApplicationBuild extends Build {
       libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion        % "provided",
       libraryDependencies += "com.typesafe.play"  %%   "play-cache"             % playVersion        % "provided",
       libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.5.1",
+      libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % "test",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
