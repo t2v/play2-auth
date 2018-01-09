@@ -1,6 +1,12 @@
 package jp.t2v.lab.play2.auth
 
-import play.api.mvc.{DiscardingCookie, Cookie, Result, RequestHeader}
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+import javax.crypto.Mac
+import javax.crypto.SecretKey
+import javax.crypto.spec.SecretKeySpec
+
+import play.api.mvc.{Cookie, DiscardingCookie, RequestHeader, Result}
 
 class CookieTokenAccessor(
   protected val cookieName: String = "PLAY2AUTH_SESS_ID",
@@ -12,6 +18,8 @@ class CookieTokenAccessor(
   protected val algorithmName: String = "HmacSHA256",
   protected val secretKey: String
 ) extends TokenAccessor {
+
+  final protected val hmacSecretKey: SecretKey = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), algorithmName)
 
   def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result = {
     val c = Cookie(cookieName, sign(token), cookieMaxAge, cookiePathOption, cookieDomainOption, cookieSecureOption, cookieHttpOnlyOption)
@@ -27,17 +35,16 @@ class CookieTokenAccessor(
   }
 
   protected def verifyHmac(token: SignedToken): Option[AuthenticityToken] = {
-//    val (hmac, value) = token.splitAt(40)
-//    if (safeEquals(Crypto.sign(value), hmac)) Some(value) else None
-    ???
+    val (hmac, value) = token.splitAt(40) // TODO: Why 40 ???
+    if (safeEquals(calculateHmac(value), hmac)) Some(value) else None
   }
 
-  protected def sign(token: AuthenticityToken): SignedToken = ??? //Crypto.sign(token) + token
+  protected def sign(token: AuthenticityToken): SignedToken = calculateHmac(token) + token
 
   // Do not change this unless you understand the security issues behind timing attacks.
   // This method intentionally runs in constant time if the two strings have the same length.
   // If it didn't, it would be vulnerable to a timing attack.
-  protected def safeEquals(a: String, b: String): Boolean = {
+  final protected def safeEquals(a: String, b: String): Boolean = {
     if (a.length != b.length) {
       false
     } else {
@@ -47,6 +54,13 @@ class CookieTokenAccessor(
       }
       equal == 0
     }
+  }
+
+  protected def calculateHmac(value: String): String = {
+    val mac = Mac.getInstance(hmacSecretKey.getAlgorithm)
+    mac.init(hmacSecretKey)
+    val hmac = mac.doFinal(value.getBytes(StandardCharsets.UTF_8))
+    Base64.getUrlEncoder.encodeToString(hmac)
   }
 
 }

@@ -2,7 +2,6 @@ package jp.t2v.lab.play2.auth
 
 import play.api.cache.AsyncCacheApi
 
-import scala.annotation.tailrec
 import scala.util.Random
 import java.security.SecureRandom
 import java.util.concurrent.TimeUnit

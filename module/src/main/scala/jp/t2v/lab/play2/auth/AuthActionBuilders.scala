@@ -57,26 +57,26 @@ class AuthActionBuilders[Id, User, Authority](asyncAuth: AsyncAuth[Id, User, Aut
     }
   }
 
-  final def composeOptionalAuthAction[R[+_] <: Request[_], B](builder: ActionBuilder[R, B]): ActionBuilder[({type L[+A] = GenericOptionalAuthRequest[A, R]})#L, B] = {
-    builder.andThen[({type L[A] = GenericOptionalAuthRequest[A, R]})#L](GenericOptionalAuthFunction[R](???/*TODO*/))
+  final def composeOptionalAuthAction[R[+_] <: Request[_], B](builder: ActionBuilder[R, B])(implicit ec: ExecutionContext): ActionBuilder[({type L[+A] = GenericOptionalAuthRequest[A, R]})#L, B] = {
+    builder.andThen[({type L[A] = GenericOptionalAuthRequest[A, R]})#L](GenericOptionalAuthFunction[R](ec))
   }
 
-  final def composeAuthenticationAction[R[+_] <: Request[_], B](builder: ActionBuilder[R, B]): ActionBuilder[({type L[+A] = GenericAuthRequest[A, R]})#L, B] = {
-    composeOptionalAuthAction[R, B](builder).andThen[({type L[+A] = GenericAuthRequest[A, R]})#L](GenericAuthenticationRefiner[R](???/*TODO*/))
+  final def composeAuthenticationAction[R[+_] <: Request[_], B](builder: ActionBuilder[R, B])(implicit ec: ExecutionContext): ActionBuilder[({type L[+A] = GenericAuthRequest[A, R]})#L, B] = {
+    composeOptionalAuthAction[R, B](builder).andThen[({type L[+A] = GenericAuthRequest[A, R]})#L](GenericAuthenticationRefiner[R](ec))
   }
 
-  final def composeAuthorizationAction[R[+_] <: Request[_], B](builder: ActionBuilder[R, B])(authority: Authority): ActionBuilder[({type L[+A] = GenericAuthRequest[A, R]})#L, B] = {
-    composeAuthenticationAction(builder).andThen[({type L[+A] = GenericAuthRequest[A, R]})#L](GenericAuthorizationFilter[R](authority, ???/*TODO*/))
+  final def composeAuthorizationAction[R[+_] <: Request[_], B](builder: ActionBuilder[R, B])(authority: Authority)(implicit ec: ExecutionContext): ActionBuilder[({type L[+A] = GenericAuthRequest[A, R]})#L, B] = {
+    composeAuthenticationAction(builder).andThen[({type L[+A] = GenericAuthRequest[A, R]})#L](GenericAuthorizationFilter[R](authority, ec))
   }
 
   final type OptionalAuthRequest[+A] = GenericOptionalAuthRequest[A, Request]
   final type AuthRequest[+A] = GenericAuthRequest[A, Request]
-  final val OptionalAuthFunction: ActionFunction[Request, OptionalAuthRequest] = GenericOptionalAuthFunction[Request](???/*TODO*/)
-  final val AuthenticationRefiner: ActionRefiner[OptionalAuthRequest, AuthRequest] = GenericAuthenticationRefiner[Request](???/*TODO*/)
-  final def AuthorizationFilter(authority: Authority): ActionFilter[AuthRequest] = GenericAuthorizationFilter[Request](authority, ???/*TODO*/)
+  final def OptionalAuthFunction(implicit ec: ExecutionContext): ActionFunction[Request, OptionalAuthRequest] = GenericOptionalAuthFunction[Request](ec)
+  final def AuthenticationRefiner(implicit ec: ExecutionContext): ActionRefiner[OptionalAuthRequest, AuthRequest] = GenericAuthenticationRefiner[Request](ec)
+  final def AuthorizationFilter(authority: Authority)(implicit ec: ExecutionContext): ActionFilter[AuthRequest] = GenericAuthorizationFilter[Request](authority, ec)
 
-  final val OptionalAuthAction: ActionBuilder[OptionalAuthRequest, AnyContent] = composeOptionalAuthAction(Action)
-  final val AuthenticationAction: ActionBuilder[AuthRequest, AnyContent] = composeAuthenticationAction(Action)
-  final def AuthorizationAction(authority: Authority): ActionBuilder[AuthRequest, AnyContent] = composeAuthorizationAction(Action)(authority)
+  final def OptionalAuthAction(implicit ec: ExecutionContext): ActionBuilder[OptionalAuthRequest, AnyContent] = composeOptionalAuthAction(Action)
+  final def AuthenticationAction(implicit ec: ExecutionContext): ActionBuilder[AuthRequest, AnyContent] = composeAuthenticationAction(Action)
+  final def AuthorizationAction(authority: Authority)(implicit ec: ExecutionContext): ActionBuilder[AuthRequest, AnyContent] = composeAuthorizationAction(Action)(authority)
 
 }
