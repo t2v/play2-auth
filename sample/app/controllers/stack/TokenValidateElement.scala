@@ -1,17 +1,32 @@
 package controllers.stack
 
-import jp.t2v.lab.play2.stackc.{RequestAttributeKey, RequestWithAttributes, StackableController}
 import scala.concurrent.Future
-import play.api.mvc.{Result, Request, Controller}
+import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
+
 import scala.util.Random
 import java.security.SecureRandom
 
-trait TokenValidateElement extends StackableController {
-    self: Controller =>
+import play.api.libs.typedmap.TypedKey
 
-  private val PreventingCsrfTokenSessionKey = "preventingCsrfToken"
+trait TokenValidateActionFunction[R[+_] <: Request[_]] extends ActionFilter[R] {
+
+  import TokenValidateActionFunction._
+
+  protected def filter[A](request: R[A]): Future[Option[Result]] = {
+//    if (isIgnoreTokenValidation(request) || validateToken(request)) {
+//      implicit val ctx = StackActionExecutionContext(request)
+//      val newToken = generateToken
+//      super.proceed(request.set(PreventingCsrfTokenKey, newToken))(f) map {
+//        _.withSession(PreventingCsrfTokenSessionKey -> newToken.value)
+//      }
+//    } else {
+//      Future.successful(BadRequest("Invalid preventing CSRF token"))
+//    }
+
+    ???
+  }
 
   private val tokenForm = Form(PreventingCsrfToken.FormKey -> text)
 
@@ -22,32 +37,52 @@ trait TokenValidateElement extends StackableController {
     Iterator.continually(random.nextInt(table.size)).map(table).take(32).mkString
   }
 
-  case object PreventingCsrfTokenKey extends RequestAttributeKey[PreventingCsrfToken]
-  case object IgnoreTokenValidation extends RequestAttributeKey[Boolean]
-
-  private def validateToken(request: Request[_]): Boolean = (for {
-    tokenInForm    <- tokenForm.bindFromRequest()(request).value
+  private def validateToken(implicit request: R[_]): Boolean = (for {
+    tokenInForm    <- tokenForm.bindFromRequest().value
     tokenInSession <- request.session.get(PreventingCsrfTokenSessionKey)
   } yield tokenInForm == tokenInSession) getOrElse false
 
-  override def proceed[A](request: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
-    if (isIgnoreTokenValidation(request) || validateToken(request)) {
-      implicit val ctx = StackActionExecutionContext(request)
-      val newToken = generateToken
-      super.proceed(request.set(PreventingCsrfTokenKey, newToken))(f) map {
-        _.withSession(PreventingCsrfTokenSessionKey -> newToken.value)
-      }
-    } else {
-      Future.successful(BadRequest("Invalid preventing CSRF token"))
-    }
-  }
+  private def isIgnoreTokenValidation(implicit request: R[_]): Boolean =
+    request.attrs.get(IgnoreTokenValidation).exists(identity)
 
-  implicit def isIgnoreTokenValidation(implicit request: RequestWithAttributes[_]): Boolean =
-    request.get(IgnoreTokenValidation).exists(identity)
+}
+object TokenValidateActionFunction {
+  val PreventingCsrfTokenKey: TypedKey[String] = TypedKey("preventingCsrfToken")
+  val IgnoreTokenValidation: TypedKey[Boolean] = TypedKey("ignoreTokenValidation")
+  private val PreventingCsrfTokenSessionKey = "preventingCsrfToken"
+}
 
-  implicit def preventingCsrfToken(implicit request: RequestWithAttributes[_]): PreventingCsrfToken =
-    request.get(PreventingCsrfTokenKey).get
+trait TokenValidateElement {
+    self: Controller =>
 
+
+//
+//  case object PreventingCsrfTokenKey extends RequestAttributeKey[PreventingCsrfToken]
+//  case object IgnoreTokenValidation extends RequestAttributeKey[Boolean]
+//
+//  private def validateToken(request: Request[_]): Boolean = (for {
+//    tokenInForm    <- tokenForm.bindFromRequest()(request).value
+//    tokenInSession <- request.session.get(PreventingCsrfTokenSessionKey)
+//  } yield tokenInForm == tokenInSession) getOrElse false
+//
+//  override def proceed[A](request: RequestWithAttributes[A])(f: RequestWithAttributes[A] => Future[Result]): Future[Result] = {
+//    if (isIgnoreTokenValidation(request) || validateToken(request)) {
+//      implicit val ctx = StackActionExecutionContext(request)
+//      val newToken = generateToken
+//      super.proceed(request.set(PreventingCsrfTokenKey, newToken))(f) map {
+//        _.withSession(PreventingCsrfTokenSessionKey -> newToken.value)
+//      }
+//    } else {
+//      Future.successful(BadRequest("Invalid preventing CSRF token"))
+//    }
+//  }
+//
+//  implicit def isIgnoreTokenValidation(implicit request: RequestWithAttributes[_]): Boolean =
+//    request.get(IgnoreTokenValidation).exists(identity)
+//
+//  implicit def preventingCsrfToken(implicit request: RequestWithAttributes[_]): PreventingCsrfToken =
+//    request.get(PreventingCsrfTokenKey).get
+//
 
 }
 

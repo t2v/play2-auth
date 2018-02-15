@@ -35,11 +35,12 @@ class CookieTokenAccessor(
   }
 
   protected def verifyHmac(token: SignedToken): Option[AuthenticityToken] = {
-    val (hmac, value) = token.splitAt(40) // TODO: Why 40 ???
-    if (safeEquals(calculateHmac(value), hmac)) Some(value) else None
+    PartialFunction.condOpt(token.split("""\.""", 2)) {
+      case Array(hmac, value) if safeEquals(calculateHmac(value), hmac) => value
+    }
   }
 
-  protected def sign(token: AuthenticityToken): SignedToken = calculateHmac(token) + token
+  protected def sign(token: AuthenticityToken): SignedToken = s"${calculateHmac(token)}.$token"
 
   // Do not change this unless you understand the security issues behind timing attacks.
   // This method intentionally runs in constant time if the two strings have the same length.

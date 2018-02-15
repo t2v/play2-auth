@@ -20,12 +20,14 @@ class AuthActionBuilders[Id, User, Authority](asyncAuth: AsyncAuth[Id, User, Aut
   case class GenericOptionalAuthFunction[R[+_] <: Request[_]](
     override protected val executionContext: ExecutionContext
   ) extends ActionFunction[R, ({type L[+A] = GenericOptionalAuthRequest[A, R]})#L] {
-    def invokeBlock[A](request: R[A], block: Request[A] => Future[Result]): Future[Result] = {
+    override def invokeBlock[A](request: R[A], block: GenericOptionalAuthRequest[A, R] => Future[Result]): Future[Result] = {
       implicit val ec: ExecutionContext = executionContext
       restoreUser(request, executionContext) recover {
         case _ => None -> identity[Result] _
       } flatMap { case (userOpt, cookieUpdater) =>
-        userOpt.fold(block(request))(user => block(request.addAttr(UserKey, user)).map(cookieUpdater))
+        block(GenericOptionalAuthRequest(userOpt, request)).map { result =>
+          userOpt.fold(result)(_ => cookieUpdater(result))
+        }
       }
     }
   }
