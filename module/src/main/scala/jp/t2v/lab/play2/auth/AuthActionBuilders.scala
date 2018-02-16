@@ -15,8 +15,6 @@ class AuthActionBuilders[Id, User, Authority](asyncAuth: AsyncAuth[Id, User, Aut
   final case class GenericOptionalAuthRequest[+A, R[+_] <: Request[_]](user: Option[User], underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
   final case class GenericAuthRequest[+A, R[+_] <: Request[_]](user: User, underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
 
-  private val UserKey: TypedKey[User] = TypedKey("play2-auth-user")
-
   case class GenericOptionalAuthFunction[R[+_] <: Request[_]](
     override protected val executionContext: ExecutionContext
   ) extends ActionFunction[R, ({type L[+A] = GenericOptionalAuthRequest[A, R]})#L] {

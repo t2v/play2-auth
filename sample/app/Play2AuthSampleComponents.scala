@@ -9,8 +9,9 @@ import play.filters.HttpFiltersComponents
 class Play2AuthSampleComponents(context: Context) extends BuiltInComponentsFromContext(context) with HttpFiltersComponents {
 
   lazy val router = {
-    val prefix: String = httpConfiguration.context
-    wire[Routes]
+//    val prefix: String = httpConfiguration.context
+//    wire[Routes]
+    ???
   }
 
 
