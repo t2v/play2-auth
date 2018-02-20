@@ -5,12 +5,12 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class AsyncAuth[Id, User, Authority](
+case class DefaultAuthComponents[Id, User, Authority](
   authConfig: AuthConfig[Id, User, Authority],
   idContainer: AsyncIdContainer[Id],
   tokenAccessor: TokenAccessor,
   env: Environment
-) {
+) extends AuthComponents[Id, User, Authority] {
 
   def authorized(authority: Authority)(implicit request: RequestHeader, context: ExecutionContext): Future[Either[Result, (User, ResultUpdater)]] = {
     restoreUser collect {

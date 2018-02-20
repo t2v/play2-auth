@@ -1,16 +1,13 @@
 package jp.t2v.lab.play2.auth
 
-import play.api.libs.typedmap.TypedKey
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 import languageFeature.higherKinds
 
+trait AuthActionBuilders[Id, User, Authority] {
 
-
-class AuthActionBuilders[Id, User, Authority](asyncAuth: AsyncAuth[Id, User, Authority]) {
-
-  import asyncAuth._
+  def auth: DefaultAuthComponents[Id, User, Authority]
 
   final case class GenericOptionalAuthRequest[+A, R[+_] <: Request[_]](user: Option[User], underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
   final case class GenericAuthRequest[+A, R[+_] <: Request[_]](user: User, underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
@@ -20,7 +17,7 @@ class AuthActionBuilders[Id, User, Authority](asyncAuth: AsyncAuth[Id, User, Aut
   ) extends ActionFunction[R, ({type L[+A] = GenericOptionalAuthRequest[A, R]})#L] {
     override def invokeBlock[A](request: R[A], block: GenericOptionalAuthRequest[A, R] => Future[Result]): Future[Result] = {
       implicit val ec: ExecutionContext = executionContext
-      restoreUser(request, executionContext) recover {
+      auth.restoreUser(request, executionContext) recover {
         case _ => None -> identity[Result] _
       } flatMap { case (userOpt, cookieUpdater) =>
         block(GenericOptionalAuthRequest(userOpt, request)).map { result =>
@@ -38,7 +35,7 @@ class AuthActionBuilders[Id, User, Authority](asyncAuth: AsyncAuth[Id, User, Aut
         Future.successful(Right[Result, GenericAuthRequest[A, R]](GenericAuthRequest[A, R](user, request.underlying)))
       } getOrElse {
         implicit val ctx = executionContext
-        authConfig.authenticationFailed(request).map(Left.apply[Result, GenericAuthRequest[A, R]])
+        auth.authConfig.authenticationFailed(request).map(Left.apply[Result, GenericAuthRequest[A, R]])
       }
     }
   }
@@ -49,10 +46,10 @@ class AuthActionBuilders[Id, User, Authority](asyncAuth: AsyncAuth[Id, User, Aut
   ) extends ActionFilter[({type L[+B] = GenericAuthRequest[B, R]})#L] {
     override protected def filter[A](request: GenericAuthRequest[A, R]): Future[Option[Result]] = {
       implicit val ctx = executionContext
-      authConfig.authorize(request.user, authority) collect {
+      auth.authConfig.authorize(request.user, authority) collect {
         case true => None
       } recoverWith {
-        case _ => authConfig.authorizationFailed(request, request.user, Some(authority)).map(Some.apply)
+        case _ => auth.authConfig.authorizationFailed(request, request.user, Some(authority)).map(Some.apply)
       }
     }
   }
@@ -74,9 +71,5 @@ class AuthActionBuilders[Id, User, Authority](asyncAuth: AsyncAuth[Id, User, Aut
   final def OptionalAuthFunction(implicit ec: ExecutionContext): ActionFunction[Request, OptionalAuthRequest] = GenericOptionalAuthFunction[Request](ec)
   final def AuthenticationRefiner(implicit ec: ExecutionContext): ActionRefiner[OptionalAuthRequest, AuthRequest] = GenericAuthenticationRefiner[Request](ec)
   final def AuthorizationFilter(authority: Authority)(implicit ec: ExecutionContext): ActionFilter[AuthRequest] = GenericAuthorizationFilter[Request](authority, ec)
-
-  final def OptionalAuthAction(implicit ec: ExecutionContext): ActionBuilder[OptionalAuthRequest, AnyContent] = composeOptionalAuthAction(Action)
-  final def AuthenticationAction(implicit ec: ExecutionContext): ActionBuilder[AuthRequest, AnyContent] = composeAuthenticationAction(Action)
-  final def AuthorizationAction(authority: Authority)(implicit ec: ExecutionContext): ActionBuilder[AuthRequest, AnyContent] = composeAuthorizationAction(Action)(authority)
 
 }
