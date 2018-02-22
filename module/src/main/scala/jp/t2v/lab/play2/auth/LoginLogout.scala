@@ -22,3 +22,5 @@ trait Logout[Id, User, Authority] {
     result.map(auth.tokenAccessor.delete)
   }
 }
+
+trait LoginLogout[Id, User, Authority] extends Login[Id, User, Authority] with Logout[Id, User, Authority]

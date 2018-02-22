@@ -12,11 +12,11 @@ trait Pjax[Id, User, Authority] extends AuthActionBuilders[Id, User, Authority] 
 
   import Pjax._
 
-  trait PjaxFunction[R[+_] <: Request[_]] extends ActionFunction[({type L[+A] = GenericAuthRequest[A, R]})#L, ({type L[+A] = GenericAuthRequest[A, R]})#L] {
+  trait PjaxFunction extends ActionFunction[AuthRequest, AuthRequest] {
 
-    def invokeBlock[A](request: GenericAuthRequest[A, R], block: GenericAuthRequest[A, R] => Future[Result]): Future[Result] = {
+    def invokeBlock[A](request: AuthRequest[A], block: AuthRequest[A] => Future[Result]): Future[Result] = {
       val template: Template = if (request.headers.keys("X-Pjax")) html.pjaxTemplate.apply else fullTemplate(request.user)
-      block(request.addAttr(TemplateKey, template))
+      block(AuthRequest(request.user, request.underlying.addAttr(TemplateKey, template)))
     }
 
   }

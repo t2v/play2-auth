@@ -23,13 +23,13 @@
 #GET     /builder/messages/write            @controllers.builder.Messages.write
 #
 ## Csrf
-#GET     /csrf/                             @controllers.csrf.Sessions.login
-#POST    /csrf/login                        @controllers.csrf.Sessions.authenticate
-#GET     /csrf/logout                       @controllers.csrf.Sessions.logout
+GET     /csrf/                             @controllers.csrf.Sessions.login
+POST    /csrf/login                        @controllers.csrf.Sessions.authenticate
+GET     /csrf/logout                       @controllers.csrf.Sessions.logout
 #
-#GET     /csrf/with_token                   @controllers.csrf.PreventingCsrfSample.formWithToken
-#GET     /csrf/without_token                @controllers.csrf.PreventingCsrfSample.formWithoutToken
-#POST    /csrf/                             @controllers.csrf.PreventingCsrfSample.submitTarget
+GET     /csrf/with_token                   @controllers.csrf.PreventingCsrfSample.formWithToken
+GET     /csrf/without_token                @controllers.csrf.PreventingCsrfSample.formWithoutToken
+POST    /csrf/                             @controllers.csrf.PreventingCsrfSample.submitTarget
 #
 #
 ## Ephemeral
@@ -70,8 +70,7 @@
 #GET     /rememberme/messages/list               @controllers.rememberme.Messages.list
 #GET     /rememberme/messages/detail/:id         @controllers.rememberme.Messages.detail(id: Int)
 #GET     /rememberme/messages/write              @controllers.rememberme.Messages.write
-#
-#
-## Map static resources from the /public folder to the /assets URL path
-#GET     /assets/*file               @controllers.Assets.at(path="/public", file)
-#
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               @controllers.Assets.at(path="/public", file)

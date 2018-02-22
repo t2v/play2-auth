@@ -7,7 +7,7 @@ import languageFeature.higherKinds
 
 trait AuthActionBuilders[Id, User, Authority] {
 
-  def auth: DefaultAuthComponents[Id, User, Authority]
+  def auth: AuthComponents[Id, User, Authority]
 
   final case class GenericOptionalAuthRequest[+A, R[+_] <: Request[_]](user: Option[User], underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
   final case class GenericAuthRequest[+A, R[+_] <: Request[_]](user: User, underlying: R[A]) extends WrappedRequest[A](underlying.asInstanceOf[Request[A]])
@@ -67,7 +67,9 @@ trait AuthActionBuilders[Id, User, Authority] {
   }
 
   final type OptionalAuthRequest[+A] = GenericOptionalAuthRequest[A, Request]
+  final def OptionalAuthRequest[A](user: Option[User], underlying: Request[A]): OptionalAuthRequest[A] = GenericOptionalAuthRequest(user, underlying)
   final type AuthRequest[+A] = GenericAuthRequest[A, Request]
+  final def AuthRequest[A](user: User, underlying: Request[A]): AuthRequest[A] = GenericAuthRequest(user, underlying)
   final def OptionalAuthFunction(implicit ec: ExecutionContext): ActionFunction[Request, OptionalAuthRequest] = GenericOptionalAuthFunction[Request](ec)
   final def AuthenticationRefiner(implicit ec: ExecutionContext): ActionRefiner[OptionalAuthRequest, AuthRequest] = GenericAuthenticationRefiner[Request](ec)
   final def AuthorizationFilter(authority: Authority)(implicit ec: ExecutionContext): ActionFilter[AuthRequest] = GenericAuthorizationFilter[Request](authority, ec)
