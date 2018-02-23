@@ -1,7 +1,5 @@
 package controllers.csrf
 
-import javax.inject.Inject
-
 import jp.t2v.lab.play2.auth.{AuthComponents, LoginLogout}
 import jp.t2v.lab.play2.auth.sample.{Account, Role}
 import play.api.Environment
@@ -12,7 +10,7 @@ import views.html
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Sessions @Inject() (val environment: Environment, val cc: ControllerComponents, val auth: AuthComponents[Int, Account, Role])(implicit ec: ExecutionContext) extends AbstractController(cc) with LoginLogout[Int, Account, Role] {
+class Sessions(val environment: Environment, val cc: ControllerComponents, val auth: AuthComponents[Int, Account, Role])(implicit ec: ExecutionContext) extends AbstractController(cc) with LoginLogout[Int, Account, Role] {
 
   val loginForm = Form {
     mapping("email" -> email, "password" -> text)(Account.authenticate)(_.map(u => (u.email, "")))

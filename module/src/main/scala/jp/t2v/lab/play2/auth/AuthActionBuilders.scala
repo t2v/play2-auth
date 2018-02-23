@@ -74,4 +74,7 @@ trait AuthActionBuilders[Id, User, Authority] {
   final def AuthenticationRefiner(implicit ec: ExecutionContext): ActionRefiner[OptionalAuthRequest, AuthRequest] = GenericAuthenticationRefiner[Request](ec)
   final def AuthorizationFilter(authority: Authority)(implicit ec: ExecutionContext): ActionFilter[AuthRequest] = GenericAuthorizationFilter[Request](authority, ec)
 
+  implicit def loggedInOpt[R[_]](implicit req: GenericOptionalAuthRequest[_, R]): Option[User] = req.user
+  implicit def loggedIn[R[_]](implicit req: GenericAuthRequest[_, R]): User = req.user
+
 }

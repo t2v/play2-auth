@@ -82,7 +82,6 @@ lazy val sample = (project in file("sample"))
   .settings(
     baseSettings,
     resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
-    libraryDependencies += play.sbt.Play.autoImport.cache,
     libraryDependencies += play.sbt.Play.autoImport.specs2 % Test,
     libraryDependencies += play.sbt.Play.autoImport.jdbc,
     libraryDependencies += "org.mindrot"               % "jbcrypt"                           % "0.3m",
@@ -95,6 +94,7 @@ lazy val sample = (project in file("sample"))
     libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-play-fixture"          % "2.6.0",
     libraryDependencies += "org.flywaydb"             %% "flyway-play"                       % "4.0.0",
     libraryDependencies += "com.softwaremill.macwire" %% "macros"                            % "2.3.0",
+    libraryDependencies += "com.h2database"            % "h2"                                % "1.4.196",
     TwirlKeys.templateImports in Compile ++= Seq(
       "jp.t2v.lab.play2.auth.sample._",
       "play.api.data.Form",

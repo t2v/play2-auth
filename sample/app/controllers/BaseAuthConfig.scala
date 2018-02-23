@@ -15,6 +15,8 @@ trait BaseAuthConfig  extends AuthConfig[Int, Account, Role] {
   type User = Account
   type Authority = Role
 
+  val sessionTimeoutInSeconds = 3600
+
   def resolveUser(id: Id)(implicit ctx: ExecutionContext) = Future.successful(Account.findById(id))
   def authorizationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = throw new AssertionError("don't use")
   override def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])(implicit ctx: ExecutionContext) = {

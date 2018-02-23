@@ -6,18 +6,20 @@ import play.api.mvc._
 import play.twirl.api.Html
 import views.html
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait Pjax[Id, User, Authority] extends AuthActionBuilders[Id, User, Authority] {
 
   import Pjax._
 
-  trait PjaxFunction extends ActionFunction[AuthRequest, AuthRequest] {
+  class PjaxFunction(implicit ec: ExecutionContext) extends ActionFunction[AuthRequest, AuthRequest] {
 
     def invokeBlock[A](request: AuthRequest[A], block: AuthRequest[A] => Future[Result]): Future[Result] = {
       val template: Template = if (request.headers.keys("X-Pjax")) html.pjaxTemplate.apply else fullTemplate(request.user)
       block(AuthRequest(request.user, request.underlying.addAttr(TemplateKey, template)))
     }
+
+    override protected def executionContext: ExecutionContext = ec
 
   }
 

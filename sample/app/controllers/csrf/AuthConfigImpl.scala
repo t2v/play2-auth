@@ -6,7 +6,7 @@ import play.api.mvc.Results._
 
 import scala.concurrent.{Future, ExecutionContext}
 
-trait AuthConfigImpl extends BaseAuthConfig {
+class AuthConfigImpl extends BaseAuthConfig {
 
   def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful(Redirect(routes.Sessions.login))
 
