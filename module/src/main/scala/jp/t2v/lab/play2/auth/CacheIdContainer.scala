@@ -1,6 +1,6 @@
 package jp.t2v.lab.play2.auth
 
-import play.api.cache.{ Cache, CacheApi }
+import play.api.cache.AsyncCacheApi
 import play.api.Play._
 
 import scala.annotation.tailrec
@@ -10,12 +10,17 @@ import java.util.concurrent.TimeUnit
 
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Await
 
-class CacheIdContainer[Id: ClassTag] (cacheApi: CacheApi) extends IdContainer[Id] {
+class CacheIdContainer[Id: ClassTag] (cacheApi: AsyncCacheApi)(implicit val ec: ExecutionContext) extends IdContainer[Id] {
 
   private[auth] val tokenSuffix = ":token"
   private[auth] val userIdSuffix = ":userId"
   private[auth] val random = new Random(new SecureRandom())
+
+  private def intToDuration(seconds: Int): Duration = if (seconds == 0) Duration.Inf else seconds.seconds
 
   def startNewSession(userId: Id, timeoutInSeconds: Int): AuthenticityToken = {
     removeByUserId(userId)
@@ -32,7 +37,7 @@ class CacheIdContainer[Id: ClassTag] (cacheApi: CacheApi) extends IdContainer[Id
   }
 
   private[auth] def removeByUserId(userId: Id) {
-    cacheApi.get[String](userId.toString + userIdSuffix) foreach unsetToken
+    cacheApi.get[String](userId.toString + userIdSuffix).foreach(x=>x.foreach(unsetToken))(ec)
     unsetUserId(userId)
   }
 
@@ -48,7 +53,10 @@ class CacheIdContainer[Id: ClassTag] (cacheApi: CacheApi) extends IdContainer[Id
     cacheApi.remove(userId.toString + userIdSuffix)
   }
 
-  def get(token: AuthenticityToken) = cacheApi.get(token + tokenSuffix).map(_.asInstanceOf[Id])
+  def get(token: AuthenticityToken) = {
+    val f = cacheApi.get(token + tokenSuffix).map(_.map(_.asInstanceOf[Id]))
+    Await.result(f, Duration.Inf)
+  }
 
   private[auth] def store(token: AuthenticityToken, userId: Id, timeoutInSeconds: Int) {
     def intToDuration(seconds: Int): Duration = if (seconds == 0) Duration.Inf else Duration(seconds, TimeUnit.SECONDS)

@@ -4,12 +4,14 @@ import javax.inject.Inject
 
 import controllers.stack.Pjax
 import jp.t2v.lab.play2.auth.AuthElement
-import play.api.mvc.Controller
 import views.html
 import jp.t2v.lab.play2.auth.sample.Role._
+import javax.inject.Inject
+import play.api.mvc.ControllerComponents
+import play.api.mvc.AbstractController
 import play.api.Environment
 
-class Messages @Inject() (val environment: Environment) extends Controller with Pjax with AuthElement with AuthConfigImpl {
+class Messages @Inject() (components: ControllerComponents, val environment: Environment) extends AbstractController(components) with Pjax with AuthElement with AuthConfigImpl {
 
   def main = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     val title = "message main"

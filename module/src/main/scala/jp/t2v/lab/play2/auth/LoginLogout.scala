@@ -6,31 +6,24 @@ import play.api.libs.Crypto
 import scala.concurrent.{Future, ExecutionContext}
 
 trait Login {
-  self: Controller with AuthConfig =>
+  self: AbstractController with AuthConfig =>
 
-  def gotoLoginSucceeded(userId: Id)(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
-    gotoLoginSucceeded(userId, loginSucceeded(request))
+  def markLoggedIn(userId: Id)(implicit request: RequestHeader, ctx: ExecutionContext): Result => Future[Result] = { result =>
+    idContainer.startNewSession(userId, sessionTimeoutInSeconds).map(token => tokenAccessor.put(token)(result))
   }
 
-  def gotoLoginSucceeded(userId: Id, result: => Future[Result])(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = for {
-    token <- idContainer.startNewSession(userId, sessionTimeoutInSeconds)
-    r     <- result
-  } yield tokenAccessor.put(token)(r)
 }
 
 trait Logout {
-  self: Controller with AuthConfig =>
+  self: AbstractController with AuthConfig =>
 
-  def gotoLogoutSucceeded(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
-    gotoLogoutSucceeded(logoutSucceeded(request))
-  }
-
-  def gotoLogoutSucceeded(result: => Future[Result])(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {
+  def markLoggedOut()(implicit request: RequestHeader, ctx: ExecutionContext): Result => Future[Result] = { result =>
     tokenAccessor.extract(request) foreach idContainer.remove
-    result.map(tokenAccessor.delete)
+    Future.successful(tokenAccessor.delete(result))
   }
+
 }
 
 trait LoginLogout extends Login with Logout {
-  self: Controller with AuthConfig =>
+  self: AbstractController with AuthConfig =>
 }

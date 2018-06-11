@@ -1,11 +1,13 @@
 package jp.t2v.lab.play2.auth
 
-import play.api.mvc.{Result, Controller}
-import jp.t2v.lab.play2.stackc.{RequestWithAttributes, RequestAttributeKey, StackableController}
+import play.api.mvc.{AbstractController, Result}
+import jp.t2v.lab.play2.stackc.{RequestAttributeKey, RequestWithAttributes, StackableController}
+
 import scala.concurrent.Future
+import play.api.mvc.BaseController
 
 trait AuthElement extends StackableController with AsyncAuth {
-    self: Controller with AuthConfig =>
+    self: AbstractController with AuthConfig =>
 
   private[auth] case object AuthKey extends RequestAttributeKey[User]
   case object AuthorityKey extends RequestAttributeKey[Authority]
@@ -33,7 +35,7 @@ trait AuthElement extends StackableController with AsyncAuth {
 }
 
 trait OptionalAuthElement extends StackableController with AsyncAuth {
-    self: Controller with AuthConfig =>
+    self: AbstractController with AuthConfig =>
 
   private[auth] case object AuthKey extends RequestAttributeKey[User]
 
@@ -49,7 +51,7 @@ trait OptionalAuthElement extends StackableController with AsyncAuth {
 }
 
 trait AuthenticationElement extends StackableController with AsyncAuth {
-    self: Controller with AuthConfig =>
+    self: AbstractController with AuthConfig =>
 
   private[auth] case object AuthKey extends RequestAttributeKey[User]
 

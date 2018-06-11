@@ -13,7 +13,6 @@ import scala.collection.concurrent.TrieMap
 import scala.util.Random
 import java.security.SecureRandom
 import scala.annotation.tailrec
-import play.api.cache.Cache
 
 trait BaseAuthConfig  extends AuthConfig {
 

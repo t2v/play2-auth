@@ -8,9 +8,14 @@ import jp.t2v.lab.play2.auth.sample.Role._
 import play.api.Environment
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.mvc.Controller
+import play.api.mvc.ControllerComponents
+import play.api.mvc.AbstractController
+import controllers.stack.TokenValidateElement
+import javax.inject.Inject
+import play.api.Environment
+import play.Logger
 
-class PreventingCsrfSample @Inject() (val environment: Environment) extends Controller with TokenValidateElement with AuthElement with AuthConfigImpl {
+class PreventingCsrfSample @Inject() (components: ControllerComponents, val environment: Environment) extends AbstractController(components) with TokenValidateElement with AuthElement with AuthConfigImpl {
 
   def formWithToken = StackAction(AuthorityKey -> NormalUser, IgnoreTokenValidation -> true) { implicit req =>
     Ok(views.html.csrf.formWithToken())

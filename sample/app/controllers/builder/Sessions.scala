@@ -12,8 +12,12 @@ import views.html
 
 import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.mvc.AbstractController
+import javax.inject.Inject
+import play.api.mvc.ControllerComponents
+import play.api.Environment
 
-class Sessions @Inject() (val environment: Environment) extends Controller with LoginLogout with AuthConfigImpl {
+class Sessions @Inject() (components: ControllerComponents, val environment: Environment) extends AbstractController(components) with LoginLogout with AuthConfigImpl {
 
   val loginForm = Form {
     mapping("email" -> email, "password" -> text)(Account.authenticate)(_.map(u => (u.email, "")))
@@ -25,7 +29,8 @@ class Sessions @Inject() (val environment: Environment) extends Controller with 
   }
 
   def logout = Action.async { implicit request =>
-    gotoLogoutSucceeded.map(_.flashing(
+    val x = markLoggedOut()
+    x(Redirect(routes.Sessions.login).flashing(
       "success" -> "You've been logged out"
     ))
   }
@@ -33,7 +38,7 @@ class Sessions @Inject() (val environment: Environment) extends Controller with 
   def authenticate = Action.async { implicit request =>
     loginForm.bindFromRequest.fold(
       formWithErrors => Future.successful(BadRequest(html.builder.login(formWithErrors))),
-      user           => gotoLoginSucceeded(user.get.id)
+      user           => {val x = markLoggedIn(user.get.id); x(Redirect(routes.Messages.main))}
     )
   }
 

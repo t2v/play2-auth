@@ -7,9 +7,10 @@ import play.api.data._
 import play.api.data.Forms._
 import scala.util.Random
 import java.security.SecureRandom
+import play.api.mvc.AbstractController
 
 trait TokenValidateElement extends StackableController {
-    self: Controller =>
+    self: AbstractController =>
 
   private val PreventingCsrfTokenSessionKey = "preventingCsrfToken"
 

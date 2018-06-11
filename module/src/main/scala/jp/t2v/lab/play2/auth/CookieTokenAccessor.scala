@@ -21,6 +21,13 @@ class CookieTokenAccessor(
   }
 
   def delete(result: Result)(implicit request: RequestHeader): Result = {
-    result.discardingCookies(DiscardingCookie(cookieName))
+
+    // before...
+    //result.discardingCookies(DiscardingCookie(cookieName))
+
+    // Since the discardedMaxAge of the cookie is "-1.day.toSecond.toInt" and it gets 
+    // caught in the check that it does not receive the minus of Max-age of HTMLUNIT,
+    // operation avoidance. In the latest version of Playframework, DiscardedMaxAge is corrected to 0 ing
+    result.withCookies(DiscardingCookie(cookieName).toCookie.copy(maxAge = Some(0)))
   }
 }

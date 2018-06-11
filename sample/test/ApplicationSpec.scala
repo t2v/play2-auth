@@ -6,20 +6,30 @@ import play.api.test.Helpers._
 import controllers.standard.{ AuthConfigImpl, Messages }
 import jp.t2v.lab.play2.auth.test.Helpers._
 import java.io.File
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.Mode
 
-import play.api.Environment
+class ApplicationSpec extends Specification with play.api.test.StubControllerComponentsFactory {
 
-class ApplicationSpec extends Specification {
+  lazy val fakeApp = new GuiceApplicationBuilder()
+            .configure(Helpers.inMemoryDatabase(name = "default", options = Map("DB_CLOSE_DELAY" -> "-1")))
+            .in(Mode.Test)
+            .build()
 
   object config extends AuthConfigImpl {
-    override val environment: Environment = Environment.simple()
+    val environment = fakeApp.environment 
   }
 
+  def withApp = new play.api.test.WithApplication(fakeApp) {
+    val con = new Messages(stubControllerComponents(), fakeApp.environment)
+    val res = con.list(FakeRequest().withLoggedIn(config)(1))
+    contentType(res) must beSome("text/html")
+    
+    
+  }
+            
   "Messages" should {
-    "return list when user is authorized" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase(name = "default", options = Map("DB_CLOSE_DELAY" -> "-1")))) {
-      val res = new Messages(Environment.simple()).list(FakeRequest().withLoggedIn(config)(1))
-      contentType(res) must beSome("text/html")
-    }
+    "return list when user is authorized" in withApp 
   }
 
 }
