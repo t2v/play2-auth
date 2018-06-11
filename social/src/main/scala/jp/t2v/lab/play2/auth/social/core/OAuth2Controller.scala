@@ -10,13 +10,15 @@ import play.api.mvc._
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
+import jp.t2v.lab.play2.auth.LoginLogout
+import scala.concurrent.ExecutionContext
 
-trait OAuth2Controller extends Controller with OAuthController { self: OptionalAuthElement with AuthConfig =>
+trait OAuth2Controller extends AbstractController with OAuthController with LoginLogout { self: OptionalAuthElement with AuthConfig =>
 
   protected val authenticator: OAuth2Authenticator
 
   protected val OAuth2StateKey = "play.auth.social.oauth2.state"
-
+  
   // TODO scope is optional in some services
   // TODO some services have more optional parameter
   def login(scope: String) = AsyncStack(ExecutionContextKey -> OAuthExecutionContext) { implicit request =>

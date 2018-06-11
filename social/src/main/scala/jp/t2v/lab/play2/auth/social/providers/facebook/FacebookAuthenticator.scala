@@ -6,13 +6,16 @@ import jp.t2v.lab.play2.auth.social.core.{ AccessTokenRetrievalFailedException, 
 import play.api.Logger
 import play.api.Play.current
 import play.api.http.{ HeaderNames, MimeTypes }
-import play.api.libs.ws.{ WS, WSResponse }
+import play.api.libs.ws.WSResponse
 import play.api.mvc.Results
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.control.NonFatal
+import javax.inject.Inject
+import play.api.libs.ws.WSClient
+import play.api.libs.ws.EmptyBody
 
-class FacebookAuthenticator extends OAuth2Authenticator {
+class FacebookAuthenticator(ws: WSClient) extends OAuth2Authenticator {
 
   type AccessToken = String
 
@@ -29,14 +32,14 @@ class FacebookAuthenticator extends OAuth2Authenticator {
   lazy val callbackUrl = current.configuration.getString("facebook.callbackURL").getOrElse(sys.error("facebook.callbackURL is missing"))
 
   def retrieveAccessToken(code: String)(implicit ctx: ExecutionContext): Future[AccessToken] = {
-    WS.url(accessTokenUrl)
-      .withQueryString(
+    ws.url(accessTokenUrl)
+      .withQueryStringParameters(
         "client_id" -> clientId,
         "client_secret" -> clientSecret,
         "redirect_uri" -> callbackUrl,
         "code" -> code)
-      .withHeaders(HeaderNames.ACCEPT -> MimeTypes.JSON)
-      .post(Results.EmptyContent())
+      .withHttpHeaders(HeaderNames.ACCEPT -> MimeTypes.JSON)
+      .post(EmptyBody)
       .map { response =>
         Logger(getClass).debug("Retrieving access token from provider API: " + response.body)
         parseAccessTokenResponse(response)

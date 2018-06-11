@@ -6,7 +6,7 @@ import play.api.libs.oauth.ConsumerKey
 
 class TwitterAuthenticator extends OAuth10aAuthenticator {
 
-  type AccessToken = TwitterOAuth10aAccessToken
+  type AccessToken = String//TwitterOAuth10aAccessToken
 
   val providerName: String = "twitter"
 
