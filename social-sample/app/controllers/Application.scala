@@ -16,9 +16,10 @@ import jp.t2v.lab.play2.auth.social.providers.facebook.{ FacebookController, Fac
 import jp.t2v.lab.play2.auth.social.providers.github.{ GitHubController, GitHubProviderUserSupport }
 import jp.t2v.lab.play2.auth.social.providers.slack.SlackController
 import play.api.Environment
-import play.api.cache.CacheApi
+import play.api.cache.AsyncCacheApi
+import play.api.libs.ws.WSClient
 
-class Application @Inject() (val environment: Environment, val cacheApi: CacheApi) extends Controller with OptionalAuthElement with AuthConfigImpl with Logout {
+class Application @Inject() (components: ControllerComponents, val environment: Environment, val cacheApi: AsyncCacheApi) extends AbstractController(components) with OptionalAuthElement with AuthConfigImpl with Logout {
 
   def index = StackAction { implicit request =>
     DB.readOnly { implicit session =>
@@ -32,7 +33,7 @@ class Application @Inject() (val environment: Environment, val cacheApi: CacheAp
   }
 
   def logout = Action.async { implicit request =>
-    gotoLogoutSucceeded
+    loginSucceeded(request)
   }
 
 }
@@ -44,10 +45,12 @@ trait AuthConfigImpl extends AuthConfig {
   val idTag: ClassTag[Id] = classTag[Id]
   val sessionTimeoutInSeconds: Int = 3600
 
-  val cacheApi: CacheApi
+  val cacheApi: AsyncCacheApi
 
   val idContainer: AsyncIdContainer[Id] = AsyncIdContainer(new CacheIdContainer[Id](cacheApi))
-
+  
+  override lazy val tokenAccessor: TokenAccessor = new CookieTokenAccessor()
+  
   def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] =
     Future.successful(DB.readOnly { implicit session =>
       User.find(id)
@@ -71,7 +74,8 @@ trait AuthConfigImpl extends AuthConfig {
 
 }
 
-class FacebookAuthController @Inject() (val environment: Environment, val cacheApi: CacheApi) extends FacebookController
+class FacebookAuthController @Inject() (components: ControllerComponents, val ws: WSClient, val environment: Environment, val cacheApi: AsyncCacheApi) extends AbstractController(components)
+    with FacebookController
     with AuthConfigImpl
     with FacebookProviderUserSupport {
 
@@ -91,9 +95,9 @@ class FacebookAuthController @Inject() (val environment: Environment, val cacheA
           case None =>
             val id = User.create(providerUser.name, providerUser.coverUrl).id
             FacebookUser.save(id, providerUser)
-            gotoLoginSucceeded(id)
+            loginSucceeded(request).flatMap(markLoggedIn(id))
           case Some(fu) =>
-            gotoLoginSucceeded(fu.userId)
+            loginSucceeded(request).flatMap(markLoggedIn(fu.userId))
         }
       }
     }
@@ -101,7 +105,8 @@ class FacebookAuthController @Inject() (val environment: Environment, val cacheA
 
 }
 
-class GitHubAuthController @Inject() (val environment: Environment, val cacheApi: CacheApi) extends GitHubController
+class GitHubAuthController @Inject() (components: ControllerComponents, val ws: WSClient, val environment: Environment, val cacheApi: AsyncCacheApi) extends AbstractController(components) 
+    with GitHubController
     with AuthConfigImpl
     with GitHubProviderUserSupport {
 
@@ -121,9 +126,9 @@ class GitHubAuthController @Inject() (val environment: Environment, val cacheApi
           case None =>
             val id = User.create(providerUser.login, providerUser.avatarUrl).id
             GitHubUser.save(id, providerUser)
-            gotoLoginSucceeded(id)
+            loginSucceeded(request).flatMap(markLoggedIn(id))
           case Some(gh) =>
-            gotoLoginSucceeded(gh.userId)
+            loginSucceeded(request).flatMap(markLoggedIn(gh.userId))
         }
       }
     }
@@ -131,7 +136,8 @@ class GitHubAuthController @Inject() (val environment: Environment, val cacheApi
 
 }
 
-class TwitterAuthController @Inject() (val environment: Environment, val cacheApi: CacheApi) extends TwitterController
+class TwitterAuthController @Inject() (components: ControllerComponents, val ws: WSClient, val environment: Environment, val cacheApi: AsyncCacheApi) extends AbstractController(components)
+    with TwitterController
     with AuthConfigImpl
     with TwitterProviderUserSupport {
 
@@ -151,9 +157,10 @@ class TwitterAuthController @Inject() (val environment: Environment, val cacheAp
           case None =>
             val id = User.create(providerUser.screenName, providerUser.profileImageUrl).id
             TwitterUser.save(id, providerUser)
-            gotoLoginSucceeded(id)
+            //gotoLoginSucceeded(id)
+            loginSucceeded(request).flatMap(markLoggedIn(id))
           case Some(tu) =>
-            gotoLoginSucceeded(tu.userId)
+            loginSucceeded(request).flatMap(markLoggedIn(tu.userId))
         }
       }
     }
@@ -161,7 +168,8 @@ class TwitterAuthController @Inject() (val environment: Environment, val cacheAp
 
 }
 
-class SlackAuthController @Inject() (val environment: Environment, val cacheApi: CacheApi) extends SlackController
+class SlackAuthController @Inject() (components: ControllerComponents, val ws: WSClient, val environment: Environment, val cacheApi: AsyncCacheApi) extends AbstractController(components)
+    with SlackController
     with AuthConfigImpl {
 
   override def onOAuthLinkSucceeded(accessToken: AccessToken, consumerUser: User)(implicit request: RequestHeader, ctx: ExecutionContext): Future[Result] = {

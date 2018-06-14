@@ -6,6 +6,7 @@ import play.api.mvc.RequestHeader
 import play.api.mvc.Results._
 
 import scala.concurrent.{Future, ExecutionContext}
+import play.api.Environment
 
 trait AuthConfigImpl extends BaseAuthConfig {
 
@@ -15,9 +16,10 @@ trait AuthConfigImpl extends BaseAuthConfig {
 
   def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext) = Future.successful(Redirect(routes.Sessions.login))
 
+  val environment: Environment
   override lazy val tokenAccessor: TokenAccessor = new CookieTokenAccessor(
     cookieName = "PLAY2AUTH_SESS_ID",
-    cookieSecureOption = play.api.Play.isProd(play.api.Play.current),
+    cookieSecureOption = environment.mode == play.api.Mode.Prod,
     cookieHttpOnlyOption = true,
     cookieDomainOption = None,
     cookiePathOption = "/",

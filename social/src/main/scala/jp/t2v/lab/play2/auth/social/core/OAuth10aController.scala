@@ -6,11 +6,14 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.oauth._
 import play.api.mvc._
+import jp.t2v.lab.play2.stackc.StackableController
+
 
 import scala.concurrent.Future
+import jp.t2v.lab.play2.auth.LoginLogout
 
-trait OAuth10aController extends Controller with OAuthController {
-  self: OptionalAuthElement with AuthConfig =>
+trait OAuth10aController extends AbstractController with OAuthController {
+  self: OptionalAuthElement with AuthConfig with LoginLogout =>
 
   protected val authenticator: OAuth10aAuthenticator
 
@@ -19,7 +22,7 @@ trait OAuth10aController extends Controller with OAuthController {
   def login = AsyncStack(ExecutionContextKey -> OAuthExecutionContext) { implicit request =>
     implicit val ec = StackActionExecutionContext
     loggedIn match {
-      case Some(_) => loginSucceeded(request)
+      case Some(u) => loginSucceeded(request)
       case None => authenticator.oauth.retrieveRequestToken(authenticator.callbackURL) match {
         case Right(token) =>
           Future.successful(

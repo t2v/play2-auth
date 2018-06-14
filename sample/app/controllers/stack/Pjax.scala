@@ -8,9 +8,10 @@ import play.twirl.api.Html
 import views.html
 
 import scala.concurrent.Future
+import play.api.mvc.AbstractController
 
 trait Pjax extends StackableController with AuthElement {
-    self: Controller with BaseAuthConfig =>
+    self: AbstractController with BaseAuthConfig =>
 
   type Template = String => Html => Html
 

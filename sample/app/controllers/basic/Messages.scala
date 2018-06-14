@@ -9,8 +9,12 @@ import views.html
 import jp.t2v.lab.play2.auth.sample.Role._
 import play.api.Environment
 import play.twirl.api.Html
+import play.api.mvc.BaseController
+import play.api.mvc.ControllerComponents
+import play.api.mvc.AbstractController
+import javax.inject.Inject
 
-class Messages @Inject() (val environment: Environment) extends Controller with AuthElement with AuthConfigImpl {
+class Messages @Inject() (components: ControllerComponents) extends AbstractController(components) with AuthElement with AuthConfigImpl {
 
   def main = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     val title = "message main"

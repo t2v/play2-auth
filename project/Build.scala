@@ -1,5 +1,7 @@
 import sbt._
 import Keys._
+import play.routes.compiler.InjectedRoutesGenerator
+import play.sbt.routes.RoutesKeys.routesGenerator
 import play.twirl.sbt.Import.TwirlKeys
 
 object ApplicationBuild extends Build {
@@ -9,9 +11,9 @@ object ApplicationBuild extends Build {
   val playVersion = play.core.PlayVersion.current
 
   lazy val baseSettings = Seq(
-    version            := "0.14.2",
-    scalaVersion       := "2.11.8",
-    crossScalaVersions := Seq("2.10.5", "2.11.8"),
+    version            := "0.16.0-SNAPSHOT",
+    scalaVersion       := "2.11.11",
+    crossScalaVersions := Seq("2.11.11", "2.12.6"),
     organization       := "jp.t2v",
     resolvers          ++=
       Resolver.typesafeRepo("releases") ::
@@ -58,7 +60,7 @@ object ApplicationBuild extends Build {
       baseSettings,
       libraryDependencies += "com.typesafe.play"  %%   "play"                   % playVersion        % "provided",
       libraryDependencies += "com.typesafe.play"  %%   "play-cache"             % playVersion        % "provided",
-      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.5.1",
+      libraryDependencies += "jp.t2v"             %%   "stackable-controller"   % "0.7.0-SNAPSHOT",
       name                    := appName,
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
@@ -84,18 +86,20 @@ object ApplicationBuild extends Build {
     .settings(
       baseSettings,
       resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
+      libraryDependencies += play.sbt.Play.autoImport.guice,
       libraryDependencies += play.sbt.Play.autoImport.cache,
       libraryDependencies += play.sbt.Play.autoImport.specs2 % Test,
       libraryDependencies += play.sbt.Play.autoImport.jdbc,
+      libraryDependencies += "com.h2database" % "h2" % "1.4.193",
       libraryDependencies += "org.mindrot"           % "jbcrypt"                           % "0.3m",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc"                       % "2.2.7",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-config"                % "2.2.7",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-syntax-support-macro"  % "2.2.7",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"                  % "2.2.7"   % "test",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-initializer"      % "2.4.0",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-dbapi-adapter"    % "2.4.0",
-      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-fixture"          % "2.4.0",
-      libraryDependencies += "org.flywaydb"         %% "flyway-play"                       % "2.0.1",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc"                       % "3.2.0",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-config"                % "3.2.0",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-syntax-support-macro"  % "3.2.0",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-test"                  % "3.2.0"   % "test",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-initializer"      % "2.6.0-scalikejdbc-3.2",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-dbapi-adapter"    % "2.6.0-scalikejdbc-3.2",
+      libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-fixture"          % "2.6.0-scalikejdbc-3.2",
+      libraryDependencies += "org.flywaydb"         %% "flyway-play"                       % "5.0.0",
       TwirlKeys.templateImports in Compile ++= Seq(
         "jp.t2v.lab.play2.auth.sample._",
         "play.api.data.Form",
@@ -108,7 +112,8 @@ object ApplicationBuild extends Build {
       publishArtifact   := false,
       packagedArtifacts := Map.empty,
       publishTo         <<=(version)(appPublishTo),
-      pomExtra          := appPomExtra
+      pomExtra          := appPomExtra,
+      routesGenerator   := InjectedRoutesGenerator
     )
     .dependsOn(core, test % "test")
 
@@ -119,6 +124,7 @@ object ApplicationBuild extends Build {
       libraryDependencies += "com.typesafe.play" %% "play"       % playVersion % "provided",
       libraryDependencies += "com.typesafe.play" %% "play-ws"    % playVersion % "provided",
       libraryDependencies += "com.typesafe.play" %% "play-cache" % playVersion % "provided",
+      libraryDependencies += "com.typesafe.play" %% "play-ahc-ws-standalone" % "1.1.9",
       publishMavenStyle       := appPublishMavenStyle,
       publishArtifact in Test := appPublishArtifactInTest,
       pomIncludeRepository    := appPomIncludeRepository,
@@ -136,14 +142,14 @@ object ApplicationBuild extends Build {
       libraryDependencies ++= Seq(
         "com.typesafe.play" %% "play-ws"                           % playVersion,
         "com.typesafe.play" %% "play-cache"                        % playVersion,
-        "org.flywaydb"      %% "flyway-play"                       % "2.0.1",
-        "org.scalikejdbc"   %% "scalikejdbc"                       % "2.2.7",
-        "org.scalikejdbc"   %% "scalikejdbc-config"                % "2.2.7",
-        "org.scalikejdbc"   %% "scalikejdbc-syntax-support-macro"  % "2.2.7",
-        "org.scalikejdbc"   %% "scalikejdbc-test"                  % "2.2.7"            % "test",
-        "org.scalikejdbc"   %% "scalikejdbc-play-initializer"      % "2.4.0",
-        "org.scalikejdbc"   %% "scalikejdbc-play-dbapi-adapter"    % "2.4.0",
-        "org.scalikejdbc"   %% "scalikejdbc-play-fixture"          % "2.4.0"
+        "org.flywaydb"      %% "flyway-play"                       % "5.0.0",
+        "org.scalikejdbc"   %% "scalikejdbc"                       % "3.2.0",
+        "org.scalikejdbc"   %% "scalikejdbc-config"                % "3.2.0",
+        "org.scalikejdbc"   %% "scalikejdbc-syntax-support-macro"  % "3.2.0",
+        "org.scalikejdbc"   %% "scalikejdbc-test"                  % "3.2.0"   % "test",
+        "org.scalikejdbc"   %% "scalikejdbc-play-initializer"      % "2.6.0-scalikejdbc-3.2",
+        "org.scalikejdbc"   %% "scalikejdbc-play-dbapi-adapter"    % "2.6.0-scalikejdbc-3.2",
+        "org.scalikejdbc"   %% "scalikejdbc-play-fixture"          % "2.6.0-scalikejdbc-3.2"
       ),
       publish           := { },
       publishArtifact   := false,
