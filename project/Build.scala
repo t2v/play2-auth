@@ -99,7 +99,7 @@ object ApplicationBuild extends Build {
       libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-initializer"      % "2.6.0-scalikejdbc-3.2",
       libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-dbapi-adapter"    % "2.6.0-scalikejdbc-3.2",
       libraryDependencies += "org.scalikejdbc"      %% "scalikejdbc-play-fixture"          % "2.6.0-scalikejdbc-3.2",
-      libraryDependencies += "org.flywaydb"         %% "flyway-play"                       % "4.0.0",
+      libraryDependencies += "org.flywaydb"         %% "flyway-play"                       % "5.0.0",
       TwirlKeys.templateImports in Compile ++= Seq(
         "jp.t2v.lab.play2.auth.sample._",
         "play.api.data.Form",
@@ -142,14 +142,14 @@ object ApplicationBuild extends Build {
       libraryDependencies ++= Seq(
         "com.typesafe.play" %% "play-ws"                           % playVersion,
         "com.typesafe.play" %% "play-cache"                        % playVersion,
-        "org.flywaydb"      %% "flyway-play"                       % "2.0.1",
-        "org.scalikejdbc"   %% "scalikejdbc"                       % "2.2.7",
-        "org.scalikejdbc"   %% "scalikejdbc-config"                % "2.2.7",
-        "org.scalikejdbc"   %% "scalikejdbc-syntax-support-macro"  % "2.2.7",
-        "org.scalikejdbc"   %% "scalikejdbc-test"                  % "2.2.7"            % "test",
-        "org.scalikejdbc"   %% "scalikejdbc-play-initializer"      % "2.4.0",
-        "org.scalikejdbc"   %% "scalikejdbc-play-dbapi-adapter"    % "2.4.0",
-        "org.scalikejdbc"   %% "scalikejdbc-play-fixture"          % "2.4.0"
+        "org.flywaydb"      %% "flyway-play"                       % "5.0.0",
+        "org.scalikejdbc"   %% "scalikejdbc"                       % "3.2.0",
+        "org.scalikejdbc"   %% "scalikejdbc-config"                % "3.2.0",
+        "org.scalikejdbc"   %% "scalikejdbc-syntax-support-macro"  % "3.2.0",
+        "org.scalikejdbc"   %% "scalikejdbc-test"                  % "3.2.0"   % "test",
+        "org.scalikejdbc"   %% "scalikejdbc-play-initializer"      % "2.6.0-scalikejdbc-3.2",
+        "org.scalikejdbc"   %% "scalikejdbc-play-dbapi-adapter"    % "2.6.0-scalikejdbc-3.2",
+        "org.scalikejdbc"   %% "scalikejdbc-play-fixture"          % "2.6.0-scalikejdbc-3.2"
       ),
       publish           := { },
       publishArtifact   := false,
