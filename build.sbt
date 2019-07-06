@@ -100,7 +100,6 @@ lazy val sample = (project in file("sample"))
       "play.api.data.Form",
       "play.api.mvc.Flash",
       "views._",
-      "views.html.helper",
       "controllers._"
     ),
     publish           := { },

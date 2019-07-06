@@ -1,4 +1,4 @@
-## Routes
+# Routes
 ## This file defines all application routes (Higher priority routes first)
 ## ~~~~
 #
@@ -11,17 +11,17 @@
 #GET     /standard/messages/list               @controllers.standard.Messages.list
 #GET     /standard/messages/detail/:id         @controllers.standard.Messages.detail(id: Int)
 #GET     /standard/messages/write              @controllers.standard.Messages.write
-#
-## Builder
-#GET     /builder/                          @controllers.builder.Sessions.login
-#POST    /builder/login                     @controllers.builder.Sessions.authenticate
-#GET     /builder/logout                    @controllers.builder.Sessions.logout
-#
-#GET     /builder/messages/main             @controllers.builder.Messages.main
-#GET     /builder/messages/list             @controllers.builder.Messages.list
-#GET     /builder/messages/detail/:id       @controllers.builder.Messages.detail(id: Int)
-#GET     /builder/messages/write            @controllers.builder.Messages.write
-#
+
+# Builder
+GET     /builder/                          controllers.builder.Sessions.login
+POST    /builder/login                     controllers.builder.Sessions.authenticate
+GET     /builder/logout                    controllers.builder.Sessions.logout
+
+GET     /builder/messages/main             controllers.builder.Messages.main
+GET     /builder/messages/list             controllers.builder.Messages.list
+GET     /builder/messages/detail/:id       controllers.builder.Messages.detail(id: Int)
+GET     /builder/messages/write            controllers.builder.Messages.write
+
 ## Csrf
 GET     /csrf/                             controllers.csrf.Sessions.login
 POST    /csrf/login                        controllers.csrf.Sessions.authenticate
