@@ -51,16 +51,16 @@ POST    /csrf/                             controllers.csrf.PreventingCsrfSample
 #GET     /stateless/messages/list             @controllers.stateless.Messages.list
 #GET     /stateless/messages/detail/:id       @controllers.stateless.Messages.detail(id: Int)
 #GET     /stateless/messages/write            @controllers.stateless.Messages.write
-#
-#
-## HTTP Basic Auth
-#GET     /basic/                            @controllers.Default.redirect(to = "/basic/messages/main")
-#GET     /basic/messages/main               @controllers.basic.Messages.main
-#GET     /basic/messages/list               @controllers.basic.Messages.list
-#GET     /basic/messages/detail/:id         @controllers.basic.Messages.detail(id: Int)
-#GET     /basic/messages/write              @controllers.basic.Messages.write
-#
-#
+
+
+# HTTP Basic Auth
+GET     /basic/                            controllers.Default.redirect(to = "/basic/messages/main")
+GET     /basic/messages/main               controllers.basic.Messages.main
+GET     /basic/messages/list               controllers.basic.Messages.list
+GET     /basic/messages/detail/:id         controllers.basic.Messages.detail(id: Int)
+GET     /basic/messages/write              controllers.basic.Messages.write
+
+
 ## Remember Me
 #GET     /rememberme/                            @controllers.rememberme.Sessions.login
 #POST    /rememberme/login                       @controllers.rememberme.Sessions.authenticate

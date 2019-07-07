@@ -13,21 +13,23 @@ import views.html
 import scala.concurrent.{ExecutionContext, Future}
 
 class TransactionalRequest[+A](val dbSession: DBSession, request: Request[A]) extends WrappedRequest[A](request)
-class TransactionalAction(val executionContext: ExecutionContext) extends ActionBuilder[TransactionalRequest, AnyContent] {
-  override def invokeBlock[A](request: Request[A], block: (TransactionalRequest[A]) => Future[Result]): Future[Result] = {
+class TransactionalAction(val executionContext: ExecutionContext, parsers: PlayBodyParsers) extends ActionBuilder[TransactionalRequest, AnyContent] {
+  override def invokeBlock[A](request: Request[A], block: TransactionalRequest[A] => Future[Result]): Future[Result] = {
     import scalikejdbc.TxBoundary.Future._
     implicit val ctx = executionContext
     DB.localTx { session =>
       block(new TransactionalRequest(session, request))
     }
   }
-  override def parser: BodyParser[AnyContent] = BodyParsers.parse.default
+  override def parser: BodyParser[AnyContent] = parsers.default
 }
 
-class Messages(val environment: Environment, val cc: ControllerComponents, val auth: AuthComponents[Int, Account, Role])(implicit ec: ExecutionContext) extends AbstractController(cc) with AuthActionBuilders[Int, Account, Role] {
+class Messages(val environment: Environment, val cc: ControllerComponents, val auth: AuthComponents[Int, Account, Role]) extends AbstractController(cc) with AuthActionBuilders[Int, Account, Role] {
+
+  implicit val ec: ExecutionContext = cc.executionContext
 
   type AuthTxRequest[+A] = GenericAuthRequest[A, TransactionalRequest]
-  final def AuthorizationTxAction(authority: Role): ActionBuilder[AuthTxRequest, AnyContent] = composeAuthorizationAction(new TransactionalAction(cc.executionContext))(authority)
+  final def AuthorizationTxAction(authority: Role): ActionBuilder[AuthTxRequest, AnyContent] = composeAuthorizationAction(new TransactionalAction(cc.executionContext, cc.parsers))(authority)
 
   class PjaxAuthRequest[+A](val template: String => Html => Html, val authRequest: AuthTxRequest[A]) extends WrappedRequest[A](authRequest)
   object PjaxRefiner extends ActionTransformer[AuthTxRequest, PjaxAuthRequest] {

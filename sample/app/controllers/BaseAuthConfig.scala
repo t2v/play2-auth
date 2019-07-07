@@ -24,9 +24,9 @@ trait BaseAuthConfig  extends AuthConfig[Int, Account, Role] {
     Future.successful(Forbidden("no permission"))
   }
   def authorize(user: User, authority: Authority)(implicit ctx: ExecutionContext) = Future.successful((user.role, authority) match {
-    case (Administrator, _) => true
+    case (Administrator, _)       => true
     case (NormalUser, NormalUser) => true
-    case _ => false
+    case _                        => false
   })
 
 }

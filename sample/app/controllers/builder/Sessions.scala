@@ -10,7 +10,9 @@ import views.html
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Sessions (val environment: Environment, val cc: ControllerComponents, val auth: AuthComponents[Int, Account, Role])(implicit ec: ExecutionContext) extends AbstractController(cc) with LoginLogout[Int, Account, Role] {
+class Sessions (val environment: Environment, val cc: ControllerComponents, val auth: AuthComponents[Int, Account, Role]) extends AbstractController(cc) with LoginLogout[Int, Account, Role] {
+
+  implicit val ec: ExecutionContext = cc.executionContext
 
   val loginForm = Form {
     mapping("email" -> email, "password" -> text)(Account.authenticate)(_.map(u => (u.email, "")))

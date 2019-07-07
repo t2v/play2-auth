@@ -22,7 +22,7 @@ lazy val baseSettings = Seq(
 lazy val appPublishMavenStyle = true
 lazy val appPublishArtifactInTest = false
 lazy val appPomIncludeRepository = { _: MavenRepository => false }
-lazy val appPublishTo = { (v: String) =>
+lazy val appPublishTo = { v: String =>
   val nexus = "https://oss.sonatype.org/"
   if (v.trim.endsWith("SNAPSHOT"))
     Some("snapshots" at nexus + "content/repositories/snapshots")
