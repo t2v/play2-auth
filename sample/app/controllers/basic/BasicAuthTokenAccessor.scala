@@ -16,7 +16,7 @@ class BasicAuthTokenAccessor extends TokenAccessor {
       h <- request.headers.get("Authorization")
       if h.startsWith("Basic ")
     } yield h.substring(6)
-    encoded.map(s => new String(Base64.decodeBase64(s), Charset.forName("UTF-8")))
+    encoded.map(s => new String(Base64.decodeBase64(s.getBytes), Charset.forName("UTF-8")))
   }
 
 }

@@ -8,9 +8,9 @@ val appName    = "play2-auth"
 val playVersion = play.core.PlayVersion.current
 
 lazy val baseSettings = Seq(
-  version            := "0.15.0-SNAPSHOT",
+  version            := "play-2.7.x-auth-0.15-RC1",
   scalaVersion       := "2.12.3",
-  crossScalaVersions := Seq("2.11.11", "2.12.3"),
+  crossScalaVersions := Seq("2.12.8", "2.13.0"),
   organization       := "jp.t2v",
   resolvers          ++=
     Resolver.typesafeRepo("releases") ::
@@ -85,16 +85,17 @@ lazy val sample = (project in file("sample"))
     libraryDependencies += play.sbt.Play.autoImport.specs2 % Test,
     libraryDependencies += play.sbt.Play.autoImport.jdbc,
     libraryDependencies += "org.mindrot"               % "jbcrypt"                           % "0.3m",
-    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc"                       % "3.1.0",
-    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-config"                % "3.1.0",
-    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-syntax-support-macro"  % "3.1.0",
-    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-test"                  % "3.1.0"   % "test",
-    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-play-initializer"      % "2.6.0",
-    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-play-dbapi-adapter"    % "2.6.0",
-    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-play-fixture"          % "2.6.0",
-    libraryDependencies += "org.flywaydb"             %% "flyway-play"                       % "4.0.0",
-    libraryDependencies += "com.softwaremill.macwire" %% "macros"                            % "2.3.0",
+    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc"                       % "3.3.+",
+    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-config"                % "3.3.+",
+    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-syntax-support-macro"  % "3.3.+",
+    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-test"                  % "3.3.+"   % "test",
+    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-play-initializer"      % "2.7.1-scalikejdbc-3.3",
+    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-play-dbapi-adapter"    % "2.7.1-scalikejdbc-3.3",
+    libraryDependencies += "org.scalikejdbc"          %% "scalikejdbc-play-fixture"          % "2.7.1-scalikejdbc-3.3",
+    libraryDependencies += "org.flywaydb"             %% "flyway-play"                       % "5.3.3",
+    libraryDependencies += "com.softwaremill.macwire" %% "macros"                            % "2.3.3",
     libraryDependencies += "com.h2database"            % "h2"                                % "1.4.196",
+    libraryDependencies += "org.netbeans.external"     % "org-apache-commons-codec"          % "RELEASE110",
     TwirlKeys.templateImports in Compile ++= Seq(
       "jp.t2v.lab.play2.auth.sample._",
       "play.api.data.Form",
